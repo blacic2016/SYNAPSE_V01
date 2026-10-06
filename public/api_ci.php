@@ -19,87 +19,108 @@ $action = $_REQUEST['action'] ?? '';
 // Función recursiva para calcular y propagar cat_unique en formato jerárquico posicional: CAT-XXYYZZ (2 dígitos del 01 al 99 por nivel)
 function recalculateCategoryCodes($cat_id, $pdo) {
     // Obtener datos actuales de la categoría
-    $stmt = $pdo->prepare("SELECT parent_id, cat_unique FROM ci_categories WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT id, parent_id, cat_unique FROM ci_categories WHERE id = ?");
     $stmt->execute([$cat_id]);
     $cat = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$cat) return;
     
-    // Si ya tiene un cat_unique y este no es temporal (no empieza por TEMP-), NO cambiarlo.
-    if (!empty($cat['cat_unique']) && strpos($cat['cat_unique'], 'TEMP-') === false) {
-        // Aún debemos propagar la recalculación a sus hijos por si hay nuevos hijos o hijos con códigos TEMP
-        $stmt_children_ids = $pdo->prepare("SELECT id FROM ci_categories WHERE parent_id = ?");
-        $stmt_children_ids->execute([$cat_id]);
-        $children_ids = $stmt_children_ids->fetchAll(PDO::FETCH_COLUMN);
-        
-        foreach ($children_ids as $child_id) {
-            recalculateCategoryCodes($child_id, $pdo);
-        }
-        return;
-    }
-    
     $parent_id = $cat['parent_id'];
-    $new_unique = '';
+    $current_unique = $cat['cat_unique'] ?? '';
     
-    if (!$parent_id) {
-        // Es raíz. Obtener todos los cat_unique de nivel raíz (formato CAT-XX)
-        $stmt_seq = $pdo->prepare("SELECT cat_unique FROM ci_categories WHERE parent_id IS NULL AND id != ? AND cat_unique LIKE 'CAT-%'");
-        $stmt_seq->execute([$cat_id]);
-        $raices = $stmt_seq->fetchAll(PDO::FETCH_COLUMN);
+    // Si tiene padre, primero asegurarse de que el padre tenga un cat_unique válido
+    $parent_unique = '';
+    if ($parent_id) {
+        $stmt_p = $pdo->prepare("SELECT cat_unique FROM ci_categories WHERE id = ?");
+        $stmt_p->execute([$parent_id]);
+        $parent_unique = $stmt_p->fetchColumn() ?: '';
         
-        $existing_nums = [];
-        foreach ($raices as $r_uniq) {
-            $existing_nums[] = (int)substr($r_uniq, 4); // CAT-XX -> XX
+        // Si el padre no tiene cat_unique válido o es TEMP-, recalcular primero el padre
+        if (empty($parent_unique) || strpos($parent_unique, 'TEMP-') === 0) {
+            recalculateCategoryCodes($parent_id, $pdo);
+            $stmt_p->execute([$parent_id]);
+            $parent_unique = $stmt_p->fetchColumn() ?: '';
         }
-        
-        // Buscar el primer número secuencial libre del 01 al 99
-        $next_val = 1;
-        for ($i = 1; $i <= 99; $i++) {
-            if (!in_array($i, $existing_nums)) {
-                $next_val = $i;
-                break;
-            }
-        }
-        
-        $new_unique = 'CAT-' . str_pad($next_val, 2, '0', STR_PAD_LEFT);
-    } else {
-        // Obtener el cat_unique del padre
-        $stmt_parent = $pdo->prepare("SELECT cat_unique FROM ci_categories WHERE id = ?");
-        $stmt_parent->execute([$parent_id]);
-        $parent_unique = $stmt_parent->fetchColumn();
-        
-        // Obtener todas las categorías hijas directas de este padre (excepto la actual)
-        $stmt_children = $pdo->prepare("SELECT cat_unique FROM ci_categories WHERE parent_id = ? AND id != ?");
-        $stmt_children->execute([$parent_id, $cat_id]);
-        $children_uniques = $stmt_children->fetchAll(PDO::FETCH_COLUMN);
-        
-        $existing_nums = [];
-        foreach ($children_uniques as $c_uniq) {
-            if (strpos($c_uniq, $parent_unique) === 0) {
-                $suffix = substr($c_uniq, strlen($parent_unique));
-                $existing_nums[] = (int)$suffix;
-            }
-        }
-        
-        // Buscar el primer número secuencial libre del 01 al 99
-        $next_child_seq = 1;
-        for ($i = 1; $i <= 99; $i++) {
-            if (!in_array($i, $existing_nums)) {
-                $next_child_seq = $i;
-                break;
-            }
-        }
-        
-        if ($next_child_seq > 99) {
-            throw new Exception("Límite de 99 subcategorías hijas para este padre excedido.");
-        }
-        $new_unique = $parent_unique . str_pad($next_child_seq, 2, '0', STR_PAD_LEFT);
     }
     
-    // Actualizar categoría actual
-    $stmt_update = $pdo->prepare("UPDATE ci_categories SET cat_unique = ? WHERE id = ?");
-    $stmt_update->execute([$new_unique, $cat_id]);
+    // Verificar si el cat_unique actual es completamente válido para su posición jerárquica actual
+    $is_valid = false;
+    if (!empty($current_unique) && strpos($current_unique, 'TEMP-') === false) {
+        if (!$parent_id) {
+            // Para nivel raíz, debe tener formato CAT-XXXX (4 dígitos)
+            if (preg_match('/^CAT-\d{4}$/', $current_unique)) {
+                $is_valid = true;
+            }
+        } else {
+            // Para categorías hijas, debe empezar exactamente con $parent_unique y tener sufijo de 2 dígitos
+            if (!empty($parent_unique) && strpos($current_unique, $parent_unique) === 0 && strlen($current_unique) === strlen($parent_unique) + 2) {
+                $suffix = substr($current_unique, strlen($parent_unique));
+                if (preg_match('/^\d{2}$/', $suffix)) {
+                    $is_valid = true;
+                }
+            }
+        }
+    }
     
-    // Propagar recursivamente a todos sus hijos directos
+    // Si NO es válido, calcular el nuevo cat_unique
+    if (!$is_valid) {
+        if (!$parent_id) {
+            // Es raíz. Obtener todos los cat_unique de nivel raíz
+            $stmt_seq = $pdo->prepare("SELECT cat_unique FROM ci_categories WHERE parent_id IS NULL AND id != ? AND cat_unique LIKE 'CAT-%'");
+            $stmt_seq->execute([$cat_id]);
+            $raices = $stmt_seq->fetchAll(PDO::FETCH_COLUMN);
+            
+            $existing_nums = [];
+            foreach ($raices as $r_uniq) {
+                if (preg_match('/^CAT-(\d+)$/', $r_uniq, $m)) {
+                    $existing_nums[] = (int)$m[1];
+                }
+            }
+            
+            $next_val = 1;
+            for ($i = 1; $i <= 9999; $i++) {
+                if (!in_array($i, $existing_nums)) {
+                    $next_val = $i;
+                    break;
+                }
+            }
+            
+            $new_unique = 'CAT-' . str_pad($next_val, 4, '0', STR_PAD_LEFT);
+        } else {
+            // Obtener todas las categorías hijas directas de este padre (excepto la actual)
+            $stmt_children = $pdo->prepare("SELECT cat_unique FROM ci_categories WHERE parent_id = ? AND id != ?");
+            $stmt_children->execute([$parent_id, $cat_id]);
+            $children_uniques = $stmt_children->fetchAll(PDO::FETCH_COLUMN);
+            
+            $existing_nums = [];
+            foreach ($children_uniques as $c_uniq) {
+                if (!empty($parent_unique) && strpos($c_uniq, $parent_unique) === 0) {
+                    $suffix = substr($c_uniq, strlen($parent_unique));
+                    if (ctype_digit($suffix)) {
+                        $existing_nums[] = (int)$suffix;
+                    }
+                }
+            }
+            
+            $next_child_seq = 1;
+            for ($i = 1; $i <= 99; $i++) {
+                if (!in_array($i, $existing_nums)) {
+                    $next_child_seq = $i;
+                    break;
+                }
+            }
+            
+            if ($next_child_seq > 99) {
+                throw new Exception("Límite de 99 subcategorías hijas para este padre excedido.");
+            }
+            $new_unique = $parent_unique . str_pad($next_child_seq, 2, '0', STR_PAD_LEFT);
+        }
+        
+        // Actualizar categoría actual
+        $stmt_update = $pdo->prepare("UPDATE ci_categories SET cat_unique = ? WHERE id = ?");
+        $stmt_update->execute([$new_unique, $cat_id]);
+    }
+    
+    // Propagar siempre la recalculación a todos sus hijos directos
     $stmt_children_ids = $pdo->prepare("SELECT id FROM ci_categories WHERE parent_id = ?");
     $stmt_children_ids->execute([$cat_id]);
     $children_ids = $stmt_children_ids->fetchAll(PDO::FETCH_COLUMN);
@@ -111,7 +132,7 @@ function recalculateCategoryCodes($cat_id, $pdo) {
 
 try {
     if ($action === 'get_categories') {
-        $stmt = $pdo->query("SELECT c.*, u.username as creator_name FROM ci_categories c LEFT JOIN users u ON c.created_by = u.id ORDER BY c.name ASC");
+        $stmt = $pdo->query("SELECT c.*, (SELECT COUNT(*) FROM ci_instances WHERE category_id = c.id) as direct_ci_count, u.username as creator_name FROM ci_categories c LEFT JOIN users u ON c.created_by = u.id ORDER BY c.name ASC");
         $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         $stmt_dep = $pdo->query("SELECT * FROM cmdb_category_dependencies");
@@ -223,7 +244,7 @@ try {
                 $stmt->execute([$name, $parent_id, $schema_json, $icon, $description, $requires_parent_instance, $id]);
                 $category_id = $id;
             } else {
-                $stmt = $pdo->prepare("INSERT INTO ci_categories (name, parent_id, schema_json, icon, description, created_by, requires_parent_instance, cat_unique, ultima_actualizacion) VALUES (?, ?, ?, ?, ?, ?, ?, '', NOW())");
+                $stmt = $pdo->prepare("INSERT INTO ci_categories (name, parent_id, schema_json, icon, description, created_by, requires_parent_instance, cat_unique, ultima_actualizacion) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NOW())");
                 $stmt->execute([$name, $parent_id, $schema_json, $icon, $description, $created_by, $requires_parent_instance]);
                 $category_id = $pdo->lastInsertId();
             }
@@ -370,11 +391,53 @@ try {
         
     } elseif ($action === 'get_instances') {
         $category_id = isset($_GET['category_id']) ? (int)$_GET['category_id'] : null;
+        $include_descendants = isset($_GET['include_descendants']) ? (int)$_GET['include_descendants'] : 1;
         if ($category_id) {
-            $stmt = $pdo->prepare("SELECT i.*, c.name as category_name FROM ci_instances i JOIN ci_categories c ON i.category_id = c.id WHERE i.category_id = ? ORDER BY i.hostname ASC");
-            $stmt->execute([$category_id]);
+            if ($include_descendants) {
+                $all_cats = $pdo->query("SELECT id, parent_id FROM ci_categories")->fetchAll(PDO::FETCH_ASSOC);
+                $cat_ids = [$category_id];
+                $collect_descendants = function($pId) use (&$collect_descendants, $all_cats, &$cat_ids) {
+                    foreach ($all_cats as $cat) {
+                        if ((int)$cat['parent_id'] === (int)$pId) {
+                            $cat_ids[] = (int)$cat['id'];
+                            $collect_descendants($cat['id']);
+                        }
+                    }
+                };
+                $collect_descendants($category_id);
+                $cat_ids = array_values(array_unique($cat_ids));
+                $in_placeholders = implode(',', array_fill(0, count($cat_ids), '?'));
+                $stmt = $pdo->prepare("
+                    SELECT i.*, c.name as category_name, c.icon as category_icon, u.username as creator_name, p.hostname as parent_ci_name
+                    FROM ci_instances i 
+                    JOIN ci_categories c ON i.category_id = c.id 
+                    LEFT JOIN users u ON i.created_by = u.id
+                    LEFT JOIN ci_instances p ON i.parent_ci_id = p.id
+                    WHERE i.category_id IN ($in_placeholders) 
+                    ORDER BY i.hostname ASC
+                ");
+                $stmt->execute($cat_ids);
+            } else {
+                $stmt = $pdo->prepare("
+                    SELECT i.*, c.name as category_name, c.icon as category_icon, u.username as creator_name, p.hostname as parent_ci_name
+                    FROM ci_instances i 
+                    JOIN ci_categories c ON i.category_id = c.id 
+                    LEFT JOIN users u ON i.created_by = u.id
+                    LEFT JOIN ci_instances p ON i.parent_ci_id = p.id
+                    WHERE i.category_id = ? 
+                    ORDER BY i.hostname ASC
+                ");
+                $stmt->execute([$category_id]);
+            }
         } else {
-            $stmt = $pdo->query("SELECT i.*, c.name as category_name FROM ci_instances i JOIN ci_categories c ON i.category_id = c.id ORDER BY i.hostname ASC");
+            $stmt = $pdo->query("
+                SELECT i.*, c.name as category_name, c.icon as category_icon, u.username as creator_name, p.hostname as parent_ci_name
+                FROM ci_instances i 
+                JOIN ci_categories c ON i.category_id = c.id 
+                LEFT JOIN users u ON i.created_by = u.id
+                LEFT JOIN ci_instances p ON i.parent_ci_id = p.id
+                ORDER BY i.hostname ASC
+            ");
         }
         $instances = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(['success' => true, 'data' => $instances]);

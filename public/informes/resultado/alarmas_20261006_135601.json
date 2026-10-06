@@ -1,0 +1,19 @@
+{
+    "resumen_general": {
+        "total_alarmas": 0,
+        "total_equipos_afectados": 0,
+        "por_severidad": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        "fecha_inicio_analisis": "01-10-2026",
+        "fecha_fin_analisis": "06-10-2026"
+    },
+    "por_equipo": [],
+    "por_tipo_alarma": [],
+    "lista_alarmas": []
+}

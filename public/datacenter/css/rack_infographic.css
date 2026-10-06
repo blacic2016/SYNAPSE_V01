@@ -1,0 +1,1678 @@
+/**
+ * Rack Infographic Diagram & Export Styles
+ * Matching the exact Vilaseca / Dalkasa enterprise layout
+ */
+
+.rack-view-modal-dialog {
+    max-width: 98vw;
+    width: 1750px;
+    margin: 1rem auto;
+}
+
+.rack-view-modal-content {
+    background: #eaedf1;
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+}
+
+.rack-view-modal-header {
+    background: #0f4c5c;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.rack-view-modal-body {
+    padding: 20px;
+    overflow-x: auto;
+    background: #eaedf1;
+}
+
+/* Master Infographic Card (captured by html2canvas) */
+#rack-infographic-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e2e8f0;
+    min-width: 1200px;
+    max-width: 1450px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #1e293b;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Header */
+.info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.info-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.info-brand-logo {
+    display: flex;
+    align-items: center;
+}
+
+.info-brand-logo img,
+.info-brand-logo svg {
+    height: 48px;
+    width: auto;
+    display: block;
+}
+
+.info-title-box h2 {
+    font-size: 32px;
+    font-weight: 800;
+    color: #0f4c5c;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+.info-subtitle {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.info-subclient {
+    font-size: 9px;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.info-badges {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-pill {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 5px 16px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    cursor: default;
+}
+
+.info-pill-btn {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.info-pill-btn:hover {
+    background: #0f4c5c;
+    color: #ffffff;
+    border-color: #0f4c5c;
+}
+
+/* Dual-color divider stripe */
+.info-divider {
+    height: 6px;
+    width: 100%;
+    margin: 14px 0 22px 0;
+    display: flex;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.info-div-teal {
+    background: #0f766e;
+    flex: 0 0 42%;
+}
+.info-div-orange {
+    background: #f59e0b;
+    flex: 1 1 58%;
+}
+
+/* 3-Column Body Grid */
+.info-body-grid {
+    display: grid;
+    grid-template-columns: minmax(540px, auto) 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* Column 1: 3D Cabinet Enclosure */
+.cabinet-3d-wrapper {
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.cabinet-top-face {
+    height: 46px;
+    width: calc(100% - 25px);
+    background: linear-gradient(180deg, #2b303c 0%, #1e222b 100%);
+    transform: perspective(400px) rotateX(32deg);
+    transform-origin: bottom center;
+    border-radius: 6px 6px 0 0;
+    border: 2px solid #374151;
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.12);
+    margin-bottom: -4px;
+    margin-left: 2px;
+}
+
+.top-vent-grill {
+    border: 1px dashed #64748b;
+    border-radius: 18px;
+    padding: 3px 20px;
+    font-size: 9px;
+    font-weight: 800;
+    color: #ffffff !important;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.cabinet-main-frame {
+    display: flex;
+    position: relative;
+}
+
+.cabinet-front {
+    width: 530px;
+    background: #141720;
+    border: 3px solid #282e3b;
+    border-radius: 4px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 0 0 1px #374151;
+    overflow: visible;
+    position: relative;
+    z-index: 2;
+}
+
+.rear-cabinet .cabinet-front,
+.cabinet-front.rear-cabinet {
+    width: 610px;
+}
+
+.cabinet-right-side {
+    width: 25px;
+    background: linear-gradient(90deg, #1c202a 0%, #0d0f14 100%);
+    border: 2px solid #282e3b;
+    border-left: none;
+    transform: skewY(-7deg);
+    transform-origin: top left;
+    margin-top: 3px;
+    box-shadow: 4px 6px 12px rgba(0, 0, 0, 0.25);
+    border-radius: 0 4px 4px 0;
+    z-index: 1;
+}
+
+.cabinet-header-plate {
+    background: #101319;
+    border-bottom: 2px solid #282e3b;
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 900;
+    color: #ffffff !important;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+}
+
+.cabinet-footer-plate {
+    background: #101319;
+    border-top: 2px solid #282e3b;
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 900;
+    color: #ffffff !important;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+}
+
+.cabinet-interior {
+    display: flex;
+    position: relative;
+    background: #0b0d12;
+}
+
+.rack-rail-left,
+.rack-rail-right {
+    width: 32px;
+    background: #202738;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #334155;
+    border-left: 1px solid #334155;
+    user-select: none;
+    z-index: 3;
+}
+
+.rail-unit-slot {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #334155;
+    font-size: 11.5px;
+    font-weight: 900;
+    color: #ffffff !important;
+    font-family: 'Consolas', 'Courier New', monospace;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+    position: relative;
+    box-sizing: border-box;
+}
+
+.rail-unit-slot .rack-bolt {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #cbd5e1 30%, #475569 80%);
+    position: absolute;
+    right: 3px;
+    box-shadow: inset 0 1px 1px #fff, 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.rack-rail-right .rail-unit-slot .rack-bolt {
+    right: auto;
+    left: 3px;
+}
+
+/* Canales laterales de PDUs Verticales (0U Mount sin sobreponer números de UR) */
+.rack-pdu-channel {
+    width: 34px;
+    background: #0f131a;
+    border-right: 1px solid #1e2533;
+    border-left: 1px solid #1e2533;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.85);
+    overflow: hidden;
+}
+
+.rack-pdu-channel.left-channel {
+    border-left: none;
+}
+
+.rack-pdu-channel.right-channel {
+    border-right: none;
+}
+
+/* En formato REAR: Las PDUs están a los extremos exteriores apegadas al rack */
+.rear-cabinet .rack-pdu-channel.left-channel.rear-outer-pdu {
+    border-right: 2px solid #282e3b;
+    border-left: 2px solid #141923;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.9), -2px 0 6px rgba(0,0,0,0.5);
+}
+
+.rear-cabinet .rack-pdu-channel.right-channel.rear-outer-pdu {
+    border-left: 2px solid #282e3b;
+    border-right: 2px solid #141923;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.9), 2px 0 6px rgba(0,0,0,0.5);
+}
+
+/* Dispositivo PDU Vertical realista para Infografía */
+.info-vertical-pdu {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid #334155;
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 1px;
+    box-sizing: border-box;
+    position: relative;
+    box-shadow: inset 0 0 4px rgba(255,255,255,0.1), 0 2px 4px rgba(0,0,0,0.5);
+    cursor: default;
+}
+
+.info-pdu-header-meter {
+    font-size: 7px;
+    font-weight: 800;
+    color: #38bdf8;
+    background: #020617;
+    padding: 2px 3px;
+    border-radius: 2px;
+    border: 1px solid #0369a1;
+    margin-bottom: 6px;
+    text-align: center;
+    letter-spacing: 0.5px;
+    font-family: monospace;
+    white-space: nowrap;
+}
+
+.info-pdu-outlets-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    width: 100%;
+    margin-bottom: auto;
+    overflow: hidden;
+}
+
+.info-pdu-outlet {
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle, #020617 40%, #1e293b 90%);
+    border: 1px solid #475569;
+    border-radius: 50%;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.8);
+    flex-shrink: 0;
+}
+
+.info-pdu-label-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    font-size: 8px;
+    font-weight: 800;
+    color: #cbd5e1;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: auto;
+    padding: 6px 0;
+    text-align: center;
+    line-height: 1;
+}
+
+.rack-slots-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #0b0e14;
+    position: relative;
+}
+
+.rack-u-slot {
+    height: 32px;
+    border-bottom: 1px solid #1a1f2c;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.rack-u-slot.empty-slot {
+    background: repeating-linear-gradient(45deg, #0d1017, #0d1017 10px, #0f121a 10px, #0f121a 20px);
+    color: #ffffff !important;
+    opacity: 0.9;
+    border: 1px dashed #283347;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+}
+
+/* Todas las letras y números dentro de los bastidores en color blanco puro de alto contraste */
+.cabinet-interior,
+.cabinet-interior *,
+.cabinet-header-plate,
+.cabinet-footer-plate,
+.appliance-face,
+.appliance-face *,
+.face-patch-panel-rear *,
+.face-switch-rear *,
+.face-firewall-rear *,
+.face-router-rear *,
+.face-nvr-rear *,
+.face-pdu-rear *,
+.face-ap-rear *,
+.face-ups-rear *,
+.face-server-rear *,
+.rear-face-plate,
+.rear-face-plate *,
+.rack-u-slot,
+.rack-u-slot *,
+.rail-unit-slot,
+.rail-unit-slot *,
+.info-vertical-pdu,
+.info-vertical-pdu *,
+.pp-title,
+.pp-tag,
+.organizer-label,
+.sw-title,
+.sw-model,
+.sw-sn,
+.sw-brand,
+.fw-title,
+.fw-brand,
+.fw-model,
+.fw-sn,
+.fw-role-tag,
+.rt-name,
+.rt-badge,
+.server-brand,
+.server-model,
+.server-label,
+.router-brand,
+.router-model,
+.nvr-brand,
+.nvr-model,
+.nvr-logo,
+.shelf-label,
+.ap-name,
+.ups-brand,
+.ups-model,
+.ups-label,
+.ups-sub,
+.pdu-label,
+.rear-dev-title,
+.rear-dev-sub,
+.info-pdu-header-meter,
+.info-pdu-label-vertical {
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.95);
+}
+
+/* Hyper-realistic Appliance Faceplates */
+.appliance-face {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    box-sizing: border-box;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #ffffff;
+    overflow: hidden;
+    z-index: 4;
+}
+
+/* Patch Panel Faceplate */
+.face-patch-panel {
+    background: #252b38;
+    justify-content: space-between;
+}
+.pp-label-box {
+    display: flex;
+    flex-direction: column;
+    min-width: 80px;
+}
+.pp-title {
+    font-size: 8px;
+    font-weight: 800;
+    color: #e2e8f0;
+    letter-spacing: 0.5px;
+}
+.pp-tag {
+    font-size: 7px;
+    font-weight: 700;
+    color: #94a3b8;
+}
+.pp-ports-matrix {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+}
+.pp-port-group {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px;
+    background: #141720;
+    padding: 2px 4px;
+    border-radius: 2px;
+    border: 1px solid #334155;
+}
+.pp-rj45 {
+    width: 6px;
+    height: 6px;
+    background: #0f1218;
+    border: 1px solid #475569;
+    border-radius: 1px;
+    position: relative;
+}
+
+/* Cable Organizer */
+.face-organizer {
+    background: #1e2430;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+}
+.organizer-comb {
+    flex: 1;
+    height: 18px;
+    background: repeating-linear-gradient(90deg, #0f1218 0px, #0f1218 6px, #2d3748 6px, #2d3748 12px);
+    border: 1px solid #334155;
+    border-radius: 2px;
+    margin-left: 10px;
+}
+.organizer-label {
+    font-size: 8px;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+}
+
+/* Switch */
+.face-switch {
+    background: #18202d;
+    justify-content: space-between;
+}
+.sw-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 100px;
+}
+.sw-model {
+    font-size: 8px;
+    font-weight: 800;
+    color: #38bdf8;
+    letter-spacing: 0.5px;
+}
+.sw-sn {
+    font-size: 6.5px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+.sw-ports-block {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.sw-port-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+    background: #0e1219;
+    padding: 2px 3px;
+    border: 1px solid #334155;
+    border-radius: 2px;
+}
+.sw-port-item {
+    width: 6px;
+    height: 6px;
+    background: #000000;
+    border: 1px solid #475569;
+    position: relative;
+}
+.sw-led {
+    position: absolute;
+    top: -3px;
+    left: 1px;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 3px #22c55e;
+}
+.sw-sfp {
+    display: flex;
+    gap: 2px;
+}
+.sw-sfp-cage {
+    width: 8px;
+    height: 12px;
+    background: #475569;
+    border: 1px solid #64748b;
+    border-radius: 1px;
+}
+
+/* Firewall */
+.face-firewall {
+    background: linear-gradient(180deg, #f8fafc 0%, #cbd5e1 100%);
+    color: #0f172a;
+    justify-content: space-between;
+}
+.fw-info {
+    display: flex;
+    flex-direction: column;
+}
+.fw-title {
+    font-size: 8px;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.fw-role-tag {
+    font-size: 7px;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+.fw-role-tag.principal {
+    background: #dcfce7;
+    color: #15803d;
+}
+.fw-role-tag.esclavo {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+.fw-sn {
+    font-size: 6.5px;
+    font-weight: 600;
+    color: #64748b;
+}
+.fw-ports {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.fw-port-slot {
+    width: 7px;
+    height: 7px;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 1px;
+    position: relative;
+}
+.fw-port-slot::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: 2px;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #22c55e;
+}
+
+/* Router Cisco */
+.face-router {
+    background: #182234;
+    justify-content: space-between;
+}
+.rt-cisco-logo {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+    height: 12px;
+}
+.rt-cisco-bar {
+    width: 2px;
+    background: #38bdf8;
+    border-radius: 1px;
+}
+.rt-title-box {
+    display: flex;
+    flex-direction: column;
+    margin-left: 6px;
+}
+.rt-name {
+    font-size: 8px;
+    font-weight: 800;
+    color: #ffffff;
+}
+.rt-badge {
+    font-size: 6.5px;
+    font-weight: 700;
+    color: #38bdf8;
+}
+.rt-ports {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.rt-port-lan {
+    width: 7px;
+    height: 7px;
+    background: #0f172a;
+    border: 1px solid #eab308;
+    border-radius: 1px;
+}
+.rt-port-cons {
+    width: 7px;
+    height: 7px;
+    background: #0f172a;
+    border: 1px solid #38bdf8;
+    border-radius: 1px;
+}
+
+/* Bandeja Metálica */
+.face-shelf {
+    background: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.shelf-perf {
+    flex: 1;
+    height: 14px;
+    background-image: radial-gradient(#1e293b 25%, transparent 26%);
+    background-size: 6px 6px;
+    margin-left: 10px;
+}
+.shelf-label {
+    font-size: 8px;
+    font-weight: 800;
+    color: #f1f5f9;
+    letter-spacing: 0.8px;
+}
+
+/* NVR */
+.face-nvr {
+    background: #111827;
+    justify-content: space-between;
+}
+.nvr-logo {
+    font-size: 9px;
+    font-weight: 900;
+    color: #f8fafc;
+    letter-spacing: 1px;
+}
+.nvr-leds {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+.nvr-led {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+}
+.nvr-led.green { background: #22c55e; box-shadow: 0 0 3px #22c55e; }
+.nvr-led.blue { background: #38bdf8; box-shadow: 0 0 3px #38bdf8; }
+.nvr-led.red { background: #ef4444; box-shadow: 0 0 3px #ef4444; }
+
+/* PDU */
+.face-pdu {
+    background: #181c24;
+    justify-content: space-between;
+}
+.pdu-label {
+    font-size: 8px;
+    font-weight: 800;
+    color: #f59e0b;
+    letter-spacing: 0.5px;
+}
+.pdu-outlets {
+    display: flex;
+    gap: 6px;
+}
+.pdu-nema {
+    width: 10px;
+    height: 12px;
+    background: #000000;
+    border: 1px solid #334155;
+    border-radius: 2px;
+    position: relative;
+}
+.pdu-nema::before,
+.pdu-nema::after {
+    content: '';
+    position: absolute;
+    width: 1.5px;
+    height: 4px;
+    background: #cbd5e1;
+    top: 2px;
+}
+.pdu-nema::before { left: 2px; }
+.pdu-nema::after { right: 2px; }
+.pdu-switch {
+    width: 14px;
+    height: 10px;
+    background: #dc2626;
+    border: 1px solid #f87171;
+    box-shadow: 0 0 4px #ef4444;
+    border-radius: 1px;
+}
+
+/* Access Point */
+.face-ap {
+    background: #1e293b;
+    justify-content: center;
+}
+.ap-capsule {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 3px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    border: 1px solid #cbd5e1;
+}
+.ap-name {
+    font-size: 8px;
+    font-weight: 800;
+    color: #0f172a;
+}
+.ap-led-ring {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 5px #22c55e;
+}
+
+/* UPS */
+.face-ups {
+    background: #111827;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6px 14px;
+    box-sizing: border-box;
+}
+.ups-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.ups-apc-logo {
+    font-size: 18px;
+    font-weight: 900;
+    color: #dc2626;
+    letter-spacing: -1px;
+    font-family: Arial, sans-serif;
+}
+.ups-label {
+    font-size: 9px;
+    font-weight: 800;
+    color: #e2e8f0;
+}
+.ups-sub {
+    font-size: 7px;
+    color: #94a3b8;
+}
+.ups-led {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 4px #22c55e;
+    display: inline-block;
+}
+
+/* Column 2: Analytics, Detalle por Unidad, Observaciones, Leyenda */
+.info-center-col {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.kpi-cards-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.kpi-stat-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 8px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.kpi-stat-num {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+.kpi-stat-num.teal { color: #0f4c5c; }
+.kpi-stat-num.green { color: #059669; }
+.kpi-stat-num.orange { color: #d97706; }
+
+.kpi-stat-label {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.occupancy-bar-box {
+    margin-bottom: 2px;
+}
+
+.occupancy-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    font-weight: 800;
+    color: #0f4c5c;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.occupancy-progress {
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.occupancy-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0d9488 0%, #10b981 100%);
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+.ur-detail-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.ur-detail-title {
+    font-size: 10px;
+    font-weight: 800;
+    color: #0e4b5a;
+    padding: 6px 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.ur-table-container {
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+.ur-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5px;
+}
+
+.ur-table th {
+    background: #0e4b5a;
+    color: #ffffff;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 5px 8px;
+    font-size: 8.5px;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.ur-table td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+.ur-table tr:nth-child(even) {
+    background: #fbfcfd;
+}
+
+.ur-empty-text {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.dev-type-indicator {
+    display: inline-block;
+    width: 6px;
+    height: 12px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.observations-box {
+    background: #fffbeb;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+
+.observations-title {
+    font-size: 10px;
+    font-weight: 800;
+    color: #b45309;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.observations-list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 9.5px;
+    color: #78350f;
+    line-height: 1.4;
+}
+
+.legend-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.legend-title {
+    font-size: 9.5px;
+    font-weight: 800;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.legend-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px 8px;
+    font-size: 8.5px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.legend-swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+.legend-swatch.circle {
+    border-radius: 50%;
+}
+
+/* Column 3: Evidencia Fotográfica */
+.info-photos-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.photos-header-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: #0e4b5a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.photos-header-sub {
+    font-size: 9px;
+    font-weight: 600;
+    color: #64748b;
+    margin: 0 0 6px 0;
+}
+
+.photo-card-main {
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    background: #0f172a;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.photo-card-main:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+.photo-card-main img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+}
+
+.photo-caption {
+    font-size: 8.5px;
+    color: #64748b;
+    text-align: center;
+    margin-top: 4px;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.photos-subgrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.photo-sub-item {
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    background: #0f172a;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.photo-sub-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.photo-sub-item img {
+    width: 100%;
+    height: 95px;
+    object-fit: cover;
+    display: block;
+}
+
+.photos-empty-state {
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 30px 15px;
+    text-align: center;
+    color: #94a3b8;
+    background: #f8fafc;
+}
+
+/* Footer */
+.info-footer {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 8.5px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   POSTERIOR (REAR) VIEW STYLES & DUAL VIEW MODE
+   ========================================================================== */
+
+.info-view-switch {
+    background: #f1f5f9;
+    border-radius: 20px;
+    padding: 2px;
+    border: 1px solid #cbd5e1;
+    display: inline-flex;
+    gap: 2px;
+}
+
+.info-view-switch .info-pill-btn {
+    border: none;
+    background: transparent;
+    padding: 4px 12px;
+    font-size: 10px;
+    border-radius: 16px;
+    margin: 0;
+    color: #475569;
+    font-weight: 700;
+    box-shadow: none;
+}
+
+.info-view-switch .info-pill-btn.active,
+.info-pill-btn.active {
+    background: #0f4c5c !important;
+    color: #ffffff !important;
+    border-color: #0f4c5c !important;
+    box-shadow: 0 2px 4px rgba(15, 76, 92, 0.25) !important;
+}
+
+.view-side-btn.active {
+    background: #ffffff !important;
+    color: #0f4c5c !important;
+    border-color: #ffffff !important;
+}
+
+/* Dual View Mode Layout */
+.info-body-grid.dual-view {
+    grid-template-columns: 540px 620px 1fr !important;
+    gap: 24px !important;
+}
+
+#rack-infographic-card.dual-view-card {
+    max-width: 2150px !important;
+    width: auto !important;
+    min-width: 1750px !important;
+}
+
+.cabinet-rear-badge {
+    background: #0f766e;
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 8px;
+    font-weight: 800;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+}
+
+/* REAR CABINET STYLING */
+.cabinet-3d-wrapper.rear-cabinet .cabinet-front {
+    border-color: #242c38;
+}
+
+.cabinet-3d-wrapper.rear-cabinet .cabinet-right-side {
+    background: linear-gradient(90deg, #151a22 0%, #0a0d11 100%);
+}
+
+.cabinet-3d-wrapper.rear-cabinet .cabinet-header-plate {
+    background: #0d1017;
+    color: #38bdf8;
+}
+
+/* REAR APPLIANCE FACEPLATES */
+
+/* Patch Panel (Rear) */
+.face-patch-panel-rear {
+    background: #202633;
+    justify-content: space-between;
+    padding: 0 8px;
+}
+.pp-rear-wireblocks {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    justify-content: center;
+}
+.pp-idc-block {
+    display: flex;
+    gap: 1.5px;
+    background: #11151e;
+    padding: 2px 4px;
+    border: 1px solid #3b4556;
+    border-radius: 2px;
+}
+.pp-idc-pin {
+    width: 4px;
+    height: 12px;
+    border-radius: 1px;
+    position: relative;
+}
+.pp-idc-pin.blue { background: #2563eb; }
+.pp-idc-pin.orange { background: #ea580c; }
+.pp-idc-pin.green { background: #16a34a; }
+.pp-idc-pin.brown { background: #92400e; }
+.pp-ground-stud {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #eab308;
+    box-shadow: 0 0 2px #ca8a04;
+    border: 1px solid #713f12;
+}
+
+/* Switch (Rear) */
+.face-switch-rear {
+    background: #171d26;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+.sw-psu-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.sw-psu-module {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #0f131a;
+    padding: 2px 6px;
+    border: 1px solid #334155;
+    border-radius: 2px;
+}
+.sw-c14-plug {
+    width: 12px;
+    height: 12px;
+    background: #000;
+    border: 1px solid #475569;
+    border-radius: 2px;
+    position: relative;
+}
+.sw-c14-plug::before {
+    content: '•••';
+    color: #cbd5e1;
+    font-size: 6px;
+    position: absolute;
+    top: -2px;
+    left: 1px;
+    letter-spacing: -1px;
+}
+.sw-fan-vent {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #0f172a 40%, #334155 70%);
+    border: 1px dashed #64748b;
+}
+
+/* Firewall (Rear) */
+.face-firewall-rear {
+    background: linear-gradient(180deg, #d1d5db 0%, #9ca3af 100%);
+    color: #111827;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+.fw-dc-jack {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #000;
+    border: 1.5px solid #4b5563;
+}
+
+/* Router (Rear) */
+.face-router-rear {
+    background: #161e2b;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+.rt-pwr-toggle {
+    width: 12px;
+    height: 8px;
+    background: #000;
+    border: 1px solid #475569;
+    border-radius: 1px;
+    color: #cbd5e1;
+    font-size: 6px;
+    line-height: 8px;
+    text-align: center;
+}
+
+/* NVR (Rear) */
+.face-nvr-rear {
+    background: #0f131a;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+.nvr-rear-ports {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.port-vga {
+    width: 10px;
+    height: 8px;
+    background: #2563eb;
+    border: 1px solid #1d4ed8;
+    border-radius: 1px;
+}
+.port-hdmi {
+    width: 9px;
+    height: 6px;
+    background: #eab308;
+    border: 1px solid #ca8a04;
+    border-radius: 1px;
+}
+.port-lan-rear {
+    width: 8px;
+    height: 8px;
+    background: #000;
+    border: 1px solid #475569;
+    border-radius: 1px;
+    position: relative;
+}
+
+/* PDU (Rear) */
+.face-pdu-rear {
+    background: #151922;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+.pdu-cord-entry {
+    width: 14px;
+    height: 10px;
+    background: #000;
+    border: 2px solid #334155;
+    border-radius: 50%;
+    box-shadow: inset 0 0 3px #000;
+}
+.pdu-breaker-btn {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 1px solid #fff;
+    box-shadow: 0 0 3px #ef4444;
+}
+
+/* Access Point (Rear) */
+.face-ap-rear {
+    background: #1a2230;
+    justify-content: center;
+}
+.ap-rear-plate {
+    background: #475569;
+    border: 1px solid #64748b;
+    border-radius: 4px;
+    padding: 3px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.ap-poe-port {
+    width: 8px;
+    height: 8px;
+    background: #000;
+    border: 1px solid #eab308;
+    border-radius: 1px;
+}
+
+/* UPS (Rear) */
+.face-ups-rear {
+    background: #11141b;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6px 12px;
+    box-sizing: border-box;
+}
+.ups-rear-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.ups-outlets-bank {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3px;
+    background: #000;
+    padding: 3px 5px;
+    border: 1px solid #334155;
+    border-radius: 3px;
+}
+.ups-outlet-slot {
+    width: 8px;
+    height: 10px;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 1px;
+}
+.ups-bat-connector {
+    width: 14px;
+    height: 10px;
+    background: #eab308;
+    border: 1px solid #ca8a04;
+    border-radius: 2px;
+    font-size: 5px;
+    font-weight: 900;
+    color: #000;
+    line-height: 10px;
+    text-align: center;
+}
+
+/* Floating U size tag in builder */
+.dev-u-tag-floating {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 7.5px;
+    font-weight: 800;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #cbd5e1;
+    padding: 1px 4px;
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 10;
+    line-height: 1;
+    letter-spacing: 0.5px;
+}
+
+/* Server Faceplate */
+.face-server {
+    background: #1e1b4b;
+    justify-content: space-between;
+}
+.srv-drive-bays {
+    display: flex;
+    gap: 3px;
+    background: #0f0d24;
+    padding: 2px 4px;
+    border-radius: 2px;
+    border: 1px solid #3730a3;
+}
+.srv-drive-caddy {
+    width: 14px;
+    height: 12px;
+    background: #18153a;
+    border: 1px solid #4338ca;
+    border-radius: 1px;
+    position: relative;
+}
+.srv-caddy-led {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 2.5px;
+    height: 2.5px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 2px #22c55e;
+}
+.srv-ctrl-panel {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.srv-pwr-btn {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: 1px solid #fff;
+    box-shadow: 0 0 3px #22c55e;
+}
+.srv-id-btn {
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+    background: #38bdf8;
+}
+
+/* Server Rear */
+.face-server-rear {
+    background: #17153a;
+    justify-content: space-between;
+}
+.srv-rear-io {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.srv-nic-ports {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: #0d0b21;
+    padding: 2px 3px;
+    border: 1px solid #3730a3;
+    border-radius: 2px;
+}
+.srv-idrac-port {
+    background: #0d0b21;
+    border: 1px solid #d97706;
+    padding: 1px 3px;
+    border-radius: 2px;
+}
+
+/* Empty Slot Hint text */
+.rack-slot-hint {
+    font-size: 8px;
+    font-weight: 700;
+    color: #475569;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    user-select: none;
+    pointer-events: none;
+}
+.rack-slot:hover .rack-slot-hint {
+    color: #38bdf8;
+}
+
+/* Print Styles */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #rack-infographic-card,
+    #rack-infographic-card * {
+        visibility: visible;
+    }
+    #rack-infographic-card {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        min-width: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 10px !important;
+    }
+}

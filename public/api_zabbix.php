@@ -387,6 +387,16 @@ switch ($action) {
 
         foreach ($final_data as &$iface) {
             $iname = $iface['interface_name'];
+            
+            // Check if physical interface (exclude VLANs, loopbacks, etc.)
+            $lowerName = strtolower(trim($iname));
+            $isSubIf = (bool)preg_match('/\.[0-9]+$/', $lowerName);
+            $isNonPhysical = (bool)preg_match('/^(vlan|vl|loopback|lo|null|tunnel|tun|bridge|br|docker|veth|virbr|stack|control|processor|virtual)[0-9_\-\:]*$/i', $lowerName);
+            if (strpos($lowerName, 'vlan') !== false || strpos($lowerName, 'loopback') !== false) {
+                $isNonPhysical = true;
+            }
+            $iface['is_physical'] = (!$isSubIf && !$isNonPhysical);
+
             if (isset($cmdb_mappings[$iname])) {
                 $m = $cmdb_mappings[$iname];
                 $iface['connected_host_name'] = $m['dest_device_name'];

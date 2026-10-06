@@ -101,11 +101,13 @@ if (php_sapi_name() !== 'cli') {
     header("X-XSS-Protection: 1; mode=block");
 
     // CSP ajustada para AdminLTE/CDNs y Topología
-    $csp = "default-src 'self'; " .
-           "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://cdn.datatables.net; " .
+    $csp = "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://cdn.datatables.net https://code.jquery.com https://fonts.googleapis.com https://fonts.gstatic.com; " .
+           "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://cdn.datatables.net https://code.jquery.com; " .
+           "script-src-elem 'self' 'unsafe-inline' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://cdn.datatables.net https://code.jquery.com; " .
            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.datatables.net; " .
+           "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.datatables.net; " .
            "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " .
-           "img-src 'self' data: https://img.icons8.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " .
+           "img-src 'self' data: blob: https://img.icons8.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " .
            "connect-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com https://cdn.datatables.net http://172.32.1.50 http://172.32.1.51; " .
            "worker-src 'self' blob:; " .
            "frame-src 'self' https://embed.diagrams.net; " .

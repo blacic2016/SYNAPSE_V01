@@ -1,0 +1,2602 @@
+{
+    "resumen_general": {
+        "total_hosts_analizados": 9,
+        "promedio_ok": 100,
+        "promedio_problem": 0,
+        "fecha_inicio_analisis": "01-07-2026",
+        "fecha_fin_analisis": "31-07-2026",
+        "dias_analizados": 31,
+        "tiempo_total_periodo_segundos": 2678400,
+        "tiempo_total_periodo_formateado": "31d",
+        "tiempo_promedio_ok_estimado": "31d",
+        "tiempo_promedio_problem_estimado": "0s",
+        "por_host": [
+            {
+                "host": "ESXI_202",
+                "ip": "172.32.2.202",
+                "porcentaje_ok_total": 100,
+                "porcentaje_problem_total": 0,
+                "tiempo_ok_estimado": "31d",
+                "tiempo_problem_estimado": "0s"
+            },
+            {
+                "host": "ESXI_201",
+                "ip": "172.32.2.201",
+                "porcentaje_ok_total": 100,
+                "porcentaje_problem_total": 0,
+                "tiempo_ok_estimado": "31d",
+                "tiempo_problem_estimado": "0s"
+            },
+            {
+                "host": "ESXI_203",
+                "ip": "172.32.2.203",
+                "porcentaje_ok_total": 100,
+                "porcentaje_problem_total": 0,
+                "tiempo_ok_estimado": "31d",
+                "tiempo_problem_estimado": "0s"
+            },
+            {
+                "host": "ESXI_204",
+                "ip": "172.32.2.204",
+                "porcentaje_ok_total": 100,
+                "porcentaje_problem_total": 0,
+                "tiempo_ok_estimado": "31d",
+                "tiempo_problem_estimado": "0s"
+            },
+            {
+                "host": "SAP_ESXI_209",
+                "ip": "172.32.2.209",
+                "porcentaje_ok_total": 100,
+                "porcentaje_problem_total": 0,
+                "tiempo_ok_estimado": "31d",
+                "tiempo_problem_estimado": "0s"
+            },
+            {
+                "host": "VCENTER",
+                "ip": "172.32.2.51",
+                "porcentaje_ok_total": 100,
+                "porcentaje_problem_total": 0,
+                "tiempo_ok_estimado": "31d",
+                "tiempo_problem_estimado": "0s"
+            },
+            {
+                "host": "HX_ESX01",
+                "ip": "172.32.2.102",
+                "porcentaje_ok_total": 100,
+                "porcentaje_problem_total": 0,
+                "tiempo_ok_estimado": "31d",
+                "tiempo_problem_estimado": "0s"
+            },
+            {
+                "host": "HX_ESX02",
+                "ip": "172.32.2.103",
+                "porcentaje_ok_total": 100,
+                "porcentaje_problem_total": 0,
+                "tiempo_ok_estimado": "31d",
+                "tiempo_problem_estimado": "0s"
+            },
+            {
+                "host": "HX_ESX03",
+                "ip": "172.32.2.104",
+                "porcentaje_ok_total": 100,
+                "porcentaje_problem_total": 0,
+                "tiempo_ok_estimado": "31d",
+                "tiempo_problem_estimado": "0s"
+            }
+        ]
+    },
+    "detalle_diario_por_host": [
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "01-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "02-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "03-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "04-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "05-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "06-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "07-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "08-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "09-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "10-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "11-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "12-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "13-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "14-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "15-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "16-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "17-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "18-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "19-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "20-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "21-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "22-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "23-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "24-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "25-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "26-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "27-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "28-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "29-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "30-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10816,
+            "host": "ESXI_202",
+            "ip": "172.32.2.202",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "31-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "01-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "02-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "03-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "04-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "05-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "06-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "07-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "08-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "09-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "10-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "11-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "12-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "13-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "14-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "15-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "16-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "17-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "18-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "19-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "20-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "21-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "22-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "23-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "24-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "25-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "26-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "27-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "28-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "29-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "30-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10817,
+            "host": "ESXI_201",
+            "ip": "172.32.2.201",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "31-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "01-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "02-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "03-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "04-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "05-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "06-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "07-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "08-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "09-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "10-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "11-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "12-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "13-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "14-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "15-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "16-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "17-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "18-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "19-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "20-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "21-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "22-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "23-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "24-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "25-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "26-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "27-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "28-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "29-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "30-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10818,
+            "host": "ESXI_203",
+            "ip": "172.32.2.203",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "31-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "01-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "02-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "03-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "04-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "05-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "06-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "07-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "08-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "09-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "10-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "11-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "12-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "13-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "14-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "15-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "16-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "17-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "18-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "19-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "20-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "21-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "22-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "23-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "24-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "25-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "26-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "27-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "28-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "29-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "30-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10819,
+            "host": "ESXI_204",
+            "ip": "172.32.2.204",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "31-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "01-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "02-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "03-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "04-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "05-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "06-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "07-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "08-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "09-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "10-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "11-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "12-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "13-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "14-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "15-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "16-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "17-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "18-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "19-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "20-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "21-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "22-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "23-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "24-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "25-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "26-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "27-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "28-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "29-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "30-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10820,
+            "host": "SAP_ESXI_209",
+            "ip": "172.32.2.209",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "31-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "01-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "02-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "03-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "04-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "05-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "06-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "07-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "08-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "09-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "10-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "11-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "12-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "13-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "14-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "15-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "16-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "17-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "18-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "19-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "20-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "21-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "22-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "23-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "24-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "25-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "26-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "27-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "28-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "29-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "30-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10609,
+            "host": "VCENTER",
+            "ip": "172.32.2.51",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "31-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "01-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "02-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "03-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "04-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "05-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "06-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "07-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "08-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "09-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "10-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "11-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "12-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "13-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "14-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "15-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "16-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "17-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "18-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "19-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "20-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "21-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "22-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "23-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "24-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "25-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "26-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "27-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "28-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "29-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "30-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10821,
+            "host": "HX_ESX01",
+            "ip": "172.32.2.102",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "31-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "01-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "02-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "03-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "04-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "05-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "06-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "07-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "08-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "09-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "10-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "11-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "12-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "13-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "14-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "15-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "16-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "17-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "18-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "19-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "20-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "21-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "22-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "23-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "24-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "25-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "26-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "27-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "28-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "29-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "30-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10822,
+            "host": "HX_ESX02",
+            "ip": "172.32.2.103",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "31-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "01-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "02-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "03-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "04-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "05-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "06-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "07-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "08-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "09-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "10-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "11-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "12-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "13-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "14-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "15-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "16-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "17-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "18-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "19-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "20-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "21-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "22-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "23-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "24-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "25-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "26-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "27-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "28-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "29-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "30-07-2026",
+            "problems": 0,
+            "ok": 100
+        },
+        {
+            "hostid": 10823,
+            "host": "HX_ESX03",
+            "ip": "172.32.2.104",
+            "trigger": "Unavailable by ICMP ping",
+            "date": "31-07-2026",
+            "problems": 0,
+            "ok": 100
+        }
+    ],
+    "eventos_de_problema": []
+}

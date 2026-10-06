@@ -1,0 +1,14 @@
+{
+    "last_backup_date": "2026-10-06 10:48:00",
+    "timestamp": 1791294500,
+    "status": "EXITOSO",
+    "status_code": "success",
+    "duration_seconds": 20.03,
+    "items_count": 1,
+    "source": "/var/www/html/PROYECTOSONDA/PREPODUCCION",
+    "target": "/var/www/html/PROYECTOSONDA/BACK",
+    "db_dump_included": false,
+    "db_dump_size": "0 MB",
+    "executed_by": "superadmin",
+    "message": "Copia total de PREPODUCCION a BACK completada con éxito (1 elementos, Base de Datos 0 MB en 20.03s)."
+}

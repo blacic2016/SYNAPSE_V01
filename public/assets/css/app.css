@@ -169,25 +169,25 @@ body.dark-mode .navbar {
   font-size: 1.2rem;
 }
 .sidebar .nav-link:hover { 
-  background: linear-gradient(90deg, rgba(255, 92, 5, 0.1) 0%, rgba(255, 92, 5, 0) 100%) !important; 
+  background: linear-gradient(90deg, rgba(0, 255, 255, 0.1) 0%, rgba(0, 255, 255, 0) 100%) !important; 
   color: #ffffff !important; 
-  border-left: 4px solid var(--sonda-orange);
+  border-left: 4px solid rgb(0, 255, 255);
   transform: translateX(4px);
 }
 .sidebar .nav-link:hover i.nav-icon {
-  color: var(--sonda-orange);
+  color: rgb(0, 255, 255);
   transform: scale(1.1);
 }
 .sidebar .nav-link.active { 
-  background: linear-gradient(135deg, var(--sonda-orange) 0%, #e04e04 100%) !important; 
-  color: #ffffff !important; 
+  background: linear-gradient(135deg, rgb(0, 255, 255) 0%, #00B8D4 100%) !important; 
+  color: var(--sonda-navy) !important; 
   font-weight: 700; 
-  box-shadow: 0 4px 15px rgba(255, 92, 5, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 184, 212, 0.4);
   border: none;
   transform: translateY(-2px);
 }
 .sidebar .nav-link.active i.nav-icon {
-  color: #ffffff;
+  color: var(--sonda-navy) !important;
 }
 #cmdbSubmenu .nav-link {
   padding-left: 2.5rem;

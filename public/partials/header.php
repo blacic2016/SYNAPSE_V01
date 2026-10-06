@@ -151,6 +151,26 @@ $page_title = $page_title ?? 'CMDB Vilaseca';
 
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
+      <!-- Current Date -->
+      <li class="nav-item d-none d-md-inline-block mr-3" style="align-self: center;">
+        <span class="text-muted" style="cursor: default; font-size: 0.9rem; font-weight: 500;">
+          <i class="far fa-calendar-alt mr-2" style="color: var(--sonda-cyan);"></i>
+          <span id="navbar-current-date"></span>
+        </span>
+      </li>
+      <script>
+        $(document).ready(function() {
+          function updateNavbarDate() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date();
+            let formattedDate = today.toLocaleDateString("es-ES", options);
+            formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+            $('#navbar-current-date').text(formattedDate);
+          }
+          updateNavbarDate();
+          setInterval(updateNavbarDate, 3600000);
+        });
+      </script>
       <!-- Dark Mode Toggle -->
       <li class="nav-item">
         <a class="nav-link" id="dark-mode-toggle" href="#" role="button">

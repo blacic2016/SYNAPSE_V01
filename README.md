@@ -31,3 +31,5 @@ Siguientes pasos realizados / recomendados:
 - UI para ver listados y filtros, modales de detalle y subida de imágenes por elemento (próximo).
 - Opcional: permitir mapeo manual de claves únicas por hoja (en `sheet_configs`).
 - Config: `IMAGE_MAX_BYTES` = 32MB (config.php) para reglas de subida de imágenes.
+
+# SYNAPSE_V01

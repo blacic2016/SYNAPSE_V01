@@ -323,7 +323,7 @@ function formatMoney($val) {
         <table class="header-table">
             <tr>
                 <td>
-                    <div class="logo-area">SONDA<span>PRECMDB</span></div>
+                    <div class="logo-area">SYNAPSE</div>
                     <div style="font-size:11px; color:#6c757d; margin-top:5px;">
                         Vilaseca S.A. | Servicios Cloud, Soporte & Conectividad<br>
                         Guayaquil - Quito, Ecuador

@@ -11,7 +11,7 @@ const faUnicodeMap = {
     'fa-mobile-alt': '\uf3cd',
     'fa-database': '\uf1c0',
     'fa-desktop': '\uf108',
-    'fa-shield-alt': '\uf3ed',
+    'fa-shadow-alt': '\uf3ed',
     'fa-hdd': '\uf0a0',
     'fa-print': '\uf02f',
     'fa-ethernet': '\uf796',
@@ -25,7 +25,12 @@ const faUnicodeMap = {
     'fa-file-alt': '\uf15c',
     'fa-door-open': '\uf52b',
     'fa-city': '\uf64f',
-    'fa-microchip': '\uf2db'
+    'fa-microchip': '\uf2db',
+    'fa-ship': '\uf21a',
+    'fa-tachometer-alt': '\uf3fd',
+    'fa-map': '\uf279',
+    'fa-code': '\uf121',
+    'fa-user': '\uf007'
 };
 
 function getUnicodeIcon(iconClass) {
@@ -46,83 +51,133 @@ function initDiagram() {
     myDiagram = $(go.Diagram, "myDiagramDiv", {
         "undoManager.isEnabled": true,
         layout: $(go.LayeredDigraphLayout, { 
-            direction: 90, 
-            layerSpacing: 60, 
-            columnSpacing: 60 
+            direction: 0, // Horizontal layout (left-to-right)
+            layerSpacing: 120, // Spacing for bezier curves
+            columnSpacing: 60,
+            setsPortSpots: false
         }),
-        initialContentAlignment: go.Spot.Center
+        initialContentAlignment: go.Spot.Center,
+        "animationManager.isEnabled": true
     });
 
     // Plantilla para los CIs (Nodos)
-    myDiagram.nodeTemplate = $(go.Node, "Auto",
+    myDiagram.nodeTemplate = $(go.Node, "Vertical",
         { 
             locationSpot: go.Spot.Center,
             click: (e, obj) => {
                 showRelations(obj.data.key);
-            }
+            },
+            fromSpot: go.Spot.Right,
+            toSpot: go.Spot.Left
         },
         new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
         new go.Binding("visible", "visible"),
-        $(go.Shape, "RoundedRectangle",
-            { fill: "#ffffff", strokeWidth: 1.5, stroke: "#bdc3c7", parameter1: 8 },
-            new go.Binding("stroke", "status", s => s === 'Activo' ? "#2ecc71" : (s === 'Pasivo' ? '#f39c12' : "#e74c3c"))
-        ),
-        $(go.Panel, "Vertical", { margin: 10, defaultAlignment: go.Spot.Left },
-            // Mini-título: Categoría de cada CI
+        
+        // 1. Contenedor del Icono
+        $(go.Panel, "Spot",
+            $(go.Shape, "Circle", {
+                fill: "#ffffff",
+                stroke: "#cbd5e1",
+                strokeWidth: 2,
+                width: 44,
+                height: 44
+            },
+            new go.Binding("stroke", "status", s => s === 'Activo' ? "#10b981" : (s === 'Pasivo' ? '#f59e0b' : "#ef4444"))
+            ),
             $(go.TextBlock, 
                 { 
-                    font: "italic bold 7.5pt sans-serif", 
-                    stroke: "#7f8c8d", 
-                    margin: new go.Margin(0, 0, 4, 0) 
+                    font: '900 16pt "Font Awesome 5 Free"', 
+                    stroke: "#3b82f6",
+                    alignment: go.Spot.Center
                 },
-                new go.Binding("text", "categoryName", name => name ? name.toUpperCase() : "")
+                new go.Binding("text", "icon", getUnicodeIcon),
+                new go.Binding("stroke", "status", s => s === 'Activo' ? "#10b981" : (s === 'Pasivo' ? '#f59e0b' : "#ef4444"))
+            )
+        ),
+        
+        // Espaciador
+        $(go.Shape, { width: 1, height: 6, fill: "transparent", stroke: null }),
+        
+        // 2. Contenedor del Texto (Pill)
+        $(go.Panel, "Auto",
+            $(go.Shape, "RoundedRectangle", 
+                { 
+                    fill: "#ffffff", 
+                    stroke: "#cbd5e1", 
+                    strokeWidth: 1.5, 
+                    parameter1: 6
+                },
+                new go.Binding("stroke", "isSelected", sel => sel ? "#3b82f6" : "#cbd5e1"),
+                new go.Binding("strokeWidth", "isSelected", sel => sel ? 2 : 1.5)
             ),
-            // Fila horizontal para Icono, Nombre del CI, y Botón Expander
-            $(go.Panel, "Horizontal",
+            $(go.Panel, "Vertical", { margin: new go.Margin(6, 12, 6, 12), defaultAlignment: go.Spot.Center },
+                // Nombre del CI
                 $(go.TextBlock, 
                     { 
-                        font: '900 13pt "Font Awesome 5 Free"', 
-                        stroke: "#3498db",
-                        margin: new go.Margin(0, 6, 0, 0),
-                        alignment: go.Spot.Center
-                    },
-                    new go.Binding("text", "icon", getUnicodeIcon),
-                    new go.Binding("stroke", "status", s => s === 'Activo' ? "#2ecc71" : (s === 'Pasivo' ? '#f39c12' : "#e74c3c"))
-                ),
-                $(go.TextBlock, 
-                    { 
-                        font: "bold 10pt sans-serif", 
-                        stroke: "#2c3e50" 
+                        font: "bold 8.5pt system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", 
+                        stroke: "#1e293b",
+                        margin: new go.Margin(0, 0, 2, 0)
                     },
                     new go.Binding("text", "name")
                 ),
-                $(go.Shape, { width: 10, height: 0, fill: "transparent", stroke: null }),
-                $("Button",
-                    {
-                        alignment: go.Spot.Right,
-                        click: (e, obj) => toggleNodeRelations(obj.part)
+                // Categoría
+                $(go.TextBlock, 
+                    { 
+                        font: "bold 6.5pt system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", 
+                        stroke: "#64748b" 
                     },
-                    $(go.TextBlock,
-                        { 
-                            font: "bold 8pt sans-serif", 
-                            stroke: "#555555",
-                            margin: new go.Margin(0, 2, 0, 2)
-                        },
-                        new go.Binding("text", "relationsCollapsed", collapsed => collapsed ? "+" : "-")
-                    )
+                    new go.Binding("text", "categoryName", name => name ? name.toUpperCase() : "")
                 )
+            )
+        ),
+        
+        // 3. Botón Expander
+        $("Button",
+            {
+                margin: new go.Margin(4, 0, 0, 0),
+                click: (e, obj) => {
+                    e.stopPropagation();
+                    toggleNodeRelations(obj.part);
+                },
+                "ButtonBorder.stroke": "#cbd5e1",
+                "ButtonBorder.fill": "#f8fafc",
+                "ButtonBorder.strokeWidth": 1,
+                "ButtonBorder.figure": "Circle",
+                width: 18,
+                height: 18
+            },
+            $(go.TextBlock,
+                { 
+                    font: "bold 7pt system-ui, sans-serif", 
+                    stroke: "#64748b",
+                    alignment: go.Spot.Center
+                },
+                new go.Binding("text", "relationsCollapsed", collapsed => collapsed ? "+" : "-")
             )
         )
     );
 
     // Plantilla de Relaciones (Enlaces)
     myDiagram.linkTemplate = $(go.Link,
-        { routing: go.Link.AvoidsNodes, curve: go.Link.JumpOver, corner: 5 },
-        $(go.Shape, { strokeWidth: 1.5, stroke: "#7f8c8d" }),
-        $(go.Shape, { toArrow: "Standard", stroke: null, fill: "#7f8c8d" }),
+        { 
+            routing: go.Link.Normal, 
+            curve: go.Link.Bezier,
+            fromSpot: go.Spot.Right, 
+            toSpot: go.Spot.Left
+        },
+        $(go.Shape, 
+            { strokeWidth: 1.5, stroke: "#cbd5e1" },
+            new go.Binding("stroke", "isSelected", sel => sel ? "#3b82f6" : "#cbd5e1"),
+            new go.Binding("strokeWidth", "isSelected", sel => sel ? 2.5 : 1.5)
+        ),
+        $(go.Shape, 
+            { toArrow: "Standard", stroke: null, fill: "#cbd5e1" },
+            new go.Binding("fill", "isSelected", sel => sel ? "#3b82f6" : "#cbd5e1")
+        ),
         $(go.Panel, "Auto",
-            $(go.Shape, "RoundedRectangle", { fill: "#ffffff", stroke: null }),
-            $(go.TextBlock, { margin: 3, font: "8pt sans-serif", stroke: "#2c3e50" },
+            new go.Binding("visible", "type", t => t && t !== ''),
+            $(go.Shape, "RoundedRectangle", { fill: "#ffffff", stroke: "#e2e8f0", strokeWidth: 1, parameter1: 4 }),
+            $(go.TextBlock, { margin: new go.Margin(3, 6, 3, 6), font: "italic 7.5pt system-ui, sans-serif", stroke: "#475569" },
                 new go.Binding("text", "type")
             )
         )
@@ -164,7 +219,6 @@ function loadGraphData() {
             let visibleCIs = new Set();
             if (typeof FOCUS_CI_ID !== 'undefined' && FOCUS_CI_ID > 0) {
                 visibleCIs.add(FOCUS_CI_ID);
-                // Neighbors start hidden to show only the central equipment first
             } else {
                 res.data.cis.forEach(ci => visibleCIs.add(ci.id));
             }

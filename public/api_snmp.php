@@ -41,29 +41,37 @@ switch ($action) {
 
     case 'upload_mib':
         if (!isset($_FILES['mib_file'])) {
-            echo json_encode(['success' => false, 'error' => 'No se subió ningún archivo']);
+            echo json_encode(['success' => false, 'error' => 'No se recibió ningún archivo']);
             exit;
         }
 
         $file = $_FILES['mib_file'];
-        $mibs_dir = SNMP_MIBS_PATH;
-
-        if (!is_writable($mibs_dir)) {
-            echo json_encode(['success' => false, 'error' => 'El directorio de MIBs no tiene permisos de escritura']);
+        if (empty($file['name']) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            $errCode = $file['error'] ?? 'desconocido';
+            echo json_encode(['success' => false, 'error' => 'Error en la transferencia del archivo (Código PHP: ' . $errCode . ')']);
             exit;
         }
 
-        // Validar extensión
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowed = ['mib', 'txt', 'my', 'dic', 'my-smi'];
-        // Note: some MIBs don't have extension, but we prefer txt/mib for safety
-        
-        $target = $mibs_dir . '/' . basename($file['name']);
+        $mibs_dir = SNMP_MIBS_PATH;
+
+        if (!is_dir($mibs_dir)) {
+            @mkdir($mibs_dir, 0777, true);
+            @chmod($mibs_dir, 0777);
+        }
+
+        if (!is_writable($mibs_dir)) {
+            echo json_encode(['success' => false, 'error' => 'El directorio de MIBs (' . $mibs_dir . ') no tiene permisos de escritura']);
+            exit;
+        }
+
+        $filename = basename($file['name']);
+        $target = $mibs_dir . '/' . $filename;
         
         if (move_uploaded_file($file['tmp_name'], $target)) {
-            echo json_encode(['success' => true, 'message' => 'Archivo MIB subido correctamente: ' . $file['name']]);
+            @chmod($target, 0666);
+            echo json_encode(['success' => true, 'message' => 'Archivo MIB subido correctamente: ' . $filename]);
         } else {
-            echo json_encode(['success' => false, 'error' => 'Error al mover el archivo al repositorio']);
+            echo json_encode(['success' => false, 'error' => 'Error al mover el archivo al repositorio (' . $mibs_dir . ')']);
         }
         break;
 

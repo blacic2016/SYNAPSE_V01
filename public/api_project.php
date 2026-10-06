@@ -632,6 +632,35 @@ try {
             echo json_encode(['success' => true, 'clients' => $clients]);
             break;
 
+        case 'quick_create_client':
+            $name = trim($_POST['name'] ?? '');
+            if (empty($name)) {
+                echo json_encode(['success' => false, 'error' => 'El nombre del cliente es obligatorio.']);
+                exit();
+            }
+
+            // Buscar categoría de Clientes (ID 48/49 o por nombre)
+            $stmtCat = $pdo->query("SELECT id FROM ci_categories WHERE name LIKE '%Cliente%' ORDER BY id ASC LIMIT 1");
+            $cat_id = $stmtCat->fetchColumn() ?: 48;
+
+            // Generar código único SND-XXXXXXXXXX
+            $ci_unique = 'SND-' . sprintf("%010d", rand(1000000, 999999999));
+
+            // Insertar nuevo CI para el cliente
+            $stmtIns = $pdo->prepare("INSERT INTO ci_instances (category_id, hostname, status, source, ci_unique) VALUES (?, ?, 'Activo', 'manual', ?)");
+            $stmtIns->execute([$cat_id, $name, $ci_unique]);
+            $new_client_id = (int)$pdo->lastInsertId();
+
+            echo json_encode([
+                'success' => true,
+                'client' => [
+                    'id' => $new_client_id,
+                    'hostname' => $name,
+                    'ci_unique' => $ci_unique
+                ]
+            ]);
+            break;
+
         default:
             echo json_encode(['success' => false, 'error' => 'Acción no válida.']);
             break;

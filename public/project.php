@@ -564,12 +564,19 @@ body.dark-mode .kanban-col {
             </div>
             <div class="col-md-6 form-group">
               <label>Cliente (CI) *</label>
-              <select name="client_ci_id" id="projectClientCi" class="form-control" required>
-                <option value="">-- Seleccionar Cliente --</option>
-                <?php foreach ($clients as $c): ?>
-                  <option value="<?php echo $c['id']; ?>"><?php echo htmlspecialchars($c['hostname'] . ' (' . $c['ci_unique'] . ')'); ?></option>
-                <?php endforeach; ?>
-              </select>
+              <div class="input-group">
+                <select name="client_ci_id" id="projectClientCi" class="form-control" required>
+                  <option value="">-- Seleccionar Cliente --</option>
+                  <?php foreach ($clients as $c): ?>
+                    <option value="<?php echo $c['id']; ?>"><?php echo htmlspecialchars($c['hostname'] . ' (' . $c['ci_unique'] . ')'); ?></option>
+                  <?php endforeach; ?>
+                </select>
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-outline-success" onclick="showQuickCreateClientModal()" title="Registrar Nuevo Cliente en la CMDB">
+                    <i class="fas fa-plus mr-1"></i> Nuevo
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -959,7 +966,37 @@ $(function() {
             }
         });
     });
-});
+// Quick Create Client Modal
+function showQuickCreateClientModal() {
+    Swal.fire({
+        title: 'Registrar Nuevo Cliente (CMDB)',
+        text: 'Ingrese el nombre o razón social del cliente para agregarlo a la CMDB:',
+        input: 'text',
+        inputPlaceholder: 'Ej. Corporación Favorita, Sonda Ecuador...',
+        showCancelButton: true,
+        confirmButtonText: 'Guardar Cliente',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#00b8d4',
+        inputValidator: (value) => {
+            if (!value || !value.trim()) {
+                return '¡Debe ingresar el nombre del cliente!';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed && result.value) {
+            let clientName = result.value.trim();
+            $.post('api_project.php', { action: 'quick_create_client', name: clientName }, function(res) {
+                if (res.success && res.client) {
+                    let newOption = new Option(`${res.client.hostname} (${res.client.ci_unique})`, res.client.id, true, true);
+                    $('#projectClientCi').append(newOption).trigger('change');
+                    Swal.fire('Cliente Registrado', `El cliente "${res.client.hostname}" ha sido registrado en la CMDB con código ${res.client.ci_unique}.`, 'success');
+                } else {
+                    Swal.fire('Error', res.error || 'No se pudo crear el cliente.', 'error');
+                }
+            }, 'json');
+        }
+    });
+}
 
 // Load Project List
 function loadProjects() {

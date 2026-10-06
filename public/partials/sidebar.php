@@ -8,20 +8,18 @@ $current_sheet = $_GET['name'] ?? '';
 <!-- Main Sidebar Container -->
 <aside class="main-sidebar sidebar-dark-primary elevation-4" style="background-color: var(--sonda-navy);">
   <!-- Brand Logo -->
-  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/dashboard.php" class="brand-link" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-    <span class="brand-text font-weight-bolder" style="color: #ffffff; letter-spacing: 1px;">
-      SONDA <span style="color: var(--sonda-orange);">PRECMDB</span>
-    </span>
+  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/dashboard.php" class="brand-link d-flex align-items-center" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding: 12px 15px; text-decoration: none;">
+    <img src="<?php echo PUBLIC_URL_PREFIX; ?>/logo/logo_white.png" alt="SYNAPSE Logo" class="brand-image" style="opacity: 1; max-height: 38px; width: auto; margin-right: 12px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+    <div class="d-flex flex-column">
+      <span class="brand-text font-weight-bolder" style="color: #ffffff; letter-spacing: 1px; font-size: 1.35rem; line-height: 1.1;">
+        SYNAPSE
+      </span>
+      <span class="text-white-50" style="font-size: 0.75rem; letter-spacing: 0.5px;">v1.0</span>
+    </div>
   </a>
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <!-- Sidebar user panel (optional) -->
-    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-      <div class="info">
-        <a href="#" class="d-block"><?php echo htmlspecialchars($user['username'] ?? 'Usuario'); ?></a>
-      </div>
-    </div>
 
     <!-- Sidebar Menu -->
     <nav class="mt-2">
@@ -37,11 +35,166 @@ $current_sheet = $_GET['name'] ?? '';
           $is_equipos_page = ($is_activos_page || $is_pasivos_page);
         ?>
         
+        <!-- Módulo FEMSA (Principal - Top Tab) -->
+        <?php if (has_role('SUPER_ADMIN') || has_module_access('femsa')): ?>
+        <li class="nav-item">
+          <a href="<?php echo PUBLIC_URL_PREFIX; ?>/femsa/index.php" class="nav-link <?php echo (strpos($_SERVER['SCRIPT_NAME'], '/femsa/') !== false) ? 'active' : ''; ?>">
+            <i class="nav-icon fas fa-building text-danger"></i>
+            <p>FEMSA <span class="badge badge-danger ml-1">Nuevo</span></p>
+          </a>
+        </li>
+        <?php endif; ?>
+
+        <!-- Módulo ACTIVIDADES (Principal - Top Tab) -->
+        <?php if (has_role('SUPER_ADMIN') || has_module_access('actividades')): ?>
+        <li class="nav-item">
+          <a href="<?php echo PUBLIC_URL_PREFIX; ?>/actividades/index.php" class="nav-link <?php echo (strpos($_SERVER['SCRIPT_NAME'], '/actividades/') !== false) ? 'active' : ''; ?>">
+            <i class="nav-icon fas fa-tasks text-primary"></i>
+            <p>ACTIVIDADES <span class="badge badge-primary ml-1">Nuevo</span></p>
+          </a>
+        </li>
+        <?php endif; ?>
+
+        <!-- Módulo CMDB_SONDA (Principal - Top Tab Autónomo & BI) -->
+        <?php if (has_role('SUPER_ADMIN') || has_module_access('cmdb_sonda')): ?>
+        <?php
+          $is_cmdb_sonda_root = (strpos($_SERVER['SCRIPT_NAME'], '/cmdb_sonda/') !== false);
+          $is_cmdb_sonda_inv = ($cur === 'index.php' && $is_cmdb_sonda_root);
+          $is_cmdb_sonda_dash = ($cur === 'dashboard.php' && $is_cmdb_sonda_root);
+        ?>
+        <li class="nav-item <?php echo $is_cmdb_sonda_root ? 'menu-is-opening menu-open' : ''; ?>">
+          <a href="#" class="nav-link <?php echo $is_cmdb_sonda_root ? 'active' : ''; ?>" style="<?php echo $is_cmdb_sonda_root ? 'background: linear-gradient(135deg, #002b49 0%, #0052cc 100%) !important; color: #fff !important;' : ''; ?>">
+            <i class="nav-icon fas fa-cubes text-info"></i>
+            <p>
+              CMDB_SONDA
+              <i class="right fas fa-angle-left"></i>
+              <span class="badge badge-info ml-1">BI</span>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/cmdb_sonda/index.php" class="nav-link <?php echo $is_cmdb_sonda_inv ? 'active' : ''; ?>">
+                <i class="far fa-circle nav-icon text-info"></i>
+                <p>Inventario & Topología</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/cmdb_sonda/dashboard.php" class="nav-link <?php echo $is_cmdb_sonda_dash ? 'active' : ''; ?>">
+                <i class="far fa-circle nav-icon text-warning"></i>
+                <p>Dashboard Analítico BI</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <?php endif; ?>
+
+        <!-- Módulo Vilaseca (Principal - Left Menu Tab) -->
+        <?php if (has_role('SUPER_ADMIN') || has_module_access('clientes') || has_module_access('vilaseca')): ?>
+        <?php 
+          $is_vilaseca_portmapping = ($cur === 'portmapping.php' && isset($_GET['cliente']) && strtoupper($_GET['cliente']) === 'VILASECA');
+          $is_vilaseca_visio = ($cur === 'visio.php' && isset($_GET['cliente']) && strtoupper($_GET['cliente']) === 'VILASECA');
+          $is_vilaseca_analisis = ($cur === 'analisis_conexiones.php');
+          $is_vilaseca_root = (strpos($_SERVER['SCRIPT_NAME'], '/clientes/vilaseca/') !== false);
+          
+          // Datacenter Vilaseca state detection
+          $is_in_datacenter = (strpos($_SERVER['SCRIPT_NAME'], '/datacenter/') !== false);
+          $is_dc_vilaseca_client = (isset($_GET['cliente']) && strtoupper($_GET['cliente']) === 'VILASECA');
+          $is_vilaseca_only_user = (!has_role('SUPER_ADMIN') && !has_module_access('datacenter') && has_module_access('vilaseca'));
+          $is_vilaseca_dc = $is_in_datacenter && ($is_dc_vilaseca_client || $is_vilaseca_only_user);
+          $is_vilaseca_rooms = ($cur === 'rooms.php' && $is_vilaseca_dc);
+          $is_vilaseca_racks = (in_array($cur, ['racks.php', 'rack_builder.php', 'floor_plan.php']) && $is_vilaseca_dc);
+          $is_vilaseca_3dviewer = (in_array($cur, ['viewer_3d.php', 'floor_plan_3d.php']) && $is_vilaseca_dc);
+          $is_vilaseca_dc_analisis = ($cur === 'analisis.php' && $is_vilaseca_dc);
+
+          $is_vilaseca_menu_open = ($is_vilaseca_root || $is_vilaseca_portmapping || $is_vilaseca_visio || $is_vilaseca_analisis || $is_vilaseca_dc);
+        ?>
+        <li class="nav-item <?php echo $is_vilaseca_menu_open ? 'menu-is-opening menu-open' : ''; ?>">
+          <a href="#" class="nav-link <?php echo $is_vilaseca_menu_open ? 'active' : ''; ?>">
+            <i class="nav-icon fas fa-building" style="color: #ff5c05;"></i>
+            <p>
+              Vilaseca
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <!-- 1. Dashboard (Manage) -->
+            <li class="nav-item">
+              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/clientes/vilaseca/index.php" class="nav-link <?php echo $is_vilaseca_root ? 'active' : ''; ?>">
+                <i class="fas fa-chart-line nav-icon" style="color: #ff5c05; font-size: 0.88rem;"></i>
+                <p>Dashboard (Manage)</p>
+              </a>
+            </li>
+
+            <!-- 2. Datacenter dentro de Vilaseca -->
+            <li class="nav-item <?php echo $is_vilaseca_dc ? 'menu-is-opening menu-open' : ''; ?>">
+              <a href="#" class="nav-link <?php echo $is_vilaseca_dc ? 'active' : ''; ?>" style="font-weight: 600;">
+                <i class="fas fa-server nav-icon" style="color: #00B8D4;"></i>
+                <p>
+                  Datacenter
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview" style="padding-left: 10px;">
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/datacenter/rooms.php?cliente=VILASECA" class="nav-link <?php echo $is_vilaseca_rooms ? 'active' : ''; ?>">
+                    <i class="fas fa-door-open nav-icon" style="color: #00B8D4; font-size: 0.85rem;"></i>
+                    <p>Cuartos / Salas</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/datacenter/racks.php?cliente=VILASECA" class="nav-link <?php echo $is_vilaseca_racks ? 'active' : ''; ?>">
+                    <i class="fas fa-cubes nav-icon" style="color: #ff5c05; font-size: 0.85rem;"></i>
+                    <p>Racks (Datacenter)</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/datacenter/viewer_3d.php?cliente=VILASECA" class="nav-link <?php echo $is_vilaseca_3dviewer ? 'active' : ''; ?>">
+                    <i class="fas fa-cube nav-icon" style="color: #38bdf8; font-size: 0.85rem;"></i>
+                    <p>3DViewer</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/datacenter/analisis.php?cliente=VILASECA" class="nav-link <?php echo $is_vilaseca_dc_analisis ? 'active' : ''; ?>">
+                    <i class="fas fa-heartbeat nav-icon" style="color: #c0da20; font-size: 0.85rem;"></i>
+                    <p>Análisis de Disponibilidad</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- 3. Portmapping -->
+            <li class="nav-item">
+              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php?cliente=VILASECA" class="nav-link <?php echo $is_vilaseca_portmapping ? 'active' : ''; ?>">
+                <i class="fas fa-network-wired nav-icon" style="color: #00B8D4; font-size: 0.85rem;"></i>
+                <p>Portmapping</p>
+              </a>
+            </li>
+
+            <!-- 4. Diagramas de Red (Modelos Visio) -->
+            <li class="nav-item">
+              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/visio.php?cliente=VILASECA" class="nav-link <?php echo $is_vilaseca_visio ? 'active' : ''; ?>">
+                <i class="fas fa-sitemap nav-icon" style="color: #c0da20; font-size: 0.85rem;"></i>
+                <p>Diagramas de Red</p>
+              </a>
+            </li>
+
+            <!-- 5. Topología de Conexiones -->
+            <li class="nav-item">
+              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/analisis_conexiones.php?cliente=VILASECA" class="nav-link <?php echo $is_vilaseca_analisis ? 'active' : ''; ?>">
+                <i class="fas fa-project-diagram nav-icon" style="color: #ff5c05; font-size: 0.85rem;"></i>
+                <p>Topología de Conexiones</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <?php endif; ?>
+
+
         <?php if (has_role('SUPER_ADMIN') || has_module_access('dashboard')): ?>
         <li class="nav-item">
           <a href="<?php echo PUBLIC_URL_PREFIX; ?>/dashboard.php" class="nav-link <?php echo $cur === 'dashboard.php' ? 'active' : ''; ?>">
             <i class="nav-icon fas fa-tachometer-alt"></i>
-            <p>Dashboard</p>
+            <p>Dashboard General</p>
           </a>
         </li>
         <?php endif; ?>
@@ -130,26 +283,32 @@ $current_sheet = $_GET['name'] ?? '';
           $active_cat_id = isset($_GET['category_id']) ? (int)$_GET['category_id'] : 0;
         ?>
         <?php if (has_module_access('ci_list')): ?>
-        <li class="nav-item <?php echo $is_cmdb_nuevo_active ? 'menu-is-opening menu-open' : ''; ?>">
-          <a href="<?php echo PUBLIC_URL_PREFIX; ?>/ci_list.php" class="nav-link <?php echo ($is_cmdb_nuevo_active && !$active_cat_id) ? 'active' : ''; ?>" onclick="window.location.href=this.href;">
+        <li class="nav-item">
+          <a href="<?php echo PUBLIC_URL_PREFIX; ?>/ci_list.php" class="nav-link <?php echo $is_cmdb_nuevo_active ? 'active' : ''; ?>">
             <i class="nav-icon fas fa-project-diagram text-primary"></i>
-            <p>
-              CMDB
-              <i class="right fas fa-angle-left"></i>
-              <span class="badge badge-info right mr-4">Nuevo</span>
-            </p>
+            <p>CMDB</p>
           </a>
-          <ul class="nav nav-treeview">
-            <li class="nav-item">
-              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/ci_list.php" class="nav-link <?php echo ($is_cmdb_nuevo_active && !$active_cat_id) ? 'active' : ''; ?>">
-                <i class="far fa-circle nav-icon"></i>
-                <p>Todos los CIs</p>
-              </a>
-            </li>
-            <?php echo renderSidebarTreeHTML($cat_tree, $active_cat_id); ?>
-          </ul>
         </li>
         <?php endif; ?>
+
+        <?php if (has_role('SUPER_ADMIN') || has_module_access('gitlab')): ?>
+        <li class="nav-item">
+          <a href="<?php echo PUBLIC_URL_PREFIX; ?>/plugins/gitlab/index.php" class="nav-link <?php echo ($cur === 'index.php' && strpos($_SERVER['SCRIPT_NAME'], '/plugins/gitlab/') !== false) ? 'active' : ''; ?>">
+            <i class="nav-icon fab fa-gitlab text-warning"></i>
+            <p>GitLab</p>
+          </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if (has_role('SUPER_ADMIN') || has_module_access('aranda')): ?>
+        <li class="nav-item">
+          <a href="<?php echo PUBLIC_URL_PREFIX; ?>/aranda.php" class="nav-link <?php echo $cur === 'aranda.php' ? 'active' : ''; ?>">
+            <i class="nav-icon fas fa-project-diagram text-success"></i>
+            <p>Aranda API</p>
+          </a>
+        </li>
+        <?php endif; ?>
+
 
         <?php
           $has_any_sheet_access = false;
@@ -251,7 +410,7 @@ $current_sheet = $_GET['name'] ?? '';
         <?php endif; ?>
 
         <?php
-          $is_datacenter_open = in_array($cur, ['rooms.php', 'racks.php', 'rack_builder.php', 'analisis.php']);
+          $is_datacenter_open = in_array($cur, ['rooms.php', 'racks.php', 'rack_builder.php', 'floor_plan.php', 'analisis.php', 'viewer_3d.php', 'floor_plan_3d.php']) && (!isset($_GET['cliente']) || strtoupper($_GET['cliente']) !== 'VILASECA');
         ?>
         <?php if (has_module_access('datacenter')): ?>
         <li class="nav-item <?php echo $is_datacenter_open ? 'menu-open' : ''; ?>">
@@ -273,6 +432,12 @@ $current_sheet = $_GET['name'] ?? '';
               <a href="<?php echo PUBLIC_URL_PREFIX; ?>/datacenter/racks.php" class="nav-link <?php echo $cur === 'racks.php' || $cur === 'rack_builder.php' ? 'active' : ''; ?>">
                 <i class="far fa-circle nav-icon"></i>
                 <p>Racks (Gabinetes)</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/datacenter/viewer_3d.php" class="nav-link <?php echo in_array($cur, ['viewer_3d.php', 'floor_plan_3d.php']) ? 'active' : ''; ?>">
+                <i class="fas fa-cube nav-icon" style="color: #38bdf8; font-size: 0.85rem;"></i>
+                <p>3DViewer</p>
               </a>
             </li>
             <li class="nav-item">
@@ -552,9 +717,9 @@ $current_sheet = $_GET['name'] ?? '';
             </li>
             <!-- VILASECA -->
             <li class="nav-item" style="padding-left: 10px;">
-              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/clientes/vilaseca/index.php" class="nav-link <?php echo $is_vilaseca ? 'active' : ''; ?>">
-                <i class="far fa-circle nav-icon text-danger"></i>
-                <p>VILASECA</p>
+              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/clientes/vilaseca/index.php" class="nav-link <?php echo $is_vilaseca_root ? 'active' : ''; ?>">
+                <i class="fas fa-chart-line nav-icon" style="color: #ff5c05; font-size: 0.85rem;"></i>
+                <p>Vilaseca (Manage)</p>
               </a>
             </li>
           </ul>
@@ -636,9 +801,18 @@ $current_sheet = $_GET['name'] ?? '';
         </li>
         <?php endif; ?>
 
-        <?php if (has_role(['SUPER_ADMIN'])): ?>
         <?php 
-          $admin_pages = ['sheet_configs.php', 'snmp_management.php', 'system_health.php', 'user_management.php', 'ci_builder.php', 'ci_categories.php', 'ci_relationships.php'];
+          $can_see_user_mgmt = has_role('SUPER_ADMIN') || has_module_access('user_management');
+          $can_see_ci_admin = has_role('SUPER_ADMIN') || has_module_access('ci_admin');
+          $can_see_sheet_cfg = has_role('SUPER_ADMIN') || has_module_access('sheet_configs');
+          $can_see_health = has_role('SUPER_ADMIN') || has_module_access('system_health');
+          $can_see_modules = has_role('SUPER_ADMIN') || has_module_access('activated_modules');
+
+          $has_any_admin_access = $can_see_user_mgmt || $can_see_ci_admin || $can_see_sheet_cfg || $can_see_health || $can_see_modules;
+        ?>
+        <?php if ($has_any_admin_access): ?>
+        <?php 
+          $admin_pages = ['sheet_configs.php', 'snmp_management.php', 'system_health.php', 'user_management.php', 'ci_builder.php', 'ci_categories.php', 'ci_relationships.php', 'activated_modules.php'];
           $is_admin_open = in_array($cur, $admin_pages);
         ?>
         <li class="nav-item <?php echo $is_admin_open ? 'menu-open' : ''; ?>">
@@ -651,6 +825,7 @@ $current_sheet = $_GET['name'] ?? '';
           </a>
           <ul class="nav nav-treeview">
             <!-- Sub-pestaña CMDB Admin -->
+            <?php if ($can_see_ci_admin): ?>
             <li class="nav-item <?php echo in_array($cur, ['ci_builder.php', 'ci_categories.php', 'ci_attributes.php', 'ci_relationships.php']) ? 'menu-is-opening menu-open' : ''; ?>">
               <a href="#" class="nav-link <?php echo in_array($cur, ['ci_builder.php', 'ci_categories.php', 'ci_attributes.php', 'ci_relationships.php']) ? 'active' : ''; ?>">
                 <i class="nav-icon fas fa-layer-group text-primary"></i>
@@ -686,24 +861,43 @@ $current_sheet = $_GET['name'] ?? '';
                 </li>
               </ul>
             </li>
+            <?php endif; ?>
+
+            <?php if ($can_see_user_mgmt): ?>
             <li class="nav-item">
               <a href="<?php echo PUBLIC_URL_PREFIX; ?>/user_management.php" class="nav-link <?php echo $cur === 'user_management.php' ? 'active' : ''; ?>">
                 <i class="far fa-circle nav-icon text-primary"></i>
                 <p>Gestión Usuarios</p>
               </a>
             </li>
+            <?php endif; ?>
+
+            <?php if ($can_see_sheet_cfg): ?>
             <li class="nav-item">
               <a href="<?php echo PUBLIC_URL_PREFIX; ?>/sheet_configs.php" class="nav-link <?php echo $cur === 'sheet_configs.php' ? 'active' : ''; ?>">
                 <i class="far fa-circle nav-icon text-info"></i>
                 <p>Config. Claves</p>
               </a>
             </li>
+            <?php endif; ?>
+
+            <?php if ($can_see_health): ?>
             <li class="nav-item">
               <a href="<?php echo PUBLIC_URL_PREFIX; ?>/system_health.php" class="nav-link <?php echo $cur === 'system_health.php' ? 'active' : ''; ?>">
                 <i class="far fa-circle nav-icon text-danger"></i>
                 <p>Salud del Sistema</p>
               </a>
             </li>
+            <?php endif; ?>
+
+            <?php if ($can_see_modules): ?>
+            <li class="nav-item">
+              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/activated_modules.php" class="nav-link <?php echo $cur === 'activated_modules.php' ? 'active' : ''; ?>">
+                <i class="far fa-circle nav-icon text-warning"></i>
+                <p>Módulos Activados</p>
+              </a>
+            </li>
+            <?php endif; ?>
           </ul>
         </li>
         <?php endif; ?>

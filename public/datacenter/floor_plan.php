@@ -10,7 +10,8 @@ require_once __DIR__ . '/../../src/db.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_login();
 $pdo = getPDO();
-$room_id = (int)($_GET['id'] ?? 0);
+$room_id = (int)($_GET['room_id'] ?? $_GET['id'] ?? 0);
+$client_filter = trim($_GET['cliente'] ?? $_GET['client'] ?? '');
 
 if (!$room_id) {
     die("ID de Cuarto no proporcionado.");
@@ -288,9 +289,13 @@ require_once __DIR__ . '/../partials/header.php';
             <p class="text-muted mb-0">Área: <?php echo $width_m; ?>m x <?php echo $length_m; ?>m | Baldosas: <?php echo $tiles_x; ?> horizontal x <?php echo $tiles_y; ?> vertical (Total: <?php echo $tiles_x * $tiles_y; ?> baldosas de 0.6x0.6m)</p>
         </div>
         <div>
-            <a href="floor_plan_3d.php?room_id=<?php echo $room_id; ?>" class="btn btn-info btn-sm mr-2"><i class="fas fa-cube"></i> Ver en 3D</a>
-            <a href="racks.php?room_id=<?php echo $room_id; ?>" class="btn btn-primary btn-sm mr-2"><i class="fas fa-server"></i> Ir a Lista de Racks</a>
-            <a href="rooms.php" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i> Volver a Cuartos</a>
+            <?php 
+            $cParam = $client_filter ? '&cliente=' . urlencode($client_filter) : ''; 
+            $cParamQ = $client_filter ? '?cliente=' . urlencode($client_filter) : '';
+            ?>
+            <a href="viewer_3d.php?room_id=<?php echo $room_id . $cParam; ?>" class="btn btn-info btn-sm mr-2"><i class="fas fa-cube"></i> 3DViewer</a>
+            <a href="racks.php?room_id=<?php echo $room_id . $cParam; ?>" class="btn btn-primary btn-sm mr-2"><i class="fas fa-server"></i> Ir a Lista de Racks</a>
+            <a href="rooms.php<?php echo $cParamQ; ?>" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i> Volver a Cuartos</a>
         </div>
     </div>
 

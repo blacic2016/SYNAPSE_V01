@@ -12,7 +12,7 @@ require_once __DIR__ . '/../src/zabbix_api.php';
 require_login(); 
 
 $pdo = getPDO();
-$page_title = 'Resumen General';
+$page_title = 'Dashboard General - Resumen General';
 
 if (!$pdo) {
     die("Error crítico: No se pudo conectar a la base de datos.");

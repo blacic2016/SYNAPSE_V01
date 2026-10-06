@@ -1,0 +1,466 @@
+{
+    "resumen_general": {
+        "total_grupos": 50,
+        "grupos_monitoreados": 50,
+        "promedio_ok": 99.7675,
+        "promedio_problem": 0.2325,
+        "fecha_inicio_analisis": "01-10-2026",
+        "fecha_fin_analisis": "06-10-2026",
+        "dias_analizados": 6,
+        "tiempo_total_periodo_formateado": "5d",
+        "tiempo_promedio_ok_estimado": "4d 23h 43m 16s",
+        "tiempo_promedio_problem_estimado": "16m 44s"
+    },
+    "grupos": [
+        {
+            "groupid": "121",
+            "name": "00 SISTEMA SONDA REDES",
+            "total_hosts": 14,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "91",
+            "name": "01 SISTEMA SONDA VMWARE",
+            "total_hosts": 9,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "85",
+            "name": "02 SISTEMA SONDA STORAGE",
+            "total_hosts": 2,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "93",
+            "name": "03 SISTEMA SONDA GPF",
+            "total_hosts": 12,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "86",
+            "name": "04 SISTEMA SONDA DATACENTER",
+            "total_hosts": 6,
+            "porcentaje_ok": 97.9386,
+            "porcentaje_problem": 2.0615,
+            "tiempo_ok_formateado": "4d 21h 31m 35s",
+            "tiempo_problem_formateado": "2h 28m 25s"
+        },
+        {
+            "groupid": "79",
+            "name": "05 SISTEMA SONDA WIRELESS",
+            "total_hosts": 15,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "123",
+            "name": "05 SISTEMA SONDA WIRELESS GYE",
+            "total_hosts": 3,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "107",
+            "name": "06 SISTEMA SONDA BIOMETRICOS",
+            "total_hosts": 9,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "124",
+            "name": "06 SISTEMA SONDA CAMARAS",
+            "total_hosts": 15,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "72",
+            "name": "07 SISTEMA SONDA FIREWALL",
+            "total_hosts": 4,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "94",
+            "name": "08 SISTEMA SONDA ENLACES",
+            "total_hosts": 3,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "129",
+            "name": "09 SISTEMA SONDA PAGINAS",
+            "total_hosts": 1,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "87",
+            "name": "10 SISTEMA SONDA IMPRESORAS",
+            "total_hosts": 4,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "125",
+            "name": "11 SISTEMA SONDA RESPALDOS VEEAM",
+            "total_hosts": 1,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "48",
+            "name": "172.32.2.102",
+            "total_hosts": 10,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "47",
+            "name": "172.32.2.103",
+            "total_hosts": 8,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "44",
+            "name": "172.32.2.104",
+            "total_hosts": 7,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "41",
+            "name": "172.32.2.202",
+            "total_hosts": 22,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "36",
+            "name": "172.32.2.203",
+            "total_hosts": 16,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "42",
+            "name": "172.32.2.204",
+            "total_hosts": 21,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "46",
+            "name": "172.32.2.209",
+            "total_hosts": 3,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "128",
+            "name": "AUTOMATIZACION INFRAESTRUCTURA",
+            "total_hosts": 9,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "19",
+            "name": "Applications",
+            "total_hosts": 94,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "33",
+            "name": "HX-PRD-SONDA",
+            "total_hosts": 3,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "43",
+            "name": "HX-PRD-SONDA (vm)",
+            "total_hosts": 25,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "23",
+            "name": "RED 172.32.1.0/24 \tVLAN RED SERVIDORES",
+            "total_hosts": 7,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "24",
+            "name": "RED 172.324 SWITCHES DE ACCESO",
+            "total_hosts": 3,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "60",
+            "name": "RED 172.32UCS",
+            "total_hosts": 3,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "34",
+            "name": "SAP",
+            "total_hosts": 1,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "45",
+            "name": "SAP (vm)",
+            "total_hosts": 3,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "32",
+            "name": "SONDA-DC",
+            "total_hosts": 7,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "101",
+            "name": "SONDA-DC/ADMINISTRACION (vm)",
+            "total_hosts": 2,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "119",
+            "name": "SONDA-DC/CIBERSEGURIDAD (vm)",
+            "total_hosts": 8,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "223",
+            "name": "SONDA-DC/DEMO_AUTOMATIZACION (vm)",
+            "total_hosts": 1,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "100",
+            "name": "SONDA-DC/INF INTERNA (vm)",
+            "total_hosts": 30,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "83",
+            "name": "SONDA-DC/LABORATORIO DCC (vm)",
+            "total_hosts": 8,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "127",
+            "name": "SONDA-DC/LABORATORIO DCC/NetBackup-Test (vm)",
+            "total_hosts": 5,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "82",
+            "name": "SONDA-DC/MONITOREO (vm)",
+            "total_hosts": 9,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "113",
+            "name": "SONDA-DC/SAP (vm)",
+            "total_hosts": 4,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "114",
+            "name": "SONDA-DC/TELEFONIA (vm)",
+            "total_hosts": 1,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "130",
+            "name": "SONDA-DC/TELEFONIA old (vm)",
+            "total_hosts": 8,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "38",
+            "name": "SONDA-DC/vCLS (vm)",
+            "total_hosts": 7,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "37",
+            "name": "SONDA-DC/vm (vm)",
+            "total_hosts": 4,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "184",
+            "name": "SRI NETINSIGHT",
+            "total_hosts": 1,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "98",
+            "name": "UCS-PRD-B200",
+            "total_hosts": 3,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "99",
+            "name": "UCS-PRD-B200 (vm)",
+            "total_hosts": 59,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "221",
+            "name": "WPS-pETROAMAZONAS",
+            "total_hosts": 1,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "112",
+            "name": "ZZ0000    RUEBAS",
+            "total_hosts": 18,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "4",
+            "name": "Zabbix servers",
+            "total_hosts": 2,
+            "porcentaje_ok": 100,
+            "porcentaje_problem": 0,
+            "tiempo_ok_formateado": "5d",
+            "tiempo_problem_formateado": "0s"
+        },
+        {
+            "groupid": "126",
+            "name": "zzz08 SISTEMA SONDA ENLACES DOWN",
+            "total_hosts": 18,
+            "porcentaje_ok": 90.4373,
+            "porcentaje_problem": 9.5627,
+            "tiempo_ok_formateado": "4d 12h 31m 29s",
+            "tiempo_problem_formateado": "11h 28m 31s"
+        }
+    ]
+}

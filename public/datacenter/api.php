@@ -441,6 +441,222 @@ try {
             echo json_encode(['success' => true, 'data' => $hosts]);
         }
         
+    } elseif ($action === 'get_rack_infographic') {
+        $rack_id = (int)($_GET['rack_id'] ?? 0);
+        if ($rack_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'ID de rack inválido']);
+            exit;
+        }
+
+        // Obtener datos del rack
+        $stmtRack = $pdo->prepare("
+            SELECT r.*, rm.name as room_name 
+            FROM dc_racks r 
+            LEFT JOIN dc_rooms rm ON r.room_id = rm.id 
+            WHERE r.id = ?
+        ");
+        $stmtRack->execute([$rack_id]);
+        $rack = $stmtRack->fetch(PDO::FETCH_ASSOC);
+
+        if (!$rack) {
+            echo json_encode(['success' => false, 'message' => 'Rack no encontrado']);
+            exit;
+        }
+
+        // Obtener equipos del rack
+        $stmtDevs = $pdo->prepare("
+            SELECT d.*, i.hostname as cmdb_hostname, i.attributes_json as cmdb_attrs 
+            FROM dc_rack_devices d
+            LEFT JOIN ci_instances i ON d.cmdb_reference = i.id
+            WHERE d.rack_id = ?
+            ORDER BY d.start_u ASC
+        ");
+        $stmtDevs->execute([$rack_id]);
+        $devices = $stmtDevs->fetchAll(PDO::FETCH_ASSOC);
+
+        // Decodificar JSON y formatear
+        $occupiedUnits = [];
+        foreach ($devices as &$dev) {
+            $dev['details'] = json_decode($dev['details_json'] ?? '{}', true) ?: [];
+            unset($dev['details_json']);
+
+            if ($dev['cmdb_reference']) {
+                $cmdb_attrs = json_decode($dev['cmdb_attrs'] ?? '{}', true) ?: [];
+                $dev['cmdb_imagen_frontal'] = $cmdb_attrs['imagen_frontal'] ?? '';
+                $dev['cmdb_imagen_trasera'] = $cmdb_attrs['imagen_trasera'] ?? '';
+                if (!empty($cmdb_attrs['marca'])) $dev['details']['make'] = $cmdb_attrs['marca'];
+                if (!empty($cmdb_attrs['modelo'])) $dev['details']['model'] = $cmdb_attrs['modelo'];
+                if (!empty($cmdb_attrs['serial_number'])) $dev['details']['serial_number'] = $cmdb_attrs['serial_number'];
+                if (!empty($cmdb_attrs['asset_tag'])) $dev['details']['asset_tag'] = $cmdb_attrs['asset_tag'];
+                if (!empty($dev['cmdb_hostname'])) $dev['name'] = $dev['cmdb_hostname'];
+            }
+            unset($dev['cmdb_attrs']);
+
+            $isVertical = (!empty($dev['details']['mounting']) && in_array($dev['details']['mounting'], ['vertical_left', 'vertical_right'])) || !empty($dev['details']['is_vertical']) || (int)$dev['start_u'] === 0;
+            if (!$isVertical) {
+                $startU = (int)$dev['start_u'];
+                $heightU = max(1, (int)$dev['height_u']);
+                for ($u = $startU; $u < $startU + $heightU; $u++) {
+                    if ($u <= (int)$rack['total_u'] && $u >= 1) {
+                        $occupiedUnits[$u] = true;
+                    }
+                }
+            }
+        }
+
+        $totalU = max(1, (int)$rack['total_u']);
+        $occupiedCount = count($occupiedUnits);
+        $freeCount = max(0, $totalU - $occupiedCount);
+        $occupancyPct = round(($occupiedCount / $totalU) * 100);
+
+        // Fotos de evidencia específicas y exclusivas de este Rack
+        $photos = [];
+        if (!empty($rack['photos_json'])) {
+            $photos = json_decode($rack['photos_json'], true) ?: [];
+        }
+
+        // Observaciones
+        $observations = [];
+        if (!empty($rack['observations_json'])) {
+            $observations = json_decode($rack['observations_json'], true) ?: [];
+        }
+        if (empty($observations) && !empty($rack['description'])) {
+            $lines = preg_split('/[\r\n]+/', $rack['description']);
+            foreach ($lines as $line) {
+                $line = trim($line, " \t\n\r\0\x0B•-*");
+                if (!empty($line)) $observations[] = $line;
+            }
+        }
+        if (empty($observations)) {
+            $observations = [
+                'Gabinete operativo en producción',
+                $occupancyPct . '% de ocupación física (' . $freeCount . ' UR disponibles)',
+                count($devices) . ' equipos registrados en inventario DCIM'
+            ];
+        }
+
+        echo json_encode([
+            'success' => true,
+            'rack' => [
+                'id' => (int)$rack['id'],
+                'name' => $rack['name'],
+                'client' => $rack['client'] ?: 'VILASECA',
+                'city' => $rack['city'] ?: 'No asignada',
+                'location' => $rack['location'] ?: 'General',
+                'room_name' => $rack['room_name'] ?? 'Sin Cuarto Asignado',
+                'total_u' => $totalU,
+                'numbering_dir' => $rack['numbering_dir'] ?? 'UP',
+                'description' => $rack['description'] ?? '',
+                'photos' => $photos,
+                'observations' => $observations
+            ],
+            'devices' => $devices,
+            'stats' => [
+                'total_u' => $totalU,
+                'occupied_u' => $occupiedCount,
+                'free_u' => $freeCount,
+                'occupancy_pct' => $occupancyPct,
+                'device_count' => count($devices)
+            ]
+        ]);
+
+    } elseif ($action === 'save_rack_evidence') {
+        $rack_id = (int)($_POST['rack_id'] ?? 0);
+        if ($rack_id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'ID de rack inválido']);
+            exit;
+        }
+
+        $observations = $_POST['observations'] ?? null;
+        $photos = $_POST['photos'] ?? null;
+
+        $updates = [];
+        $params = [];
+
+        if ($observations !== null) {
+            $obsArray = is_array($observations) ? $observations : json_decode($observations, true);
+            $updates[] = "observations_json = ?";
+            $params[] = json_encode($obsArray ?: []);
+        }
+
+        if ($photos !== null) {
+            $photosArray = is_array($photos) ? $photos : json_decode($photos, true);
+            $updates[] = "photos_json = ?";
+            $params[] = json_encode($photosArray ?: []);
+        }
+
+        // Subida de nueva fotografía (soporta new_photo, photo o file)
+        $fileKey = null;
+        if (!empty($_FILES['new_photo']['name']) && $_FILES['new_photo']['error'] === UPLOAD_ERR_OK) {
+            $fileKey = 'new_photo';
+        } elseif (!empty($_FILES['photo']['name']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+            $fileKey = 'photo';
+        } elseif (!empty($_FILES['file']['name']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+            $fileKey = 'file';
+        }
+
+        $stmtCur = $pdo->prepare("SELECT photos_json FROM dc_racks WHERE id = ?");
+        $stmtCur->execute([$rack_id]);
+        $curPhotos = json_decode($stmtCur->fetchColumn() ?: '[]', true) ?: [];
+
+        if ($fileKey !== null) {
+            $uploadDir = __DIR__ . '/../../storage/uploads/racks/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0775, true);
+            }
+            $ext = strtolower(pathinfo($_FILES[$fileKey]['name'], PATHINFO_EXTENSION));
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+                $filename = 'RACK_' . $rack_id . '_' . uniqid() . '.' . $ext;
+                $targetFile = $uploadDir . $filename;
+                if (move_uploaded_file($_FILES[$fileKey]['tmp_name'], $targetFile)) {
+                    $curPhotos[] = [
+                        'title' => trim($_POST['photo_title'] ?? 'Evidencia fotográfica de gabinete'),
+                        'url' => 'storage/uploads/racks/' . $filename
+                    ];
+                    $updates[] = "photos_json = ?";
+                    $params[] = json_encode($curPhotos);
+                }
+            }
+        }
+
+        if (!empty($updates)) {
+            $params[] = $rack_id;
+            $stmtUp = $pdo->prepare("UPDATE dc_racks SET " . implode(', ', $updates) . " WHERE id = ?");
+            $stmtUp->execute($params);
+            echo json_encode(['success' => true, 'message' => 'Evidencia fotográfica guardada exitosamente', 'photos' => $curPhotos]);
+        } else {
+            echo json_encode(['success' => true, 'message' => 'Sin cambios', 'photos' => $curPhotos]);
+        }
+
+    } elseif ($action === 'delete_rack_photo') {
+        $rack_id = (int)($_POST['rack_id'] ?? 0);
+        $photo_url = trim($_POST['photo_url'] ?? '');
+        if ($rack_id <= 0 || empty($photo_url)) {
+            echo json_encode(['success' => false, 'message' => 'Parámetros inválidos para eliminar fotografía']);
+            exit;
+        }
+
+        $stmtCur = $pdo->prepare("SELECT photos_json FROM dc_racks WHERE id = ?");
+        $stmtCur->execute([$rack_id]);
+        $curPhotos = json_decode($stmtCur->fetchColumn() ?: '[]', true) ?: [];
+
+        $updatedPhotos = [];
+        foreach ($curPhotos as $p) {
+            if (trim($p['url']) === $photo_url) {
+                // Eliminar archivo físico de disco si está en la carpeta de uploads
+                $filePath = __DIR__ . '/../../' . ltrim($photo_url, '/');
+                if (file_exists($filePath) && strpos($filePath, 'storage/uploads/racks/') !== false) {
+                    @unlink($filePath);
+                }
+            } else {
+                $updatedPhotos[] = $p;
+            }
+        }
+
+        $stmtUp = $pdo->prepare("UPDATE dc_racks SET photos_json = ? WHERE id = ?");
+        $stmtUp->execute([json_encode($updatedPhotos), $rack_id]);
+        echo json_encode(['success' => true, 'message' => 'Fotografía eliminada exitosamente', 'photos' => $updatedPhotos]);
+
     } else {
         echo json_encode(['success' => false, 'message' => 'Acción no válida']);
     }

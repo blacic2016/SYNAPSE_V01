@@ -415,6 +415,12 @@ require_once __DIR__ . '/partials/header.php';
             <button onclick="switchTab('tab-especialistas')" id="btn-tab-especialistas" class="tab-btn py-4 px-1 text-sm font-medium whitespace-nowrap text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                 <i class="fas fa-user-tie mr-2"></i> 8. Ocupación Especialistas
             </button>
+            <button onclick="switchTab('tab-horas-recargos')" id="btn-tab-horas-recargos" class="tab-btn py-4 px-1 text-sm font-medium whitespace-nowrap text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                <i class="fas fa-calculator mr-2 text-indigo-500"></i> 9. Cálculo Horas y Saltos (Recargos)
+            </button>
+            <button onclick="switchTab('tab-cumplimiento')" id="btn-tab-cumplimiento" class="tab-btn py-4 px-1 text-sm font-medium whitespace-nowrap text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                <i class="fas fa-user-check mr-2 text-emerald-500"></i> 10. Control de Cumplimiento Diario
+            </button>
         </nav>
     </div>
 
@@ -876,7 +882,10 @@ require_once __DIR__ . '/partials/header.php';
                 <h3 style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#374151;margin:0;">
                     <i class="fas fa-sitemap" style="margin-right:.4rem;color:#6366f1;"></i> Ciclo de Vida de Tickets (Vista ITIL)
                 </h3>
-                <div style="display:flex;align-items:center;gap:.75rem;">
+                <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+                    <button id="btn-toggle-hijas" onclick="toggleChildTasksVisibility()" style="font-size:0.75rem;font-weight:700;padding:.35rem .75rem;border-radius:.375rem;border:1px solid #cbd5e1;background:#ffffff;color:#334155;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;transition:all 0.2s;" title="Mostrar u ocultar tareas hijas del análisis ITIL">
+                        <i class="fas fa-sitemap" style="color:#6366f1;"></i> Tareas Hijas: <span id="lbl-status-hijas" style="color:#16a34a;font-weight:800;">VISIBLES (ON)</span>
+                    </button>
                     <input type="text" id="ticket-search" placeholder="Buscar ticket, cliente, técnico..." onkeyup="filterTicketTable()" style="font-size:0.75rem;padding:.35rem .6rem;border:1px solid #cbd5e1;border-radius:.375rem;outline:none;width:220px;">
                     <span id="ticket-count" style="font-size:0.72rem;color:#64748b;white-space:nowrap;">0 tickets</span>
                 </div>
@@ -889,9 +898,11 @@ require_once __DIR__ . '/partials/header.php';
                             <th style="padding:.6rem .5rem;text-align:left;font-weight:700;color:#475569;white-space:nowrap;min-width:90px;">Referencia
                                 <span style="display:block;font-size:.58rem;font-weight:400;color:#94a3b8;">(click para detalle)</span>
                             </th>
+                            <th style="padding:.6rem .5rem;text-align:left;font-weight:700;color:#475569;white-space:nowrap;min-width:110px;">Ticket Aranda</th>
                             <th style="padding:.6rem .5rem;text-align:left;font-weight:700;color:#475569;white-space:nowrap;min-width:140px;">T&iacute;tulo</th>
                             <th style="padding:.6rem .5rem;text-align:left;font-weight:700;color:#475569;white-space:nowrap;min-width:120px;">Cliente</th>
-                            <th style="padding:.6rem .5rem;text-align:left;font-weight:700;color:#475569;white-space:nowrap;min-width:85px;">Servicio</th>
+                            <th style="padding:.6rem .5rem;text-align:left;font-weight:700;color:#475569;white-space:nowrap;min-width:110px;">Contrato</th>
+                            <th style="padding:.6rem .5rem;text-align:left;font-weight:700;color:#475569;white-space:nowrap;min-width:110px;">Servicio</th>
                             <th style="padding:.6rem .5rem;text-align:center;font-weight:700;color:#475569;white-space:nowrap;">Tipo</th>
                             <th style="padding:.6rem .5rem;text-align:left;font-weight:700;color:#475569;white-space:nowrap;min-width:100px;">T&eacute;cnico</th>
                             <th style="padding:.6rem .5rem;text-align:left;font-weight:700;color:#475569;white-space:nowrap;min-width:115px;">Inicio</th>
@@ -905,11 +916,11 @@ require_once __DIR__ . '/partials/header.php';
                         </tr>
                     </thead>
                     <tbody id="ticket-lifecycle-body">
-                        <tr><td colspan="15" style="text-align:center;padding:2rem;color:#94a3b8;">Cargando datos...</td></tr>
+                        <tr><td colspan="17" style="text-align:center;padding:2rem;color:#94a3b8;">Cargando datos...</td></tr>
                     </tbody>
                     <tfoot id="ticket-lifecycle-foot" style="display:none;">
                         <tr style="background:#1e293b;color:#f8fafc;font-weight:700;font-size:0.72rem;">
-                            <td colspan="9" style="padding:.55rem .5rem;text-align:right;">TOTALES &rarr;</td>
+                            <td colspan="11" style="padding:.55rem .5rem;text-align:right;">TOTALES &rarr;</td>
                             <td id="tfoot-abierto" style="padding:.55rem .5rem;text-align:right;">0h</td>
                             <td id="tfoot-ejec" style="padding:.55rem .5rem;text-align:right;">0h</td>
                             <td id="tfoot-std" style="padding:.55rem .5rem;text-align:right;color:#7dd3fc;">0h</td>
@@ -1169,6 +1180,370 @@ require_once __DIR__ . '/partials/header.php';
         </div>
     </div><!-- /.tab-especialistas -->
 
+    <!-- TAB 9: Cálculo de Horas y Recargos (Saltos de Ticket) -->
+    <div id="tab-horas-recargos" class="tab-content animate__animated animate__fadeIn">
+        
+        <!-- KPI Row Header -->
+        <div class="grid-custom-4 mb-6">
+            <div class="kpi-card p-4 rounded-xl flex items-center justify-between shadow-sm">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Total Saltos / Items</p>
+                    <h3 id="kpi-hr-items" class="text-2xl font-black text-slate-800 dark:text-slate-100">0</h3>
+                </div>
+                <div class="w-11 h-11 rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400 flex items-center justify-center text-lg font-bold">
+                    <i class="fas fa-list-ol"></i>
+                </div>
+            </div>
+
+            <div class="kpi-card p-4 rounded-xl flex items-center justify-between shadow-sm">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Minutos Base (Reales)</p>
+                    <h3 id="kpi-hr-base" class="text-2xl font-black text-slate-800 dark:text-slate-100">0 min</h3>
+                </div>
+                <div class="w-11 h-11 rounded-lg bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-400 flex items-center justify-center text-lg font-bold">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+
+            <div class="kpi-card p-4 rounded-xl flex items-center justify-between shadow-sm">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Min. Ajustados (>15 min)</p>
+                    <h3 id="kpi-hr-ajust" class="text-2xl font-black text-indigo-600 dark:text-indigo-400">0 min</h3>
+                </div>
+                <div class="w-11 h-11 rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400 flex items-center justify-center text-lg font-bold">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+            </div>
+
+            <div class="kpi-card p-4 rounded-xl flex items-center justify-between shadow-sm">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Alertas > 1,440 min (24h)</p>
+                    <h3 id="kpi-hr-24h" class="text-2xl font-black text-slate-800 dark:text-slate-100">0</h3>
+                </div>
+                <div class="w-11 h-11 rounded-lg bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 flex items-center justify-center text-lg font-bold">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rules Explanatory Card -->
+        <div class="bi-card mb-6 border-l-4 border-indigo-500">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-indigo-500"></i> Reglas de Negocio para el Cálculo de Tiempos en MINUTOS
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-2 text-xs text-slate-600 dark:text-slate-300">
+                        <div class="p-2 bg-slate-50 dark:bg-slate-800/60 rounded border border-slate-200 dark:border-slate-700">
+                            <span class="font-bold text-red-600 dark:text-red-400 block mb-0.5"><i class="fas fa-exclamation-circle mr-1"></i> Tiempos > 1,440 min (24h):</span>
+                            Resaltado en ROJO si la duración supera 1,440 minutos.
+                        </div>
+                        <div class="p-2 bg-slate-50 dark:bg-slate-800/60 rounded border border-slate-200 dark:border-slate-700">
+                            <span class="font-bold text-sky-600 dark:text-sky-400 block mb-0.5"><i class="fas fa-sun mr-1"></i> Minutos Normales:</span>
+                            Ventana de <b>06:00 a 18:00 h</b> (expresado en min).
+                        </div>
+                        <div class="p-2 bg-slate-50 dark:bg-slate-800/60 rounded border border-slate-200 dark:border-slate-700">
+                            <span class="font-bold text-purple-600 dark:text-purple-400 block mb-0.5"><i class="fas fa-moon mr-1"></i> Minutos Extras:</span>
+                            Ventana de <b>18:00 a 22:00 h</b> (expresado en min).
+                        </div>
+                        <div class="p-2 bg-slate-50 dark:bg-slate-800/60 rounded border border-slate-200 dark:border-slate-700">
+                            <span class="font-bold text-amber-600 dark:text-amber-400 block mb-0.5"><i class="fas fa-cloud-moon mr-1"></i> Min. Extraordinarios:</span>
+                            Ventana de <b>22:00 a 06:00 h</b> del día siguiente.
+                        </div>
+                    </div>
+                    <div class="mt-2 text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-4">
+                        <span><b><i class="fas fa-step-forward text-indigo-500 mr-1"></i>Redondeo >15 min:</b> Si los minutos fraccionales superan 15 min (ej: 196 min), se eleva a la hora completa equivalente: <b>240 min</b> (+60 min).</span>
+                        <span><b><i class="fas fa-bolt text-amber-500 mr-1"></i>Minutos al Doble:</b> Si está activo, duplica (x2) todos los minutos calculados en cada ventana.</span>
+                        <span class="text-indigo-600 font-bold"><b><i class="fas fa-arrows-alt-h mr-1"></i>Columnas Ajustables:</b> Haz clic y arrastra el borde derecho de cualquier encabezado para ajustar su ancho.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls & Filter Toolbar -->
+        <div class="bi-card mb-6">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                
+                <!-- Left: View Mode Switches -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">Modo de Vista:</span>
+                    <button id="btn-view-hierarchical" onclick="setHorasRecargosViewMode('hierarchical')" class="px-3 py-1.5 rounded-md font-bold text-xs bg-indigo-600 text-white shadow-sm flex items-center gap-1.5">
+                        <i class="fas fa-sitemap"></i> Hierárquica (Ticket + Saltos)
+                    </button>
+                    <button id="btn-view-saltos" onclick="setHorasRecargosViewMode('saltos')" class="px-3 py-1.5 rounded-md font-medium text-xs bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 flex items-center gap-1.5">
+                        <i class="fas fa-running"></i> Detalle por Saltos
+                    </button>
+                </div>
+
+                <!-- Right: Toggle Horas al Doble + Export Excel -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <button id="btn-toggle-doble" onclick="toggleHorasDoble()" class="px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 border shadow-sm transition-all bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200">
+                        <i class="fas fa-bolt text-amber-500"></i> Horas al Doble: 
+                        <span id="lbl-status-doble" class="text-slate-500 font-extrabold uppercase">DESACTIVADO (1x)</span>
+                    </button>
+
+                    <button onclick="exportHorasRecargosExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                        <i class="fas fa-file-excel text-sm"></i> Exportar a Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Subbar -->
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-md">
+                    <input type="text" id="horas-search-input" placeholder="Buscar por ticket, cliente, técnico, servicio..." onkeyup="renderHorasRecargosTab()" class="w-full text-xs py-1.5 pl-8 pr-3 border border-slate-300 dark:border-slate-600 rounded-lg outline-none focus:border-indigo-500 dark:bg-slate-800 dark:text-slate-100">
+                    <i class="fas fa-search absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                </div>
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Sincronizado con la barra global de filtros BI</span>
+            </div>
+        </div>
+
+        <!-- Main Data Table Container -->
+        <div class="bi-card p-0 overflow-hidden">
+            <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+                <table id="horas-recargos-table" class="w-full text-xs text-left border-collapse">
+                    <thead class="sticky top-0 z-20 shadow-sm font-extrabold text-[11px]">
+                        <!-- Row 1: Grouped Header Categories with Color Coding -->
+                        <tr class="bg-slate-800 text-white uppercase text-[10px] tracking-wider text-center">
+                            <th colspan="12" class="py-2 px-2 bg-slate-800 border-r border-slate-700">
+                                <i class="fas fa-ticket-alt mr-1 text-indigo-400"></i> Informes & Identificación ITIL del Ticket / Salto
+                            </th>
+                            <th colspan="3" class="py-2 px-2 bg-blue-700 border-r border-blue-600 text-white font-black">
+                                <i class="fas fa-clock mr-1"></i> Desglose Real de Tiempos (Azul)
+                            </th>
+                            <th colspan="2" class="py-2 px-2 bg-emerald-700 border-r border-emerald-600 text-white font-black">
+                                <i class="fas fa-step-forward mr-1"></i> Regla Ajuste +15m (Verde)
+                            </th>
+                            <th colspan="4" class="py-2 px-2 bg-amber-600 text-white font-black">
+                                <i class="fas fa-bolt mr-1"></i> Recargos Liquidados 2x (Ámbar)
+                            </th>
+                            <th rowspan="2" class="py-2 px-2 bg-slate-900 text-white border-l border-slate-700 min-w-[90px] text-center">Alerta >24h</th>
+                        </tr>
+                        <!-- Row 2: Detailed Sub-Headers -->
+                        <tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-b-2 border-slate-300 dark:border-slate-700">
+                            <th class="py-2.5 px-2.5 min-w-[95px]">ID Tarea</th>
+                            <th class="py-2.5 px-2 min-w-[110px]">Referencia</th>
+                            <th class="py-2.5 px-2 min-w-[120px]">Ticket Aranda</th>
+                            <th class="py-2.5 px-2 min-w-[150px]">Título</th>
+                            <th class="py-2.5 px-2 min-w-[120px]">Cliente</th>
+                            <th class="py-2.5 px-2 min-w-[110px]">Servicio</th>
+                            <th class="py-2.5 px-2 text-center min-w-[95px]">Tipo</th>
+                            <th class="py-2.5 px-2 min-w-[120px]">Técnico / Resp.</th>
+                            <th class="py-2.5 px-2 text-center min-w-[100px]">Estado</th>
+                            <th class="py-2.5 px-2 min-w-[110px]">Inicio Efectivo</th>
+                            <th class="py-2.5 px-2 min-w-[110px]">Fin Efectivo</th>
+                            <th class="py-2.5 px-2 text-center min-w-[100px] border-r border-slate-300 dark:border-slate-700">Duración Real</th>
+
+                            <!-- Grupo Azul: Desglose Real -->
+                            <th class="py-2.5 px-2 text-right bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 min-w-[95px]">Norm (06-18h)</th>
+                            <th class="py-2.5 px-2 text-right bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 min-w-[95px]">Ext (18-22h)</th>
+                            <th class="py-2.5 px-2 text-right bg-blue-50 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200 border-r border-blue-200 dark:border-blue-800 min-w-[95px]">Extord (22-06h)</th>
+
+                            <!-- Grupo Verde: Regla +15m -->
+                            <th class="py-2.5 px-2 text-right bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 min-w-[105px]">Incremento (+15m)</th>
+                            <th class="py-2.5 px-2 text-right bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 border-r border-emerald-200 dark:border-emerald-800 font-bold min-w-[110px]">Min. Ajustados</th>
+
+                            <!-- Grupo Ámbar: Recargos al Doble (2x) -->
+                            <th class="py-2.5 px-2 text-right bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 min-w-[105px]">Norm Liq. (06-18)</th>
+                            <th class="py-2.5 px-2 text-right bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 min-w-[105px]">Ext Liq. (18-22)</th>
+                            <th class="py-2.5 px-2 text-right bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 min-w-[105px]">Extord Liq. (22-06)</th>
+                            <th class="py-2.5 px-2 text-right bg-amber-100 dark:bg-amber-900/60 text-amber-950 dark:text-amber-100 font-black min-w-[125px]">Total Liq. Final</th>
+                        </tr>
+                    </thead>
+                    <tbody id="horas-recargos-body">
+                        <tr>
+                            <td colspan="22" class="py-8 text-center text-slate-400">Cargando datos del cálculo de horas y recargos...</td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="bg-slate-900 text-white font-extrabold text-xs sticky bottom-0 z-20 shadow-lg">
+                        <tr>
+                            <td colspan="11" class="py-3 px-4 text-right uppercase tracking-wider text-slate-300">TOTALES ACUMULADOS &rarr;</td>
+                            <td id="ft-recargos-real-dur" class="py-3 px-2 text-center text-slate-100 font-bold">0 min</td>
+                            
+                            <!-- Totales Grupo Azul -->
+                            <td id="ft-recargos-real-norm" class="py-3 px-2 text-right text-blue-300 font-semibold">0 min</td>
+                            <td id="ft-recargos-real-ext" class="py-3 px-2 text-right text-blue-300 font-semibold">0 min</td>
+                            <td id="ft-recargos-real-extord" class="py-3 px-2 text-right text-blue-300 font-semibold border-r border-slate-700">0 min</td>
+
+                            <!-- Totales Grupo Verde -->
+                            <td id="ft-recargos-inc15" class="py-3 px-2 text-right text-emerald-300 font-semibold">0 min</td>
+                            <td id="ft-recargos-ajustadas" class="py-3 px-2 text-right text-emerald-200 font-extrabold border-r border-slate-700">0 min</td>
+
+                            <!-- Totales Grupo Ámbar -->
+                            <td id="ft-recargos-normales" class="py-3 px-2 text-right text-amber-300">0 min</td>
+                            <td id="ft-recargos-extras" class="py-3 px-2 text-right text-amber-300">0 min</td>
+                            <td id="ft-recargos-extord" class="py-3 px-2 text-right text-amber-300">0 min</td>
+                            <td id="ft-recargos-total" class="py-3 px-2 text-right text-amber-200 font-black text-sm bg-amber-950/60">0 min</td>
+
+                            <td class="py-3 px-2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div><!-- /.tab-horas-recargos -->
+
+    <!-- TAB 10: Control de Carga de Trabajo y Cumplimiento Diario por Especialista -->
+    <div id="tab-cumplimiento" class="tab-content animate__animated animate__fadeIn">
+        <!-- Header Summary Card & Controls -->
+        <div class="bi-card mb-6 bg-slate-900 text-white rounded-xl shadow-lg border border-slate-800 p-5">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-800">
+                <div>
+                    <h2 class="text-lg font-black text-white flex items-center gap-2">
+                        <i class="fas fa-user-check text-emerald-400"></i> Control de Carga de Trabajo y Cumplimiento Diario de Jornada
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Análisis tipo Pivot por Especialista, Fecha, Mes y Año. Supervisión de cumplimiento de jornada laboral (Meta 8 Horas/día) con tiempo efectivo en tareas padres e hijas.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                    <span class="text-xs font-bold text-slate-300">Jornada Objetivo (Horas/Día):</span>
+                    <input type="number" id="cmp-target-hours" value="8" min="1" max="24" step="0.5" onchange="renderCumplimientoTab()" class="w-16 bg-slate-900 text-emerald-400 font-extrabold text-center text-sm border border-emerald-500/50 rounded py-0.5 focus:outline-none focus:ring-1 focus:ring-emerald-400">
+                    <span class="text-xs text-slate-400">hrs</span>
+                </div>
+            </div>
+
+            <!-- KPI Summary Bar -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div class="bg-slate-800/60 p-3 rounded-lg border border-slate-700">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Días Evaluados</span>
+                    <span id="cmp-kpi-dias" class="text-xl font-extrabold text-slate-100">0</span>
+                </div>
+                <div class="bg-emerald-950/40 p-3 rounded-lg border border-emerald-800/60">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">Días Cumplidos (&ge; 8h)</span>
+                    <span id="cmp-kpi-cumplidos" class="text-xl font-extrabold text-emerald-400">0</span>
+                </div>
+                <div class="bg-red-950/40 p-3 rounded-lg border border-red-800/60">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-red-400 block">Días Incumplidos (&lt; 8h)</span>
+                    <span id="cmp-kpi-incumplidos" class="text-xl font-extrabold text-red-400 flex items-center gap-1.5">
+                        <i class="fas fa-exclamation-triangle text-sm"></i> <span id="cmp-kpi-incumplidos-val">0</span>
+                    </span>
+                </div>
+                <div class="bg-blue-950/40 p-3 rounded-lg border border-blue-800/60">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-300 block">Tiempo Total Trabajado</span>
+                    <span id="cmp-kpi-tiempo-total" class="text-xl font-extrabold text-blue-300">0h 0m</span>
+                </div>
+                <div class="bg-indigo-950/40 p-3 rounded-lg border border-indigo-800/60">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-300 block">% Cumplimiento Global</span>
+                    <span id="cmp-kpi-tasa" class="text-xl font-extrabold text-indigo-300">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Control Bar -->
+        <div class="bi-card mb-6 p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                <div>
+                    <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase block mb-1">
+                        <i class="fas fa-user mr-1 text-indigo-500"></i> Especialista:
+                    </label>
+                    <select id="cmp-select-especialista" onchange="renderCumplimientoTab()" class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-lg p-2 font-medium">
+                        <option value="">-- Todos los Especialistas --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase block mb-1">
+                        <i class="far fa-calendar-alt mr-1 text-indigo-500"></i> Año:
+                    </label>
+                    <select id="cmp-select-ano" onchange="renderCumplimientoTab()" class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-lg p-2 font-medium">
+                        <option value="">-- Todos los Años --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase block mb-1">
+                        <i class="far fa-calendar-minus mr-1 text-indigo-500"></i> Mes:
+                    </label>
+                    <select id="cmp-select-mes" onchange="renderCumplimientoTab()" class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-lg p-2 font-medium">
+                        <option value="">-- Todos los Meses --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase block mb-1">
+                        <i class="fas fa-filter mr-1 text-indigo-500"></i> Estado Cumplimiento:
+                    </label>
+                    <select id="cmp-select-estado" onchange="renderCumplimientoTab()" class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-lg p-2 font-medium">
+                        <option value="">-- Todos los Estados --</option>
+                        <option value="cumplido">Cumplido (&ge; 8h)</option>
+                        <option value="incumplido">Incumplido (&lt; 8h en Rojo)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase block mb-1">
+                        <i class="fas fa-search mr-1 text-indigo-500"></i> Buscar en Tabla:
+                    </label>
+                    <input type="text" id="cmp-search-text" onkeyup="renderCumplimientoTab()" placeholder="Filtrar por nombre, fecha..." class="w-full text-xs bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-lg p-2 font-medium">
+                </div>
+            </div>
+        </div>
+
+        <!-- Executive Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+            <!-- Chart 1: Horas Trabajadas Diarias vs Meta 8h (span 8) -->
+            <div class="lg:col-span-8 bi-card p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
+                    <i class="fas fa-chart-bar text-indigo-500"></i> Carga de Trabajo Diaria vs Meta (Horas Efectivas en Verde/Rojo)
+                </h3>
+                <div class="h-64 relative">
+                    <canvas id="cmp-chart-diario"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Tasa de Cumplimiento (span 4) -->
+            <div class="lg:col-span-4 bi-card p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
+                    <i class="fas fa-chart-pie text-emerald-500"></i> Proporción de Días Cumplidos
+                </h3>
+                <div class="h-64 relative flex items-center justify-center">
+                    <canvas id="cmp-chart-proporcion"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pivot Matrix Data Table Section -->
+        <div class="bi-card p-5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+                <div>
+                    <h3 class="text-sm font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fas fa-table text-indigo-600"></i> Matriz Pivot de Carga Diaria y Cumplimiento de Jornada
+                    </h3>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">
+                        Las fechas con tiempo efectivo inferior a 8 horas se resaltan en <strong class="text-red-600 dark:text-red-400">ROJO</strong>. Haz clic en "Ver Tareas" para inspeccionar las tareas padres e hijas trabajadas ese día.
+                    </span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="cmp-table-row-count" class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                        Mostrando 0 registros
+                    </span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead class="sticky top-0 z-20 shadow-sm font-extrabold text-[11px] bg-slate-800 text-white uppercase tracking-wider">
+                        <tr>
+                            <th class="py-3 px-3 min-w-[130px]">Fecha / Día</th>
+                            <th class="py-3 px-2 min-w-[100px]">Día Semana</th>
+                            <th class="py-3 px-3 min-w-[160px]">Especialista</th>
+                            <th class="py-3 px-2 min-w-[110px] text-center">Jornada Meta</th>
+                            <th class="py-3 px-2 text-center min-w-[120px]">Tareas (Padre/Hijos)</th>
+                            <th class="py-3 px-3 min-w-[140px] text-right">Tiempo Trabajado</th>
+                            <th class="py-3 px-3 min-w-[120px] text-right">Diferencia</th>
+                            <th class="py-3 px-3 text-center min-w-[130px]">% Cumplimiento</th>
+                            <th class="py-3 px-3 text-center min-w-[130px]">Estado Jornada</th>
+                            <th class="py-3 px-3 text-center min-w-[110px]">Acción / Desglose</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cmp-matrix-body" class="divide-y divide-slate-200 dark:divide-slate-700">
+                        <tr>
+                            <td colspan="10" class="py-8 text-center text-slate-400">Cargando matriz pivot de cumplimiento...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div><!-- /.tab-cumplimiento -->
+
+
     </div><!-- /.novaiops-scope -->
 
 <!-- REQUIRED SCRIPTS FOR DATATABLES AND PIVOTTABLE -->
@@ -1284,6 +1659,10 @@ require_once __DIR__ . '/partials/header.php';
                 pbRenderAll();
             } else if (tabId === 'tab-especialistas') {
                 peRenderAll();
+            } else if (tabId === 'tab-horas-recargos') {
+                renderHorasRecargosTab();
+            } else if (tabId === 'tab-cumplimiento') {
+                renderCumplimientoTab();
             }
         }, 200);
     }
@@ -1608,6 +1987,8 @@ require_once __DIR__ . '/partials/header.php';
                             .html('<span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-green-500"></span> Base de Datos Sincronizada');
                         
                         window.biState.dataOriginal = response.tareas;
+                        window.biState.seguimientosOriginal = response.seguimientos || [];
+                        window.biState.informacionOriginal = response.informacion || [];
                         window.biState.dataFiltrada = [...response.tareas];
                         window.biState.columnsMeta = response.columns;
                         
@@ -1956,6 +2337,12 @@ require_once __DIR__ . '/partials/header.php';
 
         // 6. Refresh Ticket Lifecycle Analysis
         renderTicketAnalysis();
+
+        // 7. Refresh Horas y Recargos Calculation (Tab 9)
+        renderHorasRecargosTab();
+
+        // 8. Refresh Workload & Daily Compliance Analysis (Tab 10)
+        renderCumplimientoTab();
     }
 
     /**
@@ -2500,23 +2887,218 @@ require_once __DIR__ . '/partials/header.php';
     /**
      * Render Tab 5: Ticket Lifecycle Analysis (ITIL-style hierarchical view)
      */
-    function renderTicketAnalysis() {
+    window.showChildTasksInAnalysis = true;
+
+    function toggleChildTasksVisibility() {
+        window.showChildTasksInAnalysis = !window.showChildTasksInAnalysis;
+        const btn = document.getElementById('btn-toggle-hijas');
+        const lbl = document.getElementById('lbl-status-hijas');
+        if (window.showChildTasksInAnalysis) {
+            if (btn) btn.style.background = '#ffffff';
+            if (lbl) {
+                lbl.textContent = 'VISIBLES (ON)';
+                lbl.style.color = '#16a34a';
+            }
+            if (window.toastr) toastr.info('Tareas hijas VISIBLES debajo de cada ticket padre');
+        } else {
+            if (btn) btn.style.background = '#fffbe6';
+            if (lbl) {
+                lbl.textContent = 'OCULTAS (OFF)';
+                lbl.style.color = '#d97706';
+            }
+            if (window.toastr) toastr.warning('Tareas hijas OCULTADAS (Mostrando solo Tickets Padres)');
+        }
+        renderTicketAnalysis();
+    }
+
+    /**
+     * Render Tab 5: Ticket Lifecycle Analysis (ITIL-style hierarchical view with parent & nested children)
+     */
+    window.openTicketDetailModal = function(identifier) {
+    if (!identifier) return;
+    const target = String(identifier).trim().toLowerCase();
+    const list = (window.biState && window.biState.dataOriginal) ? window.biState.dataOriginal : [];
+    
+    const ticket = list.find(r => 
+        String(r.referencia || '').trim().toLowerCase() === target ||
+        String(r.id_tarea || '').trim().toLowerCase() === target ||
+        String(r.arranda_ticket_name || '').trim().toLowerCase() === target ||
+        String(r.ticket_aranda || '').trim().toLowerCase() === target ||
+        String(r.aranda_ticket || '').trim().toLowerCase() === target
+    );
+
+    if (!ticket) {
+        if (window.toastr) toastr.warning('No se encontraron detalles adicionales para: ' + identifier);
+        else alert('No se encontraron detalles para: ' + identifier);
+        return;
+    }
+
+    const id = ticket.id_tarea || '-';
+    const ref = ticket.referencia || '-';
+    const ticketAranda = ticket.arranda_ticket_name || ticket.ticket_aranda || ticket.aranda_ticket || ticket.aranda || '-';
+    const titulo = ticket.titulo || ticket.arranda_ticket_name || ticket.ticket_aranda || 'Sin Título';
+    const cliente = ticket.cliente || 'Sin Cliente';
+    const contrato = ticket.contrato || ticket.codigo_de_contrato || 'Sin Contrato';
+    const servicio = ticket.servicio || 'Sin Servicio';
+    const tecnico = ticket.assigned_to_fullname || 'Sin Asignar';
+    const status = ticket.status_name || 'Desconocido';
+    const tipo = ticket.type_name || 'N/A';
+    const descripcion = (ticket.descripcion || '').trim();
+
+    function fmtMins(m) {
+        const val = parseFloat(m) || 0;
+        if (val === 0) return '0m';
+        const h = Math.floor(val / 60), mn = Math.round(val % 60);
+        return h > 0 ? `${h}h ${mn}m` : `${mn}m`;
+    }
+
+    // Find child tasks if this ticket is a parent
+    const childTasks = list.filter(r => String(r.parent_task_id || r.id_tarea_padre || '').trim() === String(id).trim());
+
+    let childrenHtml = '';
+    if (childTasks.length > 0) {
+        childrenHtml = `
+        <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid #cbd5e1;text-align:left;">
+            <span style="font-weight:800;color:#0f172a;font-size:0.75rem;display:block;margin-bottom:.4rem;">
+                <i class="fas fa-sitemap text-indigo-600 mr-1"></i> Tareas Hijas Asociadas (${childTasks.length}):
+            </span>
+            <table style="width:100%;border-collapse:collapse;font-size:0.7rem;background:#ffffff;border:1px solid #e2e8f0;border-radius:0.375rem;">
+                <thead>
+                    <tr style="background:#f1f5f9;color:#475569;font-weight:700;">
+                        <th style="padding:.35rem .5rem;text-align:left;">ID Hijo</th>
+                        <th style="padding:.35rem .5rem;text-align:left;">Ref</th>
+                        <th style="padding:.35rem .5rem;text-align:left;">Ticket Aranda</th>
+                        <th style="padding:.35rem .5rem;text-align:left;">Título / Descripción</th>
+                        <th style="padding:.35rem .5rem;text-align:left;">Técnico</th>
+                        <th style="padding:.35rem .5rem;text-align:right;">T. Ejecución</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${childTasks.map(ch => {
+                        const chAranda = ch.arranda_ticket_name || ch.ticket_aranda || ch.aranda_ticket || ch.aranda || '-';
+                        return `
+                    <tr style="border-t:1px solid #f1f5f9;">
+                        <td style="padding:.35rem .5rem;font-weight:700;color:#16a34a;">#${ch.id_tarea}</td>
+                        <td style="padding:.35rem .5rem;font-weight:700;color:#0369a1;">${ch.referencia||'-'}</td>
+                        <td style="padding:.35rem .5rem;font-weight:700;color:#4338ca;">${chAranda}</td>
+                        <td style="padding:.35rem .5rem;color:#334155;">${(ch.titulo||ch.descripcion||'-').substring(0,40)}</td>
+                        <td style="padding:.35rem .5rem;color:#475569;">${ch.assigned_to_fullname||'-'}</td>
+                        <td style="padding:.35rem .5rem;text-align:right;font-weight:700;">${fmtMins(ch.total_minutos_en_estado_ejecucion)}</td>
+                    </tr>
+                    `;}).join('')}
+                </tbody>
+            </table>
+        </div>`;
+    }
+
+    const htmlContent = `
+    <div style="text-align:left;font-family:ui-sans-serif,system-ui,sans-serif;color:#1e293b;font-size:0.8rem;line-height:1.4;">
+        <div style="background:#f8fafc;padding:.6rem .8rem;border-radius:.375rem;border:1px solid #e2e8f0;margin-bottom:.75rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;">
+                <span style="font-weight:800;font-size:0.9rem;color:#0369a1;">
+                    <i class="fas fa-ticket-alt mr-1"></i> #${id} (Ref: ${ref})
+                </span>
+                <span style="background:#e0f2fe;color:#0369a1;padding:.2rem .6rem;border-radius:9999px;font-size:0.68rem;font-weight:700;">
+                    ${status}
+                </span>
+            </div>
+            <div style="font-weight:700;color:#0f172a;font-size:0.82rem;margin-bottom:.4rem;">
+                ${titulo}
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem;">
+            <div style="background:#eef2ff;padding:.5rem .7rem;border-radius:.375rem;border:1px solid #c7d2fe;">
+                <span style="font-size:0.65rem;color:#4338ca;font-weight:800;display:block;">TICKET ARANDA:</span>
+                <span style="font-weight:800;color:#3730a3;font-size:0.78rem;">${ticketAranda}</span>
+            </div>
+            <div style="background:#f1f5f9;padding:.5rem .7rem;border-radius:.375rem;">
+                <span style="font-size:0.65rem;color:#64748b;font-weight:700;display:block;">CLIENTE:</span>
+                <span style="font-weight:700;color:#0f172a;font-size:0.75rem;">${cliente}</span>
+            </div>
+            <div style="background:#e0f2fe;padding:.5rem .7rem;border-radius:.375rem;border:1px solid #bae6fd;">
+                <span style="font-size:0.65rem;color:#0369a1;font-weight:800;display:block;">CONTRATO ASOCIADO:</span>
+                <span style="font-weight:800;color:#0284c7;font-size:0.78rem;">${contrato}</span>
+            </div>
+            <div style="background:#f0fdf4;padding:.5rem .7rem;border-radius:.375rem;border:1px solid #bbf7d0;">
+                <span style="font-size:0.65rem;color:#15803d;font-weight:800;display:block;">SERVICIO ASOCIADO:</span>
+                <span style="font-weight:800;color:#16a34a;font-size:0.78rem;">${servicio}</span>
+            </div>
+            <div style="background:#f1f5f9;padding:.5rem .7rem;border-radius:.375rem;grid-column: span 2;">
+                <span style="font-size:0.65rem;color:#64748b;font-weight:700;display:block;">TÉCNICO ASIGNADO:</span>
+                <span style="font-weight:700;color:#0f172a;font-size:0.75rem;">${tecnico}</span>
+            </div>
+        </div>
+
+        <div style="background:#ffffff;padding:.75rem;border-radius:.375rem;border:1px solid #cbd5e1;margin-bottom:.75rem;">
+            <span style="font-weight:800;color:#4338ca;font-size:0.75rem;display:block;margin-bottom:.3rem;">
+                <i class="fas fa-align-left mr-1"></i> Descripción Completa del Ticket:
+            </span>
+            <div style="max-height:160px;overflow-y:auto;color:#334155;font-size:0.72rem;line-height:1.45;white-space:pre-wrap;background:#f8fafc;padding:.5rem .75rem;border-radius:.25rem;border:1px solid #e2e8f0;">${descripcion || 'Sin descripción registrada en la tarea.'}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:.4rem;text-align:center;">
+            <div style="background:#f0f9ff;padding:.35rem;border-radius:.25rem;border:1px solid #bae6fd;">
+                <span style="font-size:0.6rem;color:#0369a1;font-weight:700;display:block;">T. Abierto:</span>
+                <span style="font-size:0.75rem;font-weight:800;color:#0284c7;">${fmtMins(ticket.total_minutos_abierta)}</span>
+            </div>
+            <div style="background:#f0fdf4;padding:.35rem;border-radius:.25rem;border:1px solid #bbf7d0;">
+                <span style="font-size:0.6rem;color:#15803d;font-weight:700;display:block;">T. Ejecución:</span>
+                <span style="font-size:0.75rem;font-weight:800;color:#16a34a;">${fmtMins(ticket.total_minutos_en_estado_ejecucion)}</span>
+            </div>
+            <div style="background:#f5f3ff;padding:.35rem;border-radius:.25rem;border:1px solid #ddd6fe;">
+                <span style="font-size:0.6rem;color:#6d28d9;font-weight:700;display:block;">H. Nocturna:</span>
+                <span style="font-size:0.75rem;font-weight:800;color:#7c3aed;">${fmtMins(ticket.total_minutos_ejecucion_efectivo_nocturno)}</span>
+            </div>
+            <div style="background:#fffbeb;padding:.35rem;border-radius:.25rem;border:1px solid #fef3c7;">
+                <span style="font-size:0.6rem;color:#b45309;font-weight:700;display:block;">Fin de Semana:</span>
+                <span style="font-size:0.75rem;font-weight:800;color:#d97706;">${fmtMins(ticket.total_minutos_ejecucion_efectivo_fin_semana)}</span>
+            </div>
+        </div>
+
+        ${childrenHtml}
+    </div>`;
+
+    if (window.Swal) {
+        Swal.fire({
+            title: `<i class="fas fa-file-alt text-indigo-600 mr-2"></i> Detalle Completo del Ticket`,
+            html: htmlContent,
+            width: '680px',
+            showCloseButton: true,
+            showConfirmButton: true,
+            confirmButtonText: '<i class="fas fa-check mr-1"></i> Cerrar',
+            confirmButtonColor: '#6366f1'
+        });
+    } else {
+        alert(`Ticket #${id} (Ref: ${ref})
+Cliente: ${cliente}
+Contrato: ${contrato}
+Servicio: ${servicio}
+
+Descripción:
+${descripcion}`);
+    }
+};
+
+
+function renderTicketAnalysis() {
         const data = window.biState ? window.biState.dataFiltrada : [];
         const tbody = document.getElementById('ticket-lifecycle-body');
         if (!tbody) return;
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:2rem;color:#94a3b8;">Sin datos. Sube un archivo Excel en la pestaña 1.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="17" style="text-align:center;padding:2rem;color:#94a3b8;">Sin datos. Sube un archivo Excel en la pestaña 1.</td></tr>';
             return;
         }
 
+        const getParentId = (r) => String(r['parent_task_id'] || r['id_tarea_padre'] || r['id_parent'] || r['parent_id'] || r['id_padre'] || '').trim();
+
         // Build parent-child maps
         const childrenMap = {};
-        const parentSet = new Set();
         const childSet = new Set();
 
         data.forEach(r => {
-            const pid = String(r['parent_task_id'] || '').trim();
+            const pid = getParentId(r);
             if (pid && pid !== '0') {
                 if (!childrenMap[pid]) childrenMap[pid] = [];
                 childrenMap[pid].push(r);
@@ -2525,7 +3107,7 @@ require_once __DIR__ . '/partials/header.php';
         });
 
         const parents = data.filter(r => {
-            const pid = String(r['parent_task_id'] || '').trim();
+            const pid = getParentId(r);
             return !pid || pid === '0';
         });
 
@@ -2546,7 +3128,6 @@ require_once __DIR__ . '/partials/header.php';
         if (kpiHijo) kpiHijo.textContent = totalHijo.toLocaleString();
         if (kpiSla) kpiSla.textContent = slaPercent + '%';
         if (kpiVida) kpiVida.textContent = Math.round(avgVida / 60) + 'h';
-        if (countEl) countEl.textContent = data.length + ' tickets';
 
         // Helpers
         function statusBadge(status) {
@@ -2560,11 +3141,17 @@ require_once __DIR__ . '/partials/header.php';
             else { bg='#f1f5f9'; color='#475569'; icon='fa-circle'; }
             return `<span style="display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .5rem;border-radius:9999px;font-size:.63rem;font-weight:700;background:${bg};color:${color};white-space:nowrap;"><i class="fas ${icon}" style="font-size:.55rem;"></i>${s||'N/A'}</span>`;
         }
-        function typeBadge(type) {
+        function typeBadge(type, isParent, childCount) {
             const t = (type || '').trim();
+            if (!isParent) {
+                return `<span style="padding:.1rem .4rem;border-radius:.25rem;font-size:.6rem;font-weight:700;background:#dcfce7;color:#15803d;"><i class="fas fa-code-branch mr-1"></i>Hijo</span>`;
+            }
+            if (childCount > 0) {
+                return `<span style="padding:.1rem .4rem;border-radius:.25rem;font-size:.6rem;font-weight:700;background:#e0f2fe;color:#0369a1;"><i class="fas fa-layer-group mr-1"></i>Padre (${childCount})</span>`;
+            }
             const bg = t==='Interna' ? '#ede9fe' : '#e0f2fe';
             const color = t==='Interna' ? '#7c3aed' : '#0369a1';
-            return `<span style="padding:.1rem .35rem;border-radius:.25rem;font-size:.6rem;font-weight:700;background:${bg};color:${color};">${t||'-'}</span>`;
+            return `<span style="padding:.1rem .35rem;border-radius:.25rem;font-size:.6rem;font-weight:700;background:${bg};color:${color};">${t||'Padre'}</span>`;
         }
         function fmtTime(mins) {
             const m = parseFloat(mins) || 0;
@@ -2573,27 +3160,32 @@ require_once __DIR__ . '/partials/header.php';
             const mn = Math.round(m % 60);
             return h > 0 ? `${h}h&nbsp;${mn}m` : `${mn}m`;
         }
-        function buildRow(r, isParent) {
-            const bg = isParent ? '#e0f2fe' : '#f0fdf4';
-            const bl = isParent ? '4px solid #38bdf8' : '4px solid #4ade80';
-            const indent = isParent ? '' : '&nbsp;&nbsp;<i class="fas fa-level-down-alt" style="color:#4ade80;font-size:.6rem;transform:rotate(90deg);display:inline-block;"></i>&nbsp;';
+        function buildRow(r, isParent, childCount = 0) {
+            const bg = isParent ? '#e0f2fe' : '#ffffff';
+            const bl = isParent ? '4px solid #0284c7' : '4px solid #16a34a';
             const id = r['id_tarea'] || '';
             const ref = r['referencia'] || '-';
+            const ticketAranda = r['arranda_ticket_name'] || r['ticket_aranda'] || r['aranda_ticket'] || '-';
             const titulo = (r['titulo'] || r['arranda_ticket_name'] || '-').substring(0, 55);
             const descripcion = (r['descripcion'] || '').trim();
-            const cliente = (r['cliente'] || '-').substring(0, 26);
+            const cliente = (r['cliente'] || '-').substring(0, 24);
+            const contrato = (r['contrato'] || r['codigo_de_contrato'] || '-').substring(0, 20);
             const servicio = (r['servicio'] || '-').substring(0, 20);
             const tipo = r['type_name'] || '';
             const tecnico = (r['assigned_to_fullname'] || '-').split(' ').slice(0,2).join(' ');
             const status = r['status_name'] || '';
-            const search = `${id} ${ref} ${titulo} ${cliente} ${tecnico} ${status}`.toLowerCase();
-            const rowId = `tk-${String(id).replace(/[^a-z0-9]/gi,'_')}`;
+            const search = `${id} ${ref} ${ticketAranda} ${titulo} ${cliente} ${contrato} ${servicio} ${tecnico} ${status}`.toLowerCase();
+            const rowId = `tk-det-${String(id).replace(/[^a-z0-9]/gi,'_')}`;
+            const iconId = `icon-tk-${String(id).replace(/[^a-z0-9]/gi,'_')}`;
 
-            // Format date+time: "6 abr 2026 14:19:37" -> dd/mmm/yy HH:MM:SS
+            const chevron = `<i class="fas fa-chevron-right text-indigo-500 mr-1.5 transition-transform" id="${iconId}" style="font-size:0.65rem;"></i>`;
+            const indent = isParent 
+                ? `${chevron}<i class="fas fa-folder-open text-sky-600 mr-1"></i>` 
+                : `&nbsp;&nbsp;&nbsp;&nbsp;${chevron}<i class="fas fa-level-up-alt rotate-90 text-emerald-600 mr-1" style="display:inline-block;"></i>&nbsp;`;
+
             function fmtDateFull(raw) {
                 if (!raw || raw === '-') return '<span style="color:#cbd5e1;">—</span>';
                 const s = String(raw).trim();
-                // expected: "6 abr 2026 14:19:37"
                 const m = s.match(/(\d+)\s+(\S+)\s+(\d{4})\s+(\d{2}:\d{2}:\d{2})/);
                 if (m) {
                     const months = {ene:'01',feb:'02',mar:'03',abr:'04',may:'05',jun:'06',
@@ -2608,22 +3200,104 @@ require_once __DIR__ . '/partials/header.php';
             const inicioHtml = fmtDateFull(r['inicio_tarea']);
             const finHtml = fmtDateFull(r['finalizado_seguimiento_o_actualizacion']);
 
-            const detailHtml = descripcion
-                ? `<div style="padding:.5rem .75rem .5rem 1.5rem;background:#f8fafc;border-left:3px solid #6366f1;font-size:.7rem;color:#334155;">
-                    <span style="font-weight:700;color:#6366f1;"><i class="fas fa-comment-alt" style="margin-right:.3rem;"></i>Descripci&oacute;n:</span> ${descripcion}
-                   </div>`
-                : `<div style="padding:.4rem .75rem;background:#f8fafc;font-size:.7rem;color:#94a3b8;font-style:italic;">Sin descripci&oacute;n disponible.</div>`;
+            const parentChildren = childrenMap[String(id).trim()] || [];
+            let childrenTableHtml = '';
 
-            return `<tr class="ticket-row" style="background:${bg};border-left:${bl};border-bottom:1px solid #e2e8f0;cursor:pointer;" data-searchable="${search}" onclick="toggleTicketDetail('${rowId}')"
+            if (isParent && parentChildren.length > 0) {
+                childrenTableHtml = `
+                <div style="margin-top:.6rem;padding-top:.6rem;border-top:1px solid #cbd5e1;">
+                    <span style="font-weight:700;color:#1e293b;font-size:.7rem;display:block;margin-bottom:.4rem;">
+                        <i class="fas fa-sitemap text-indigo-500 mr-1"></i> ${parentChildren.length} Tareas Hijas Pertenecientes a este Ticket Padre:
+                    </span>
+                    <table style="width:100%;border-collapse:collapse;font-size:.68rem;background:#ffffff;border:1px solid #cbd5e1;border-radius:.375rem;overflow:hidden;">
+                        <thead>
+                            <tr style="background:#f1f5f9;color:#475569;font-weight:700;border-bottom:1px solid #cbd5e1;">
+                                <th style="padding:.4rem .5rem;text-align:left;">ID Hijo</th>
+                                <th style="padding:.4rem .5rem;text-align:left;">Referencia</th>
+                                <th style="padding:.4rem .5rem;text-align:left;">Ticket Aranda</th>
+                                <th style="padding:.4rem .5rem;text-align:left;">Título / Descripción</th>
+                                <th style="padding:.4rem .5rem;text-align:left;">Contrato</th>
+                                <th style="padding:.4rem .5rem;text-align:left;">Técnico</th>
+                                <th style="padding:.4rem .5rem;text-align:right;">T. Abierto</th>
+                                <th style="padding:.4rem .4rem;text-align:right;">T. Ejecución</th>
+                                <th style="padding:.4rem .5rem;text-align:center;">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${parentChildren.map(ch => {
+                                const chAranda = ch['arranda_ticket_name'] || ch['ticket_aranda'] || ch['aranda_ticket'] || '-';
+                                return `
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:.35rem .5rem;font-weight:700;color:#16a34a;"><i class="fas fa-code-branch mr-1"></i>#${ch['id_tarea']}</td>
+                                <td style="padding:.35rem .5rem;">
+                                    <span onclick="event.stopPropagation();window.openTicketDetailModal('${ch['referencia']||ch['id_tarea']}')" style="color:#0369a1;font-weight:700;text-decoration:underline dotted;cursor:pointer;">${ch['referencia']||'-'}</span>
+                                </td>
+                                <td style="padding:.35rem .5rem;color:#4338ca;font-weight:700;">${chAranda}</td>
+                                <td style="padding:.35rem .5rem;color:#334155;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${ch['titulo']||ch['descripcion']||'-'}">${ch['titulo']||ch['descripcion']||'-'}</td>
+                                <td style="padding:.35rem .5rem;color:#0284c7;font-weight:600;">${ch['contrato']||ch['codigo_de_contrato']||'-'}</td>
+                                <td style="padding:.35rem .5rem;color:#475569;">${ch['assigned_to_fullname']||'-'}</td>
+                                <td style="padding:.35rem .5rem;text-align:right;color:#64748b;">${fmtTime(ch['total_minutos_abierta'])}</td>
+                                <td style="padding:.35rem .4rem;text-align:right;font-weight:700;color:#0f172a;">${fmtTime(ch['total_minutos_en_estado_ejecucion'])}</td>
+                                <td style="padding:.35rem .5rem;text-align:center;">${statusBadge(ch['status_name']||'')}</td>
+                            </tr>
+                            `;}).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+            }
+
+            const detailHtml = `
+            <div style="padding:.75rem 1rem .75rem 1.75rem;background:#f8fafc;border-left:4px solid #6366f1;font-size:.72rem;color:#334155;box-shadow:inset 0 2px 4px rgba(0,0,0,0.03);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;padding-bottom:.4rem;border-bottom:1px solid #e2e8f0;">
+                    <span style="font-weight:800;color:#0f172a;font-size:.75rem;">
+                        <i class="fas fa-info-circle text-indigo-500 mr-1"></i> Detalle Completo de ${isParent ? 'Ticket Padre' : 'Tarea Hija'} #${id} (Ref: ${ref} | Aranda: ${ticketAranda})
+                    </span>
+                    <span style="font-size:.68rem;color:#64748b;">
+                        Cliente: <b style="color:#1e293b;">${r['cliente'] || '-'}</b> | Contrato: <b style="color:#0284c7;">${contrato}</b> | Servicio: <b style="color:#16a34a;">${servicio}</b>
+                    </span>
+                </div>
+                
+                <div style="background:#ffffff;padding:.6rem .8rem;border-radius:.375rem;border:1px solid #e2e8f0;margin-bottom:.5rem;">
+                    <span style="font-weight:700;color:#4338ca;display:block;margin-bottom:.2rem;">
+                        <i class="fas fa-align-left mr-1"></i> Descripción Completa:
+                    </span>
+                    <p style="margin:0;color:#334155;line-height:1.4;white-space:pre-wrap;font-size:.7rem;">${descripcion || (r['titulo'] ? 'Título: ' + r['titulo'] : 'Sin descripción registrada.')}</p>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:.5rem;margin-bottom:.4rem;">
+                    <div style="background:#f0f9ff;padding:.4rem .6rem;border-radius:.25rem;border:1px solid #bae6fd;">
+                        <span style="font-size:.62rem;color:#0369a1;font-weight:700;display:block;">T. Abierto Total:</span>
+                        <span style="font-size:.8rem;font-weight:800;color:#0284c7;">${fmtTime(r['total_minutos_abierta'])}</span>
+                    </div>
+                    <div style="background:#f0fdf4;padding:.4rem .6rem;border-radius:.25rem;border:1px solid #bbf7d0;">
+                        <span style="font-size:.62rem;color:#15803d;font-weight:700;display:block;">T. Ejecución Efectivo:</span>
+                        <span style="font-size:.8rem;font-weight:800;color:#16a34a;">${fmtTime(r['total_minutos_en_estado_ejecucion'])}</span>
+                    </div>
+                    <div style="background:#f5f3ff;padding:.4rem .6rem;border-radius:.25rem;border:1px solid #ddd6fe;">
+                        <span style="font-size:.62rem;color:#6d28d9;font-weight:700;display:block;">T. Horas Nocturnas:</span>
+                        <span style="font-size:.8rem;font-weight:800;color:#7c3aed;">${fmtTime(r['total_minutos_ejecucion_efectivo_nocturno'])}</span>
+                    </div>
+                    <div style="background:#fffbeb;padding:.4rem .6rem;border-radius:.25rem;border:1px solid #fef3c7;">
+                        <span style="font-size:.62rem;color:#b45309;font-weight:700;display:block;">T. Fin de Semana:</span>
+                        <span style="font-size:.8rem;font-weight:800;color:#d97706;">${fmtTime(r['total_minutos_ejecucion_efectivo_fin_semana'])}</span>
+                    </div>
+                </div>
+
+                ${childrenTableHtml}
+            </div>`;
+
+            return `<tr class="ticket-row ${isParent ? 'parent-row' : 'child-row'}" style="background:${bg};border-left:${bl};border-bottom:1px solid #e2e8f0;cursor:pointer;" data-searchable="${search}" onclick="toggleTicketDetail('${rowId}', '${iconId}')"
                     onmouseenter="this.style.filter='brightness(.96)'" onmouseleave="this.style.filter=''">  
-                <td style="padding:.4rem .45rem;font-weight:700;color:#0f172a;">${indent}${id}</td>
+                <td style="padding:.4rem .45rem;font-weight:700;color:#0f172a;">${indent}#${id}</td>
                 <td style="padding:.4rem .45rem;">
-                    <span style="color:#0369a1;font-weight:700;text-decoration:underline dotted;cursor:pointer;">${ref}</span>
+                    <span onclick="event.stopPropagation();window.openTicketDetailModal('${ref||id}')" style="color:#0369a1;font-weight:700;text-decoration:underline dotted;cursor:pointer;" title="Clic para ver modal con detalle completo">${ref}</span>
                 </td>
-                <td style="padding:.4rem .45rem;color:#1e293b;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${titulo}">${titulo}</td>
+                <td style="padding:.4rem .45rem;color:#4338ca;font-weight:700;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${ticketAranda}">${ticketAranda}</td>
+                <td style="padding:.4rem .45rem;color:#1e293b;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${titulo}">${titulo}</td>
                 <td style="padding:.4rem .45rem;color:#334155;">${cliente}</td>
+                <td style="padding:.4rem .45rem;color:#0284c7;font-weight:600;" title="${contrato}">${contrato}</td>
                 <td style="padding:.4rem .45rem;color:#334155;">${servicio}</td>
-                <td style="padding:.4rem .45rem;text-align:center;">${typeBadge(tipo)}</td>
+                <td style="padding:.4rem .45rem;text-align:center;">${typeBadge(tipo, isParent, childCount)}</td>
                 <td style="padding:.4rem .45rem;color:#334155;">${tecnico}</td>
                 <td style="padding:.4rem .45rem;">${inicioHtml}</td>
                 <td style="padding:.4rem .45rem;">${finHtml}</td>
@@ -2635,14 +3309,11 @@ require_once __DIR__ . '/partials/header.php';
                 <td style="padding:.4rem .45rem;text-align:center;">${statusBadge(status)}</td>
             </tr>
             <tr id="${rowId}" style="display:none;background:#f8fafc;border-left:${bl};">
-                <td colspan="15" style="padding:0;">${detailHtml}</td>
+                <td colspan="17" style="padding:0;">${detailHtml}</td>
             </tr>`;
-        }
-
-        // Build HTML: parents first, then their children
-        let html = '';
+        }let html = '';
         const renderedChildIds = new Set();
-        // Totals accumulators
+        let renderedCount = 0;
         let totAbierto = 0, totEjec = 0, totStd = 0, totNoct = 0, totFin = 0;
 
         function accumulateTotals(r) {
@@ -2655,25 +3326,38 @@ require_once __DIR__ . '/partials/header.php';
 
         parents.forEach(parent => {
             const pid = String(parent['id_tarea'] || '').trim();
-            html += buildRow(parent, true);
+            const childTasks = childrenMap[pid] || [];
+            
+            html += buildRow(parent, true, childTasks.length);
             accumulateTotals(parent);
-            (childrenMap[pid] || []).forEach(child => {
-                html += buildRow(child, false);
-                accumulateTotals(child);
-                renderedChildIds.add(String(child['id_tarea'] || '').trim());
-            });
-        });
-        // Orphan children
-        data.forEach(r => {
-            const pid = String(r['parent_task_id'] || '').trim();
-            const myId = String(r['id_tarea'] || '').trim();
-            if (pid && pid !== '0' && !renderedChildIds.has(myId) && !parents.find(p => String(p['id_tarea']||'').trim() === myId)) {
-                html += buildRow(r, false);
-                accumulateTotals(r);
+            renderedCount++;
+
+            if (window.showChildTasksInAnalysis && childTasks.length > 0) {
+                childTasks.forEach(child => {
+                    html += buildRow(child, false, 0);
+                    accumulateTotals(child);
+                    renderedChildIds.add(String(child['id_tarea'] || '').trim());
+                    renderedCount++;
+                });
             }
         });
 
-        tbody.innerHTML = html || '<tr><td colspan="15" style="text-align:center;padding:2rem;color:#94a3b8;">No hay tickets.</td></tr>';
+        // Render orphan children if enabled
+        if (window.showChildTasksInAnalysis) {
+            data.forEach(r => {
+                const pid = getParentId(r);
+                const myId = String(r['id_tarea'] || '').trim();
+                if (pid && pid !== '0' && !renderedChildIds.has(myId) && !parents.find(p => String(p['id_tarea']||'').trim() === myId)) {
+                    html += buildRow(r, false, 0);
+                    accumulateTotals(r);
+                    renderedCount++;
+                }
+            });
+        }
+
+        tbody.innerHTML = html || '<tr><td colspan="17" style="text-align:center;padding:2rem;color:#94a3b8;">No hay tickets.</td></tr>';
+
+        if (countEl) countEl.textContent = renderedCount + ' tickets visibles';
 
         // Update tfoot totals
         function fmtTotal(m) {
@@ -2692,10 +3376,17 @@ require_once __DIR__ . '/partials/header.php';
     /**
      * Toggle description detail row for a ticket
      */
-    function toggleTicketDetail(rowId) {
+    function toggleTicketDetail(rowId, iconId) {
         const row = document.getElementById(rowId);
+        const icon = document.getElementById(iconId);
         if (!row) return;
-        row.style.display = row.style.display === 'none' ? '' : 'none';
+        if (row.style.display === 'none') {
+            row.style.display = '';
+            if (icon) icon.className = 'fas fa-chevron-down text-indigo-500 mr-1.5 transition-transform';
+        } else {
+            row.style.display = 'none';
+            if (icon) icon.className = 'fas fa-chevron-right text-indigo-500 mr-1.5 transition-transform';
+        }
     }
 
     /**
@@ -3558,6 +4249,1095 @@ require_once __DIR__ . '/partials/header.php';
             }
         });
     }
+
+
+/* ==========================================================================
+   TAB 9: CÁLCULO DE HORAS Y RECARGOS (VISTA DE GRUPOS ITIL - AZUL, VERDE, ÁMBAR)
+   ========================================================================== */
+window.horasDobleActive = false;
+window.horasRecargosViewMode = 'hierarchical';
+
+function toggleHorasDoble() {
+    window.horasDobleActive = !window.horasDobleActive;
+    const btn = document.getElementById('btn-toggle-doble');
+    const lbl = document.getElementById('lbl-status-doble');
+    if (window.horasDobleActive) {
+        if (btn) {
+            btn.className = 'px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 border shadow-md transition-all bg-amber-500 text-white border-amber-600 hover:bg-amber-600';
+        }
+        if (lbl) {
+            lbl.textContent = 'ACTIVADO (2x Multiplicador)';
+            lbl.className = 'text-white font-extrabold uppercase bg-amber-700/50 px-1.5 py-0.5 rounded';
+        }
+        if (window.toastr) toastr.success('Recargos en Ventanas Horarias al DOBLE (2x) ACTIVADOS');
+    } else {
+        if (btn) {
+            btn.className = 'px-4 py-2 rounded-lg font-bold text-xs flex items-center gap-2 border shadow-sm transition-all bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200';
+        }
+        if (lbl) {
+            lbl.textContent = 'DESACTIVADO (1x)';
+            lbl.className = 'text-slate-500 font-extrabold uppercase';
+        }
+        if (window.toastr) toastr.info('Recargos al DOBLE Desactivados (Volviendo a 1x)');
+    }
+    renderHorasRecargosTab();
+}
+
+function setHorasRecargosViewMode(mode) {
+    window.horasRecargosViewMode = mode;
+    ['hierarchical', 'saltos'].forEach(m => {
+        const b = document.getElementById('btn-view-' + m);
+        if (b) {
+            if (m === mode) {
+                b.className = 'px-3 py-1.5 rounded-md font-bold text-xs bg-indigo-600 text-white shadow-sm flex items-center gap-1.5';
+            } else {
+                b.className = 'px-3 py-1.5 rounded-md font-medium text-xs bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 flex items-center gap-1.5';
+            }
+        }
+    });
+    renderHorasRecargosTab();
+}
+
+function parseDateFlexible(dateStr) {
+    if (!dateStr || dateStr === '-' || dateStr === 'N/A' || dateStr === 'null' || dateStr === 'undefined') return null;
+    
+    if (dateStr instanceof Date) {
+        return isNaN(dateStr.getTime()) ? null : dateStr;
+    }
+
+    let s = String(dateStr).trim();
+    if (!s) return null;
+
+    // 1. Excel numeric serial date (e.g. 46118.5969)
+    if (/^\d+(\.\d+)?$/.test(s)) {
+        let n = parseFloat(s);
+        if (n > 20000 && n < 80000) {
+            let date = new Date(Math.round((n - 25569) * 86400 * 1000));
+            return isNaN(date.getTime()) ? null : date;
+        }
+    }
+
+    // 2. Spanish named month (e.g., "6 abr. 2026 14:19:37", "06 de abril del 2026 14:19")
+    let spanishMatch = s.match(/^(\d{1,2})\s*(?:de)?\s*([a-zA-ZáéíóúÁÉÍÓÚ\.]+)\s*(?:de|del)?\s*(\d{4})(?:[\s,]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/i);
+    if (spanishMatch) {
+        const months = {
+            ene:0, enero:0, feb:1, febrero:1, mar:2, marzo:2, abr:3, abril:3,
+            may:4, mayo:4, jun:5, junio:5, jul:6, julio:6, ago:7, agosto:7,
+            sep:8, sept:8, septiembre:8, oct:9, octubre:9, nov:10, noviembre:10, dic:11, diciembre:11
+        };
+        let mClean = spanishMatch[2].toLowerCase().replace('.', '').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        let monthNum = months[mClean] ?? months[mClean.substring(0, 3)] ?? null;
+        if (monthNum !== null) {
+            let year = parseInt(spanishMatch[3], 10);
+            let day = parseInt(spanishMatch[1], 10);
+            let hour = spanishMatch[4] ? parseInt(spanishMatch[4], 10) : 0;
+            let min = spanishMatch[5] ? parseInt(spanishMatch[5], 10) : 0;
+            let sec = spanishMatch[6] ? parseInt(spanishMatch[6], 10) : 0;
+            return new Date(year, monthNum, day, hour, min, sec);
+        }
+    }
+
+    // 3. Latin format: DD/MM/YYYY HH:MM:SS or DD-MM-YYYY HH:MM
+    let latinMatch = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})(?:[\sT]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+    if (latinMatch) {
+        let day = parseInt(latinMatch[1], 10);
+        let month = parseInt(latinMatch[2], 10) - 1;
+        let year = parseInt(latinMatch[3], 10);
+        let hour = latinMatch[4] ? parseInt(latinMatch[4], 10) : 0;
+        let min = latinMatch[5] ? parseInt(latinMatch[5], 10) : 0;
+        let sec = latinMatch[6] ? parseInt(latinMatch[6], 10) : 0;
+
+        if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
+            return new Date(year, month, day, hour, min, sec);
+        }
+    }
+
+    // 4. ISO format: YYYY-MM-DD HH:MM:SS or YYYY/MM/DD THH:MM:SS
+    let isoMatch = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[\sT]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+    if (isoMatch) {
+        let year = parseInt(isoMatch[1], 10);
+        let month = parseInt(isoMatch[2], 10) - 1;
+        let day = parseInt(isoMatch[3], 10);
+        let hour = isoMatch[4] ? parseInt(isoMatch[4], 10) : 0;
+        let min = isoMatch[5] ? parseInt(isoMatch[5], 10) : 0;
+        let sec = isoMatch[6] ? parseInt(isoMatch[6], 10) : 0;
+        return new Date(year, month, day, hour, min, sec);
+    }
+
+    // 5. Fallback native
+    let d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+}
+
+function calculateTimeWindowBreakdown(startDt, endDt) {
+    if (!startDt || !endDt || endDt <= startDt) {
+        return { normalMins: 0, extraMins: 0, extraordinariaMins: 0, totalMins: 0 };
+    }
+    
+    let totalMs = endDt.getTime() - startDt.getTime();
+    let totalMins = Math.round(totalMs / 60000);
+    if (totalMins <= 0) {
+        return { normalMins: 0, extraMins: 0, extraordinariaMins: 0, totalMins: 0 };
+    }
+
+    let normalMins = 0;
+    let extraMins = 0;
+    let extraordinariaMins = 0;
+
+    let curr = new Date(startDt.getTime());
+    let endMs = endDt.getTime();
+    let steps = 0;
+    let maxSteps = totalMins + 1;
+
+    while (curr.getTime() < endMs && steps < maxSteps) {
+        let h = curr.getHours();
+        if (h >= 6 && h < 18) {
+            normalMins++;
+        } else if (h >= 18 && h < 22) {
+            extraMins++;
+        } else {
+            extraordinariaMins++;
+        }
+        curr.setMinutes(curr.getMinutes() + 1);
+        steps++;
+    }
+
+    return { normalMins, extraMins, extraordinariaMins, totalMins };
+}
+
+function processCalculatedRow(startStr, endStr, explicitMins, applyDouble) {
+    let startDt = parseDateFlexible(startStr);
+    let endDt = parseDateFlexible(endStr);
+
+    // If startDt is valid and endDt is missing/invalid, construct endDt = startDt + explicitMins
+    if (startDt && (!endDt || isNaN(endDt.getTime())) && explicitMins > 0) {
+        endDt = new Date(startDt.getTime() + Math.round(explicitMins) * 60000);
+    }
+
+    // If endDt is valid and startDt is missing/invalid, construct startDt = endDt - explicitMins
+    if (endDt && (!startDt || isNaN(startDt.getTime())) && explicitMins > 0) {
+        startDt = new Date(endDt.getTime() - Math.round(explicitMins) * 60000);
+    }
+
+    let breakdown = calculateTimeWindowBreakdown(startDt, endDt);
+
+    let totalMins = breakdown.totalMins;
+    if (totalMins <= 0 && explicitMins > 0) {
+        totalMins = Math.round(explicitMins);
+        breakdown.normalMins = totalMins;
+    }
+
+    let isOver24h = totalMins > 1440; // > 1,440 minutes (24 hours)
+
+    // Grupo 2 (Azul): Desglose Real de Tiempos
+    let realNormMins = breakdown.normalMins;
+    let realExtMins = breakdown.extraMins;
+    let realExtordMins = breakdown.extraordinariaMins;
+
+    // Grupo 3 (Verde): Regla +15 min
+    let baseHoursCount = Math.floor(totalMins / 60);
+    let remainderMins = totalMins % 60;
+    let incremento15mMins = remainderMins > 15 ? (60 - remainderMins) : 0;
+    let adjustedMins = totalMins + incremento15mMins;
+
+    // Grupo 4 (Ámbar): Recargos al Doble (2x)
+    function roundCategoryMins(mins) {
+        if (mins <= 0) return 0;
+        let bH = Math.floor(mins / 60);
+        let rM = mins % 60;
+        if (rM > 15) {
+            return (bH + 1) * 60;
+        }
+        return Math.round(mins);
+    }
+
+    let mult = applyDouble ? 2 : 1;
+    let finalNormMins = Math.round(roundCategoryMins(realNormMins) * mult);
+    let finalExtMins = Math.round(roundCategoryMins(realExtMins) * mult);
+    let finalExtordMins = Math.round(roundCategoryMins(realExtordMins) * mult);
+    let totalLiquidadasMins = finalNormMins + finalExtMins + finalExtordMins;
+
+    return {
+        startDt,
+        endDt,
+        totalMins,
+        isOver24h,
+        realNormMins,
+        realExtMins,
+        realExtordMins,
+        incremento15mMins,
+        adjustedMins,
+        finalNormMins,
+        finalExtMins,
+        finalExtordMins,
+        totalLiquidadasMins,
+        multiplier: mult
+    };
+}
+
+function fmtMinutesOnly(mins) {
+    let m = Math.round(parseFloat(mins) || 0);
+    return m.toLocaleString() + ' min';
+}
+
+function fmtDateShort(dtObj, rawFallback) {
+    if (dtObj && !isNaN(dtObj.getTime())) {
+        let dd = String(dtObj.getDate()).padStart(2, '0');
+        let mm = String(dtObj.getMonth() + 1).padStart(2, '0');
+        let yy = String(dtObj.getFullYear()).slice(2);
+        let hh = String(dtObj.getHours()).padStart(2, '0');
+        let min = String(dtObj.getMinutes()).padStart(2, '0');
+        return `<span class="font-medium text-slate-700 dark:text-slate-300">${dd}/${mm}/${yy}</span> <span class="text-indigo-600 font-bold">${hh}:${min}</span>`;
+    }
+    return rawFallback ? `<span class="text-slate-400">${rawFallback}</span>` : '<span class="text-slate-300">—</span>';
+}
+
+function toggleHorasDetail(rowId) {
+    const row = document.getElementById(rowId);
+    const icon = document.getElementById('icon-' + rowId);
+    if (!row) return;
+    if (row.style.display === 'none') {
+        row.style.display = '';
+        if (icon) icon.className = 'fas fa-chevron-down text-indigo-500 mr-1.5 transition-transform';
+    } else {
+        row.style.display = 'none';
+        if (icon) icon.className = 'fas fa-chevron-right text-indigo-500 mr-1.5 transition-transform';
+    }
+}
+
+function updateHorasRecargosKPIs(items, baseMins, ajustMins, liqMins, over24Count) {
+    const elItems = document.getElementById('kpi-hr-items');
+    const elBase = document.getElementById('kpi-hr-base');
+    const elAjust = document.getElementById('kpi-hr-ajust');
+    const elLiq = document.getElementById('kpi-hr-liq');
+    const el24h = document.getElementById('kpi-hr-24h');
+
+    if (elItems) elItems.textContent = items.toLocaleString();
+    if (elBase) elBase.textContent = Math.round(baseMins).toLocaleString() + ' min';
+    if (elAjust) elAjust.textContent = Math.round(ajustMins).toLocaleString() + ' min';
+    if (elLiq) elLiq.textContent = Math.round(liqMins).toLocaleString() + ' min';
+    if (el24h) {
+        el24h.textContent = over24Count.toLocaleString();
+        if (over24Count > 0) {
+            el24h.className = 'text-2xl font-black text-red-600 dark:text-red-400 animate-pulse';
+        } else {
+            el24h.className = 'text-2xl font-black text-slate-800 dark:text-slate-100';
+        }
+    }
+}
+
+function makeTableResizable(tableId) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    table.classList.add('resizable-table');
+    const cols = table.querySelectorAll('thead th');
+    
+    cols.forEach(col => {
+        const oldResizer = col.querySelector('.resizer');
+        if (oldResizer) oldResizer.remove();
+
+        const resizer = document.createElement('div');
+        resizer.className = 'resizer';
+        col.appendChild(resizer);
+        
+        let x = 0;
+        let w = 0;
+        
+        const mouseDownHandler = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            x = e.clientX;
+            const styles = window.getComputedStyle(col);
+            w = parseInt(styles.width, 10);
+            
+            resizer.classList.add('resizing');
+            
+            document.addEventListener('mousemove', mouseMoveHandler);
+            document.addEventListener('mouseup', mouseUpHandler);
+        };
+        
+        const mouseMoveHandler = function(e) {
+            const dx = e.clientX - x;
+            const newW = Math.max(50, w + dx);
+            col.style.width = `${newW}px`;
+            col.style.minWidth = `${newW}px`;
+        };
+        
+        const mouseUpHandler = function() {
+            resizer.classList.remove('resizing');
+            document.removeEventListener('mousemove', mouseMoveHandler);
+            document.removeEventListener('mouseup', mouseUpHandler);
+        };
+        
+        resizer.addEventListener('mousedown', mouseDownHandler);
+    });
+}
+
+function exportHorasRecargosExcel() {
+    const table = document.getElementById('horas-recargos-table');
+    if (!table) return;
+    if (typeof XLSX === 'undefined') {
+        alert('Librería XLSX no cargada.');
+        return;
+    }
+    let wb = XLSX.utils.table_to_book(table, { sheet: "Minutos_y_Recargos_ITIL" });
+    XLSX.writeFile(wb, "Reporte_Minutos_Recargos_ITIL_NovaIOPS.xlsx");
+    if (window.toastr) toastr.success('Reporte Excel en minutos generado correctamente.');
+}
+
+function renderHorasRecargosTab() {
+    const tareas = window.biState ? window.biState.dataFiltrada : [];
+    const seguimientosAll = window.biState ? (window.biState.seguimientosOriginal || []) : [];
+    const isDouble = !!window.horasDobleActive;
+    const viewMode = window.horasRecargosViewMode || 'hierarchical';
+
+    const tbody = document.getElementById('horas-recargos-body');
+    if (!tbody) return;
+
+    if (!tareas || tareas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="21" class="py-8 text-center text-slate-400">Sin datos. Carga un reporte en la Pestaña 1 o ajusta los filtros.</td></tr>';
+        updateHorasRecargosKPIs(0, 0, 0, 0, 0);
+        return;
+    }
+
+    const taskMap = {};
+    const filteredTaskIds = new Set();
+    tareas.forEach(t => {
+        let tid = String(t.id_tarea || '').trim();
+        if (tid) {
+            taskMap[tid] = t;
+            filteredTaskIds.add(tid);
+        }
+        let ref = String(t.referencia || '').trim();
+        if (ref) {
+            taskMap[ref] = t;
+        }
+    });
+
+    const filteredSeguimientos = seguimientosAll.filter(s => {
+        let tid = String(s.id_tarea || '').trim();
+        let ref = String(s.referencia || '').trim();
+        return filteredTaskIds.has(tid) || (ref && taskMap[ref]);
+    });
+
+    let totalItems = 0;
+    let totalOver24Count = 0;
+    let sumTotalDurationMins = 0;
+    
+    // Group Azul Totals
+    let sumRealNormMins = 0;
+    let sumRealExtMins = 0;
+    let sumRealExtordMins = 0;
+    
+    // Group Verde Totals
+    let sumInc15Mins = 0;
+    let sumAdjustedMins = 0;
+
+    // Group Ámbar Totals (2x)
+    let sumLiqNormMins = 0;
+    let sumLiqExtMins = 0;
+    let sumLiqExtordMins = 0;
+    let sumLiqTotalMins = 0;
+
+    let html = '';
+    const searchVal = (document.getElementById('horas-search-input')?.value || '').toLowerCase().trim();
+
+    if (viewMode === 'hierarchical') {
+        tareas.forEach(t => {
+            let tid = String(t.id_tarea || '').trim();
+            let ref = String(t.referencia || '').trim();
+            let ticketAranda = t.arranda_ticket_name || t.ticket_aranda || t.aranda_ticket || t.aranda || '-';
+            let parentSegs = filteredSeguimientos.filter(s => String(s.id_tarea || '').trim() === tid || (ref && String(s.referencia || '').trim() === ref));
+
+            let startStr = t.inicio_tarea || '';
+            let endStr = t.finalizado_seguimiento_o_actualizacion || t.ultima_actualizacion_tarea || '';
+            let explicitMins = parseFloat(t.total_minutos_en_estado_ejecucion) || parseFloat(t.total_minutos_abierta) || 0;
+            
+            let calc = processCalculatedRow(startStr, endStr, explicitMins, isDouble);
+
+            let statusName = t.status_name || t.estado || 'En progreso';
+            let typeName = t.type_name || 'Ticket';
+            let refDisplay = ref ? `<button onclick="if(window.openTicketDetailModal){openTicketDetailModal('${ref}')}else{alert('Referencia: ${ref}')}" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">${ref}</button>` : '<span class="text-slate-400">—</span>';
+
+            let textSearch = `${tid} ${ref} ${ticketAranda} ${t.cliente||''} ${t.servicio||''} ${t.assigned_to_fullname||''} ${t.titulo||''} ${statusName} ${typeName}`.toLowerCase();
+            if (searchVal && !textSearch.includes(searchVal)) return;
+
+            totalItems++;
+            if (calc.isOver24h) totalOver24Count++;
+            sumTotalDurationMins += calc.totalMins;
+
+            sumRealNormMins += calc.realNormMins;
+            sumRealExtMins += calc.realExtMins;
+            sumRealExtordMins += calc.realExtordMins;
+
+            sumInc15Mins += calc.incremento15mMins;
+            sumAdjustedMins += calc.adjustedMins;
+
+            sumLiqNormMins += calc.finalNormMins;
+            sumLiqExtMins += calc.finalExtMins;
+            sumLiqExtordMins += calc.finalExtordMins;
+            sumLiqTotalMins += calc.totalLiquidadasMins;
+
+            let alertBadge = calc.isOver24h 
+                ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-red-600 text-white animate-pulse shadow-sm"><i class="fas fa-exclamation-triangle mr-1"></i> > 1,440 MIN</span>`
+                : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"><i class="fas fa-check-circle mr-1"></i> Normal</span>`;
+
+            let durationDisplay = calc.isOver24h
+                ? `<span class="font-extrabold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded border border-red-200 dark:border-red-800">${fmtMinutesOnly(calc.totalMins)}</span>`
+                : `<span class="font-semibold text-slate-700 dark:text-slate-300">${fmtMinutesOnly(calc.totalMins)}</span>`;
+
+            let rowId = `hr-tk-${tid}`;
+
+            html += `
+                <tr class="bg-indigo-50/40 dark:bg-indigo-950/20 border-l-4 border-indigo-500 border-b border-slate-200 dark:border-slate-700 hover:bg-indigo-50 font-medium cursor-pointer" onclick="toggleHorasDetail('${rowId}')">
+                    <!-- Informes e Identificación ITIL -->
+                    <td class="py-2.5 px-2.5 font-bold text-slate-800 dark:text-slate-100">
+                        <i class="fas fa-chevron-right text-indigo-500 mr-1.5 transition-transform" id="icon-${rowId}"></i> #${tid}
+                    </td>
+                    <td class="py-2.5 px-2" onclick="event.stopPropagation()">${refDisplay}</td>
+                    <td class="py-2.5 px-2 font-bold text-indigo-700 dark:text-indigo-300 truncate max-w-[120px]" title="${ticketAranda}">${ticketAranda}</td>
+                    <td class="py-2.5 px-2 text-slate-700 dark:text-slate-300 truncate max-w-[150px]" title="${t.titulo||'-'}">${t.titulo||'-'}</td>
+                    <td class="py-2.5 px-2 text-slate-700 dark:text-slate-300 truncate max-w-[120px]" title="${t.cliente||'-'}">${t.cliente||'-'}</td>
+                    <td class="py-2.5 px-2 text-slate-600 dark:text-slate-400 truncate max-w-[110px]" title="${t.servicio||'-'}">${t.servicio||'-'}</td>
+                    <td class="py-2.5 px-2 text-center">
+                        <span class="px-2 py-0.5 bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300 font-bold rounded text-[10px]">${typeName} (${parentSegs.length} Saltos)</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-slate-700 dark:text-slate-300 truncate max-w-[120px]" title="${t.assigned_to_fullname||'-'}">${t.assigned_to_fullname||'-'}</td>
+                    <td class="py-2.5 px-2 text-center">
+                        <span class="px-2 py-0.5 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 font-semibold rounded text-[10px]">${statusName}</span>
+                    </td>
+                    <td class="py-2.5 px-2 text-xs text-slate-500">${fmtDateShort(calc.startDt, startStr)}</td>
+                    <td class="py-2.5 px-2 text-xs text-slate-500">${fmtDateShort(calc.endDt, endStr)}</td>
+                    <td class="py-2.5 px-2 text-center border-r border-slate-200 dark:border-slate-700">${durationDisplay}</td>
+
+                    <!-- Grupo Azul: Desglose Real -->
+                    <td class="py-2.5 px-2 text-right bg-blue-50/50 dark:bg-blue-950/20 text-blue-900 dark:text-blue-300 font-medium">${calc.realNormMins.toLocaleString()} min</td>
+                    <td class="py-2.5 px-2 text-right bg-blue-50/50 dark:bg-blue-950/20 text-blue-900 dark:text-blue-300 font-medium">${calc.realExtMins.toLocaleString()} min</td>
+                    <td class="py-2.5 px-2 text-right bg-blue-50/50 dark:bg-blue-950/20 text-blue-900 dark:text-blue-300 font-medium border-r border-blue-200 dark:border-blue-800">${calc.realExtordMins.toLocaleString()} min</td>
+
+                    <!-- Grupo Verde: Regla +15m -->
+                    <td class="py-2.5 px-2 text-right bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-300 font-semibold">${calc.incremento15mMins > 0 ? '+' + calc.incremento15mMins.toLocaleString() + ' min' : '0 min'}</td>
+                    <td class="py-2.5 px-2 text-right bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-300 font-extrabold border-r border-emerald-200 dark:border-emerald-800">${calc.adjustedMins.toLocaleString()} min</td>
+
+                    <!-- Grupo Ámbar: Recargos al Doble (2x) -->
+                    <td class="py-2.5 px-2 text-right bg-amber-50/50 dark:bg-amber-950/20 text-amber-950 dark:text-amber-300 font-bold">${calc.finalNormMins.toLocaleString()} min</td>
+                    <td class="py-2.5 px-2 text-right bg-amber-50/50 dark:bg-amber-950/20 text-amber-950 dark:text-amber-300 font-bold">${calc.finalExtMins.toLocaleString()} min</td>
+                    <td class="py-2.5 px-2 text-right bg-amber-50/50 dark:bg-amber-950/20 text-amber-950 dark:text-amber-300 font-bold">${calc.finalExtordMins.toLocaleString()} min</td>
+                    <td class="py-2.5 px-2 text-right bg-amber-100/80 dark:bg-amber-900/40 text-amber-950 dark:text-amber-100 font-black">${calc.totalLiquidadasMins.toLocaleString()} min</td>
+
+                    <!-- Alerta -->
+                    <td class="py-2.5 px-2 text-center">${alertBadge}</td>
+                </tr>
+            `;
+
+            if (parentSegs.length > 0) {
+                html += `<tr id="${rowId}" style="display:none;" class="bg-slate-50/70 dark:bg-slate-900/40"><td colspan="22" class="p-0">
+                    <table class="w-full text-xs text-left border-l-4 border-indigo-300 dark:border-indigo-700">
+                        <thead>
+                            <tr class="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-300 dark:border-slate-700">
+                                <th class="py-1.5 px-2.5">Salto ID</th>
+                                <th class="py-1.5 px-2">Ref</th>
+                                <th class="py-1.5 px-2">Ticket Aranda</th>
+                                <th class="py-1.5 px-2">Descripción Salto</th>
+                                <th class="py-1.5 px-2">Cliente</th>
+                                <th class="py-1.5 px-2">Servicio</th>
+                                <th class="py-1.5 px-2 text-center">Tipo</th>
+                                <th class="py-1.5 px-2">Especialista</th>
+                                <th class="py-1.5 px-2 text-center">Estado Salto</th>
+                                <th class="py-1.5 px-2">Inicio Efectivo</th>
+                                <th class="py-1.5 px-2">Fin Efectivo</th>
+                                <th class="py-1.5 px-2 text-center border-r border-slate-300">Duración Real</th>
+                                
+                                <th class="py-1.5 px-2 text-right bg-blue-100 dark:bg-blue-900/40 text-blue-900">Norm Real</th>
+                                <th class="py-1.5 px-2 text-right bg-blue-100 dark:bg-blue-900/40 text-blue-900">Ext Real</th>
+                                <th class="py-1.5 px-2 text-right bg-blue-100 dark:bg-blue-900/40 text-blue-900 border-r border-blue-300">Extord Real</th>
+
+                                <th class="py-1.5 px-2 text-right bg-emerald-100 dark:bg-emerald-900/40 text-emerald-900">Inc +15m</th>
+                                <th class="py-1.5 px-2 text-right bg-emerald-100 dark:bg-emerald-900/40 text-emerald-900 border-r border-emerald-300 font-bold">Min. Ajust</th>
+
+                                <th class="py-1.5 px-2 text-right bg-amber-100 dark:bg-amber-900/40 text-amber-900">Norm Liq</th>
+                                <th class="py-1.5 px-2 text-right bg-amber-100 dark:bg-amber-900/40 text-amber-900">Ext Liq</th>
+                                <th class="py-1.5 px-2 text-right bg-amber-100 dark:bg-amber-900/40 text-amber-900">Extord Liq</th>
+                                <th class="py-1.5 px-2 text-right bg-amber-200 dark:bg-amber-800 text-amber-950 font-black">Total Liq</th>
+                                <th class="py-1.5 px-2 text-center">Alerta</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                parentSegs.forEach(seg => {
+                    let sStart = seg.inicio || '';
+                    let sEnd = seg.fin || '';
+                    let sMins = parseFloat(seg.duracion_min) || 0;
+                    let sCalc = processCalculatedRow(sStart, sEnd, sMins, isDouble);
+                    let segAranda = seg.arranda_ticket_name || seg.ticket_aranda || seg.aranda_ticket || ticketAranda;
+
+                    let sDurDisplay = sCalc.isOver24h
+                        ? `<span class="font-extrabold text-red-600 bg-red-100 px-1.5 py-0.5 rounded animate-pulse">> 1,440 min (${fmtMinutesOnly(sCalc.totalMins)})</span>`
+                        : `<span>${fmtMinutesOnly(sCalc.totalMins)}</span>`;
+
+                    html += `
+                        <tr class="border-b border-slate-200/60 dark:border-slate-800 hover:bg-slate-100/80 dark:hover:bg-slate-800/60">
+                            <td class="py-2 px-2.5 font-semibold text-indigo-600 dark:text-indigo-400">
+                                <i class="fas fa-level-up-alt rotate-90 text-indigo-400 mr-1"></i> Salto #${seg.id_seguimiento || '-'}
+                            </td>
+                            <td class="py-2 px-2 text-slate-500">${ref || '-'}</td>
+                            <td class="py-2 px-2 font-bold text-indigo-700 dark:text-indigo-300 truncate max-w-[120px]">${segAranda}</td>
+                            <td class="py-2 px-2 text-slate-700 dark:text-slate-300 truncate max-w-[150px]" title="${seg.descripcion||'-'}">${seg.descripcion||'-'}</td>
+                            <td class="py-2 px-2 text-slate-500 truncate max-w-[120px]">${t.cliente||'-'}</td>
+                            <td class="py-2 px-2 text-slate-500 truncate max-w-[110px]">${t.servicio||'-'}</td>
+                            <td class="py-2 px-2 text-center"><span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-200 text-slate-700 font-medium">Salto</span></td>
+                            <td class="py-2 px-2 text-slate-700 dark:text-slate-300 truncate max-w-[120px]">${seg.usuario || t.assigned_to_fullname || '-'}</td>
+                            <td class="py-2 px-2 text-center"><span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-200 text-slate-700 font-semibold">${seg.estado || 'En curso'}</span></td>
+                            <td class="py-2 px-2 text-slate-500">${fmtDateShort(sCalc.startDt, sStart)}</td>
+                            <td class="py-2 px-2 text-slate-500">${fmtDateShort(sCalc.endDt, sEnd)}</td>
+                            <td class="py-2 px-2 text-center border-r border-slate-200">${sDurDisplay}</td>
+
+                            <!-- Grupo Azul -->
+                            <td class="py-2 px-2 text-right bg-blue-50/30 text-blue-900">${sCalc.realNormMins.toLocaleString()} min</td>
+                            <td class="py-2 px-2 text-right bg-blue-50/30 text-blue-900">${sCalc.realExtMins.toLocaleString()} min</td>
+                            <td class="py-2 px-2 text-right bg-blue-50/30 text-blue-900 border-r border-blue-200">${sCalc.realExtordMins.toLocaleString()} min</td>
+
+                            <!-- Grupo Verde -->
+                            <td class="py-2 px-2 text-right bg-emerald-50/30 text-emerald-900">${sCalc.incremento15mMins > 0 ? '+' + sCalc.incremento15mMins.toLocaleString() + ' min' : '0 min'}</td>
+                            <td class="py-2 px-2 text-right bg-emerald-50/30 text-emerald-900 font-bold border-r border-emerald-200">${sCalc.adjustedMins.toLocaleString()} min</td>
+
+                            <!-- Grupo Ámbar (2x) -->
+                            <td class="py-2 px-2 text-right bg-amber-50/30 text-amber-900 font-semibold">${sCalc.finalNormMins.toLocaleString()} min</td>
+                            <td class="py-2 px-2 text-right bg-amber-50/30 text-amber-900 font-semibold">${sCalc.finalExtMins.toLocaleString()} min</td>
+                            <td class="py-2 px-2 text-right bg-amber-50/30 text-amber-900 font-semibold">${sCalc.finalExtordMins.toLocaleString()} min</td>
+                            <td class="py-2 px-2 text-right bg-amber-100/50 text-amber-950 font-black">${sCalc.totalLiquidadasMins.toLocaleString()} min</td>
+                            <td class="py-2 px-2 text-center">${sCalc.isOver24h ? '⚠️' : '✓'}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `</tbody></table></td></tr>`;
+            }
+        });
+    } else if (viewMode === 'saltos') {
+        filteredSeguimientos.forEach(seg => {
+            let parentTask = taskMap[String(seg.id_tarea || '').trim()] || taskMap[String(seg.referencia || '').trim()] || {};
+            let sStart = seg.inicio || '';
+            let sEnd = seg.fin || '';
+            let sMins = parseFloat(seg.duracion_min) || 0;
+            let calc = processCalculatedRow(sStart, sEnd, sMins, isDouble);
+
+            let statusName = seg.estado || parentTask.status_name || 'En seguimiento';
+            let typeName = parentTask.type_name || 'Salto';
+            let ref = seg.referencia || parentTask.referencia || '';
+            let refDisplay = ref ? `<button onclick="if(window.openTicketDetailModal){openTicketDetailModal('${ref}')}else{alert('Referencia: ${ref}')}" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">${ref}</button>` : '<span class="text-slate-400">—</span>';
+
+            let textSearch = `${seg.id_tarea||''} ${ref} ${parentTask.cliente||''} ${seg.usuario||''} ${seg.descripcion||''} ${statusName}`.toLowerCase();
+            if (searchVal && !textSearch.includes(searchVal)) return;
+
+            totalItems++;
+            if (calc.isOver24h) totalOver24Count++;
+            sumTotalDurationMins += calc.totalMins;
+
+            sumRealNormMins += calc.realNormMins;
+            sumRealExtMins += calc.realExtMins;
+            sumRealExtordMins += calc.realExtordMins;
+
+            sumInc15Mins += calc.incremento15mMins;
+            sumAdjustedMins += calc.adjustedMins;
+
+            sumLiqNormMins += calc.finalNormMins;
+            sumLiqExtMins += calc.finalExtMins;
+            sumLiqExtordMins += calc.finalExtordMins;
+            sumLiqTotalMins += calc.totalLiquidadasMins;
+
+            let alertBadge = calc.isOver24h 
+                ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-red-600 text-white animate-pulse shadow-sm"><i class="fas fa-exclamation-triangle mr-1"></i> > 1,440 MIN</span>`
+                : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"><i class="fas fa-check-circle mr-1"></i> Normal</span>`;
+
+            let durationDisplay = calc.isOver24h
+                ? `<span class="font-extrabold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded border border-red-200 dark:border-red-800">${fmtMinutesOnly(calc.totalMins)}</span>`
+                : `<span class="font-semibold text-slate-700 dark:text-slate-300">${fmtMinutesOnly(calc.totalMins)}</span>`;
+
+            html += `
+                <tr class="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                    <td class="py-2.5 px-2.5 font-bold text-slate-800 dark:text-slate-100">#${seg.id_tarea||'-'} / Salto #${seg.id_seguimiento||'-'}</td>
+                    <td class="py-2.5 px-2">${refDisplay}</td>
+                    <td class="py-2.5 px-2 text-slate-700 dark:text-slate-300 truncate max-w-[150px]" title="${seg.descripcion||parentTask.titulo||'-'}">${seg.descripcion||parentTask.titulo||'-'}</td>
+                    <td class="py-2.5 px-2 text-slate-700 dark:text-slate-300 truncate max-w-[120px]">${parentTask.cliente||'-'}</td>
+                    <td class="py-2.5 px-2 text-slate-600 dark:text-slate-400 truncate max-w-[110px]">${parentTask.servicio||'-'}</td>
+                    <td class="py-2.5 px-2 text-center"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 font-semibold rounded text-[10px]">${typeName}</span></td>
+                    <td class="py-2.5 px-2 text-slate-700 dark:text-slate-300 truncate max-w-[120px]">${seg.usuario || parentTask.assigned_to_fullname || '-'}</td>
+                    <td class="py-2.5 px-2 text-center"><span class="px-2 py-0.5 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 font-semibold rounded text-[10px]">${statusName}</span></td>
+                    <td class="py-2.5 px-2 text-xs text-slate-500">${fmtDateShort(calc.startDt, sStart)}</td>
+                    <td class="py-2.5 px-2 text-xs text-slate-500">${fmtDateShort(calc.endDt, sEnd)}</td>
+                    <td class="py-2.5 px-2 text-center border-r border-slate-200 dark:border-slate-700">${durationDisplay}</td>
+
+                    <!-- Grupo Azul -->
+                    <td class="py-2.5 px-2 text-right bg-blue-50/50 dark:bg-blue-950/20 text-blue-900 dark:text-blue-300 font-medium">${calc.realNormMins.toLocaleString()} min</td>
+                    <td class="py-2.5 px-2 text-right bg-blue-50/50 dark:bg-blue-950/20 text-blue-900 dark:text-blue-300 font-medium">${calc.realExtMins.toLocaleString()} min</td>
+                    <td class="py-2.5 px-2 text-right bg-blue-50/50 dark:bg-blue-950/20 text-blue-900 dark:text-blue-300 font-medium border-r border-blue-200 dark:border-blue-800">${calc.realExtordMins.toLocaleString()} min</td>
+
+                    <!-- Grupo Verde -->
+                    <td class="py-2.5 px-2 text-right bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-300 font-semibold">${calc.incremento15mMins > 0 ? '+' + calc.incremento15mMins.toLocaleString() + ' min' : '0 min'}</td>
+                    <td class="py-2.5 px-2 text-right bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-300 font-extrabold border-r border-emerald-200 dark:border-emerald-800">${calc.adjustedMins.toLocaleString()} min</td>
+
+                    <!-- Grupo Ámbar (2x) -->
+                    <td class="py-2.5 px-2 text-right bg-amber-50/50 dark:bg-amber-950/20 text-amber-950 dark:text-amber-300 font-bold">${calc.finalNormMins.toLocaleString()} min</td>
+                    <td class="py-2.5 px-2 text-right bg-amber-50/50 dark:bg-amber-950/20 text-amber-950 dark:text-amber-300 font-bold">${calc.finalExtMins.toLocaleString()} min</td>
+                    <td class="py-2.5 px-2 text-right bg-amber-50/50 dark:bg-amber-950/20 text-amber-950 dark:text-amber-300 font-bold">${calc.finalExtordMins.toLocaleString()} min</td>
+                    <td class="py-2.5 px-2 text-right bg-amber-100/80 dark:bg-amber-900/40 text-amber-950 dark:text-amber-100 font-black">${calc.totalLiquidadasMins.toLocaleString()} min</td>
+
+                    <!-- Alerta -->
+                    <td class="py-2.5 px-2 text-center">${alertBadge}</td>
+                </tr>
+            `;
+        });
+    }
+
+    tbody.innerHTML = html || '<tr><td colspan="21" class="py-8 text-center text-slate-400">No se encontraron registros para la vista seleccionada.</td></tr>';
+
+    document.getElementById('ft-recargos-real-dur').textContent = Math.round(sumTotalDurationMins).toLocaleString() + ' min';
+    document.getElementById('ft-recargos-real-norm').textContent = Math.round(sumRealNormMins).toLocaleString() + ' min';
+    document.getElementById('ft-recargos-real-ext').textContent = Math.round(sumRealExtMins).toLocaleString() + ' min';
+    document.getElementById('ft-recargos-real-extord').textContent = Math.round(sumRealExtordMins).toLocaleString() + ' min';
+
+    document.getElementById('ft-recargos-inc15').textContent = '+' + Math.round(sumInc15Mins).toLocaleString() + ' min';
+    document.getElementById('ft-recargos-ajustadas').textContent = Math.round(sumAdjustedMins).toLocaleString() + ' min';
+
+    document.getElementById('ft-recargos-normales').textContent = Math.round(sumLiqNormMins).toLocaleString() + ' min';
+    document.getElementById('ft-recargos-extras').textContent = Math.round(sumLiqExtMins).toLocaleString() + ' min';
+    document.getElementById('ft-recargos-extord').textContent = Math.round(sumLiqExtordMins).toLocaleString() + ' min';
+    document.getElementById('ft-recargos-total').textContent = Math.round(sumLiqTotalMins).toLocaleString() + ' min';
+
+    updateHorasRecargosKPIs(totalItems, sumTotalDurationMins, sumAdjustedMins, sumLiqTotalMins, totalOver24Count);
+    makeTableResizable('horas-recargos-table');
+}
+
+/**
+ * TAB 10: Control de Carga de Trabajo y Cumplimiento Diario por Especialista
+ */
+window.cmpCharts = window.cmpCharts || {};
+window.cmpDailyDataStore = {};
+
+function renderCumplimientoTab() {
+    const data = window.biState ? (window.biState.dataOriginal || []) : [];
+    const container = document.getElementById('tab-cumplimiento');
+    if (!container) return;
+
+    if (!data || data.length === 0) {
+        const tbody = document.getElementById('cmp-matrix-body');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-slate-400">No hay datos cargados en el sistema.</td></tr>';
+        return;
+    }
+
+    const targetHoursInput = parseFloat(document.getElementById('cmp-target-hours')?.value) || 8;
+    const targetMins = targetHoursInput * 60;
+
+    const selectedSpec = document.getElementById('cmp-select-especialista')?.value || '';
+    const selectedYear = document.getElementById('cmp-select-ano')?.value || '';
+    const selectedMonth = document.getElementById('cmp-select-mes')?.value || '';
+    const selectedState = document.getElementById('cmp-select-estado')?.value || '';
+    const searchText = (document.getElementById('cmp-search-text')?.value || '').toLowerCase().trim();
+
+    // 1. Populate Dropdowns if needed
+    cmpRebuildDropdowns(data);
+
+    // 2. Aggregate Data by Specialist + Date (YYYY-MM-DD)
+    const dailyMap = {};
+    window.cmpDailyDataStore = {};
+
+    const daysSpanish = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const monthsSpanish = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+    data.forEach(row => {
+        const specName = row.assigned_to_fullname || row.tecnico || row.usuario || 'Sin Asignar';
+        const d = parseSpanishDate(row.inicio_tarea || row.inicio);
+        if (!d) return;
+
+        const yearStr = d.getFullYear().toString();
+        const monthName = monthsSpanish[d.getMonth()];
+        const dayNum = d.getDate();
+        const dateKey = `${yearStr}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+        const dayOfWeek = daysSpanish[d.getDay()];
+
+        const key = `${specName}___${dateKey}`;
+        if (!dailyMap[key]) {
+            dailyMap[key] = {
+                specName: specName,
+                dateKey: dateKey,
+                dateObj: d,
+                formattedDate: `${String(dayNum).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${yearStr}`,
+                dayOfWeek: dayOfWeek,
+                yearStr: yearStr,
+                monthName: monthName,
+                totalMins: 0,
+                tasks: []
+            };
+        }
+
+        const mins = parseFloat(row.total_minutos_en_estado_ejecucion) || parseFloat(row.duracion_min) || 0;
+        dailyMap[key].totalMins += mins;
+        dailyMap[key].tasks.push(row);
+    });
+
+    // 3. Filter Daily Map Records
+    let dailyRecords = Object.values(dailyMap);
+
+    dailyRecords = dailyRecords.filter(rec => {
+        if (selectedSpec && rec.specName !== selectedSpec) return false;
+        if (selectedYear && rec.yearStr !== selectedYear) return false;
+        if (selectedMonth && rec.monthName !== selectedMonth) return false;
+
+        const isCompliant = rec.totalMins >= targetMins;
+        if (selectedState === 'cumplido' && !isCompliant) return false;
+        if (selectedState === 'incumplido' && isCompliant) return false;
+
+        if (searchText) {
+            const rowText = `${rec.specName} ${rec.formattedDate} ${rec.dayOfWeek} ${rec.yearStr} ${rec.monthName}`.toLowerCase();
+            if (!rowText.includes(searchText)) return false;
+        }
+
+        return true;
+    });
+
+    // Sort by Date descending then Specialist name
+    dailyRecords.sort((a, b) => b.dateObj - a.dateObj || a.specName.localeCompare(b.specName));
+
+    // Store in global window store for modal lookup
+    dailyRecords.forEach(rec => {
+        const storeKey = `${rec.specName}___${rec.dateKey}`;
+        window.cmpDailyDataStore[storeKey] = rec;
+    });
+
+    // 4. Calculate KPIs
+    let totalEvaluatedDays = dailyRecords.length;
+    let totalCompliantDays = 0;
+    let totalIncumplidosDays = 0;
+    let totalWorkedMins = 0;
+
+    dailyRecords.forEach(rec => {
+        totalWorkedMins += rec.totalMins;
+        if (rec.totalMins >= targetMins) {
+            totalCompliantDays++;
+        } else {
+            totalIncumplidosDays++;
+        }
+    });
+
+    const overallRate = totalEvaluatedDays > 0 ? Math.round((totalCompliantDays / totalEvaluatedDays) * 100) : 0;
+
+    const kpiDias = document.getElementById('cmp-kpi-dias');
+    if (kpiDias) kpiDias.textContent = totalEvaluatedDays.toLocaleString();
+
+    const kpiCumplidos = document.getElementById('cmp-kpi-cumplidos');
+    if (kpiCumplidos) kpiCumplidos.textContent = totalCompliantDays.toLocaleString();
+
+    const kpiIncumplidosVal = document.getElementById('cmp-kpi-incumplidos-val');
+    if (kpiIncumplidosVal) kpiIncumplidosVal.textContent = totalIncumplidosDays.toLocaleString();
+
+    const kpiTiempoTotal = document.getElementById('cmp-kpi-tiempo-total');
+    if (kpiTiempoTotal) kpiTiempoTotal.textContent = formatMinutes(totalWorkedMins);
+
+    const kpiTasa = document.getElementById('cmp-kpi-tasa');
+    if (kpiTasa) kpiTasa.textContent = `${overallRate}%`;
+
+    const rowCountEl = document.getElementById('cmp-table-row-count');
+    if (rowCountEl) rowCountEl.textContent = `Mostrando ${dailyRecords.length} días analizados`;
+
+    // 5. Render Matrix Table
+    const tbody = document.getElementById('cmp-matrix-body');
+    if (tbody) {
+        if (dailyRecords.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-slate-400">Sin datos de carga para los filtros seleccionados.</td></tr>';
+        } else {
+            let html = '';
+            dailyRecords.forEach(rec => {
+                const storeKey = `${rec.specName}___${rec.dateKey}`;
+                const isCompliant = rec.totalMins >= targetMins;
+                const pct = Math.min(200, Math.round((rec.totalMins / targetMins) * 100));
+                const diffMins = rec.totalMins - targetMins;
+
+                const hrsStr = formatMinutes(rec.totalMins);
+                const targetHrsStr = `${targetHoursInput}h 00m`;
+
+                let diffDisplay = '';
+                if (diffMins >= 0) {
+                    diffDisplay = `<span class="font-extrabold text-emerald-600 dark:text-emerald-400">+${formatMinutes(diffMins)}</span>`;
+                } else {
+                    diffDisplay = `<span class="font-extrabold text-red-600 dark:text-red-400">-${formatMinutes(Math.abs(diffMins))}</span>`;
+                }
+
+                // DATE BADGE: RED if < 8h, GREEN if >= 8h
+                let dateBadge = isCompliant
+                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 shadow-sm"><i class="fas fa-check-circle mr-1.5 text-emerald-600 dark:text-emerald-400"></i>${rec.formattedDate}</span>`
+                    : `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-black bg-red-600 text-white dark:bg-red-700 dark:text-white border border-red-500 shadow-sm animate-pulse"><i class="fas fa-exclamation-circle mr-1.5"></i>${rec.formattedDate} (&lt;${targetHoursInput}h)</span>`;
+
+                let statusBadge = isCompliant
+                    ? `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500 text-white uppercase tracking-wider shadow-sm"><i class="fas fa-check mr-1"></i> CUMPLIDO (&ge;${targetHoursInput}H)</span>`
+                    : `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black bg-red-600 text-white uppercase tracking-wider shadow-sm animate-pulse"><i class="fas fa-times-circle mr-1"></i> INCUMPLIDO (&lt;${targetHoursInput}H)</span>`;
+
+                let progressBar = `
+                    <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden flex">
+                        <div class="${isCompliant ? 'bg-emerald-500' : 'bg-red-500'}" style="width: ${Math.min(100, pct)}%"></div>
+                    </div>
+                    <span class="text-[10px] font-extrabold ${isCompliant ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'} mt-0.5 block">${pct}%</span>
+                `;
+
+                const encKey = encodeURIComponent(storeKey);
+
+                html += `
+                    <tr class="${isCompliant ? 'bg-white dark:bg-slate-800/80 hover:bg-emerald-50/30' : 'bg-red-50/40 dark:bg-red-950/20 hover:bg-red-50/70'} border-b border-slate-200 dark:border-slate-700 font-medium">
+                        <td class="py-3 px-3">${dateBadge}</td>
+                        <td class="py-3 px-2 font-bold text-slate-700 dark:text-slate-300">${rec.dayOfWeek}</td>
+                        <td class="py-3 px-3 font-extrabold text-slate-900 dark:text-slate-100">${rec.specName}</td>
+                        <td class="py-3 px-2 text-center font-bold text-slate-600 dark:text-slate-400">${targetHrsStr}</td>
+                        <td class="py-3 px-2 text-center">
+                            <span class="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 font-black text-xs">${rec.tasks.length} tareas</span>
+                        </td>
+                        <td class="py-3 px-3 text-right font-black text-slate-800 dark:text-slate-100">${hrsStr}</td>
+                        <td class="py-3 px-3 text-right">${diffDisplay}</td>
+                        <td class="py-3 px-3 text-center min-w-[130px]">${progressBar}</td>
+                        <td class="py-3 px-3 text-center">${statusBadge}</td>
+                        <td class="py-3 px-3 text-center">
+                            <button onclick="openDailyTasksModal('${encKey}')" class="px-2.5 py-1 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm inline-flex items-center gap-1">
+                                <i class="fas fa-list-ul"></i> Ver Tareas
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+    }
+
+    // 6. Render Charts
+    cmpRenderCharts(dailyRecords, targetHoursInput);
+}
+
+function cmpRebuildDropdowns(data) {
+    const specSel = document.getElementById('cmp-select-especialista');
+    const yearSel = document.getElementById('cmp-select-ano');
+    const monthSel = document.getElementById('cmp-select-mes');
+
+    if (!specSel || specSel.options.length > 1) return;
+
+    const specs = new Set();
+    const years = new Set();
+    const monthsSpanish = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+    data.forEach(r => {
+        const s = r.assigned_to_fullname || r.tecnico || r.usuario;
+        if (s) specs.add(s);
+        const d = parseSpanishDate(r.inicio_tarea || r.inicio);
+        if (d) {
+            years.add(d.getFullYear().toString());
+        }
+    });
+
+    Array.from(specs).sort().forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        specSel.appendChild(opt);
+    });
+
+    Array.from(years).sort().forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        yearSel.appendChild(opt);
+    });
+
+    monthsSpanish.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m.charAt(0).toUpperCase() + m.slice(1);
+        monthSel.appendChild(opt);
+    });
+}
+
+window.openDailyTasksModal = function(storeKeyEnc) {
+    const storeKey = decodeURIComponent(storeKeyEnc);
+    const record = window.cmpDailyDataStore ? window.cmpDailyDataStore[storeKey] : null;
+    if (!record) {
+        if (window.toastr) toastr.warning('No se encontraron detalles para este día.');
+        else alert('No se encontraron detalles para este día.');
+        return;
+    }
+
+    const targetHoursInput = parseFloat(document.getElementById('cmp-target-hours')?.value) || 8;
+    const targetMins = targetHoursInput * 60;
+    const isCompliant = record.totalMins >= targetMins;
+
+    const statusBadge = isCompliant
+        ? `<span style="background:#10b981;color:#ffffff;padding:.2rem .6rem;border-radius:9999px;font-size:0.7rem;font-weight:800;">CUMPLIDO (&ge;${targetHoursInput}h)</span>`
+        : `<span style="background:#ef4444;color:#ffffff;padding:.2rem .6rem;border-radius:9999px;font-size:0.7rem;font-weight:800;">INCUMPLIDO (&lt;${targetHoursInput}h)</span>`;
+
+    const html = `
+        <div style="text-align:left;font-family:ui-sans-serif,system-ui,sans-serif;color:#1e293b;font-size:0.8rem;">
+            <div style="background:#f8fafc;padding:.75rem;border-radius:.375rem;border:1px solid #cbd5e1;margin-bottom:.75rem;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <span style="font-weight:800;font-size:0.95rem;color:#0f172a;display:block;">
+                        <i class="fas fa-user-circle text-indigo-600 mr-1"></i> ${record.specName}
+                    </span>
+                    <span style="font-size:0.75rem;color:#64748b;font-weight:600;">
+                        ${record.dayOfWeek}, ${record.formattedDate}
+                    </span>
+                </div>
+                <div>${statusBadge}</div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem;text-align:center;">
+                <div style="background:#f0f9ff;padding:.5rem;border-radius:.375rem;border:1px solid #bae6fd;">
+                    <span style="font-size:0.65rem;color:#0369a1;font-weight:700;display:block;">TIEMPO TOTAL TRABAJADO:</span>
+                    <span style="font-size:0.9rem;font-weight:900;color:#0284c7;">${formatMinutes(record.totalMins)}</span>
+                </div>
+                <div style="background:${isCompliant ? '#f0fdf4' : '#fef2f2'};padding:.5rem;border-radius:.375rem;border:1px solid ${isCompliant ? '#bbf7d0' : '#fecaca'};">
+                    <span style="font-size:0.65rem;color:${isCompliant ? '#15803d' : '#b91c1c'};font-weight:700;display:block;">DIFERENCIA VS META ${targetHoursInput}H:</span>
+                    <span style="font-size:0.9rem;font-weight:900;color:${isCompliant ? '#16a34a' : '#dc2626'};">
+                        ${record.totalMins >= targetMins ? '+' : '-'}${formatMinutes(Math.abs(record.totalMins - targetMins))}
+                    </span>
+                </div>
+            </div>
+
+            <span style="font-weight:800;color:#0f172a;font-size:0.75rem;display:block;margin-bottom:.4rem;">
+                <i class="fas fa-tasks text-indigo-600 mr-1"></i> Tareas y Tickets Trabajados (${record.tasks.length}):
+            </span>
+
+            <div style="max-height:260px;overflow-y:auto;border:1px solid #cbd5e1;border-radius:.375rem;">
+                <table style="width:100%;border-collapse:collapse;font-size:0.7rem;background:#ffffff;">
+                    <thead>
+                        <tr style="background:#1e293b;color:#ffffff;font-weight:700;">
+                            <th style="padding:.4rem .5rem;text-align:left;">ID Tarea</th>
+                            <th style="padding:.4rem .5rem;text-align:left;">Ref / Ticket Aranda</th>
+                            <th style="padding:.4rem .5rem;text-align:left;">Título / Descripción</th>
+                            <th style="padding:.4rem .5rem;text-align:left;">Cliente</th>
+                            <th style="padding:.4rem .5rem;text-align:right;">Tiempo Ejecutado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${record.tasks.map(t => {
+                            const tid = t.id_tarea || '-';
+                            const ref = t.referencia || '-';
+                            const aranda = t.arranda_ticket_name || t.ticket_aranda || t.aranda_ticket || '-';
+                            const mins = parseFloat(t.total_minutos_en_estado_ejecucion) || parseFloat(t.duracion_min) || 0;
+                            const title = t.titulo || t.descripcion || '-';
+                            const client = t.cliente || '-';
+                            return `
+                                <tr style="border-bottom:1px solid #f1f5f9;">
+                                    <td style="padding:.4rem .5rem;font-weight:800;color:#16a34a;">#${tid}</td>
+                                    <td style="padding:.4rem .5rem;">
+                                        <div style="font-weight:700;color:#0369a1;">Ref: ${ref}</div>
+                                        <div style="font-weight:700;color:#4338ca;">Aranda: ${aranda}</div>
+                                    </td>
+                                    <td style="padding:.4rem .5rem;color:#334155;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${title}">${title}</td>
+                                    <td style="padding:.4rem .5rem;color:#64748b;">${client}</td>
+                                    <td style="padding:.4rem .5rem;text-align:right;font-weight:800;color:#0f172a;">${formatMinutes(mins)}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+
+    if (window.Swal) {
+        Swal.fire({
+            title: `<i class="fas fa-clock text-indigo-600 mr-2"></i> Tareas del Día - ${record.specName}`,
+            html: html,
+            width: '720px',
+            showCloseButton: true,
+            confirmButtonText: '<i class="fas fa-check mr-1"></i> Entendido',
+            confirmButtonColor: '#6366f1'
+        });
+    } else {
+        alert(`Tareas de ${record.specName} el ${record.formattedDate}:\n` + record.tasks.map(t => `#${t.id_tarea}: ${t.titulo||t.descripcion}`).join('\n'));
+    }
+};
+
+function cmpRenderCharts(dailyRecords, targetHours) {
+    if (typeof Chart !== 'function') return;
+
+    if (window.cmpCharts.diario) window.cmpCharts.diario.destroy();
+    if (window.cmpCharts.proporcion) window.cmpCharts.proporcion.destroy();
+
+    // Chart 1: Bar Chart of Daily Worked Hours vs Target Hours
+    const chartRecs = dailyRecords.slice(0, 20).reverse();
+
+    const labels = chartRecs.map(r => `${r.formattedDate.substring(0,5)} (${r.specName.split(' ')[0]})`);
+    const hoursData = chartRecs.map(r => parseFloat((r.totalMins / 60).toFixed(2)));
+    const barColors = chartRecs.map(r => (r.totalMins / 60) >= targetHours ? '#10b981' : '#ef4444');
+
+    const ctx1 = document.getElementById('cmp-chart-diario')?.getContext('2d');
+    if (ctx1) {
+        window.cmpCharts.diario = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Horas Efectivas Trabajadas',
+                        data: hoursData,
+                        backgroundColor: barColors,
+                        borderRadius: 6,
+                        borderWidth: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ` Horas Trabajadas: ${ctx.raw}h (Meta: ${targetHours}h)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Horas Trabajadas' }
+                    },
+                    x: {
+                        ticks: { font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // Chart 2: Donut Chart
+    let compliantCount = 0;
+    let deficitCount = 0;
+    dailyRecords.forEach(r => {
+        if ((r.totalMins / 60) >= targetHours) compliantCount++;
+        else deficitCount++;
+    });
+
+    const ctx2 = document.getElementById('cmp-chart-proporcion')?.getContext('2d');
+    if (ctx2) {
+        window.cmpCharts.proporcion = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Cumplidos (>= ' + targetHours + 'h)', 'Incumplidos (< ' + targetHours + 'h en Rojo)'],
+                datasets: [{
+                    data: [compliantCount, deficitCount],
+                    backgroundColor: ['#10b981', '#ef4444'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+}
+
 
 </script>
 

@@ -151,6 +151,8 @@ function loadQuotesList() {
               <td>v${q.version}</td>
               <td class="text-right">
                 <div class="btn-group btn-group-sm">
+                  <a href="view.php?id=${q.id}" target="_blank" class="btn btn-outline-primary" title="Ver Detalle y Comparar"><i class="fas fa-eye"></i></a>
+                  <a href="matrix.php?id=${q.id}" target="_blank" class="btn btn-outline-success" title="Matriz de Ejecución"><i class="fas fa-table"></i></a>
                   <button class="btn btn-outline-info" title="Editar (Sobrescribir)" onclick="loadQuoteForEdit(${q.id}, 'update')"><i class="fas fa-edit"></i></button>
                   <button class="btn btn-outline-warning" title="Editar (Nueva Versión)" onclick="loadQuoteForEdit(${q.id}, 'new_version')"><i class="fas fa-history"></i></button>
                   ${q.estado === 'Borrador' ? `<button class="btn btn-outline-success" title="Aprobar / Enviar" onclick="approveQuote(${q.id})"><i class="fas fa-check"></i></button>` : ''}
@@ -223,6 +225,8 @@ function toggleVersions(parentId) {
               <td>${v.aprobado_por ? escapeHtml(v.aprobado_por) + ' (' + v.aprobado_fecha + ')' : '-'}</td>
               <td class="text-right">
                 <div class="btn-group btn-group-sm">
+                  <a href="view.php?id=${v.id}" target="_blank" class="btn btn-outline-primary" title="Ver Detalle y Comparar"><i class="fas fa-eye"></i></a>
+                  <a href="matrix.php?id=${v.id}" target="_blank" class="btn btn-outline-success" title="Matriz de Ejecución"><i class="fas fa-table"></i></a>
                   <button class="btn btn-outline-info" title="Editar (Sobrescribir)" onclick="loadQuoteForEdit(${v.id}, 'update')"><i class="fas fa-edit"></i></button>
                   <button class="btn btn-outline-warning" title="Editar (Nueva Versión)" onclick="loadQuoteForEdit(${v.id}, 'new_version')"><i class="fas fa-history"></i></button>
                   ${v.estado === 'Borrador' ? `<button class="btn btn-outline-success" title="Aprobar / Enviar" onclick="approveQuote(${v.id})"><i class="fas fa-check"></i></button>` : ''}
@@ -268,13 +272,7 @@ function compareSelectedQuotes() {
   const id1 = selected.eq(0).val();
   const id2 = selected.eq(1).val();
   
-  $.getJSON('api.php?action=compare_quotes', { id1, id2 }, function(res) {
-    if (res.success) {
-      renderComparison(res.q1, res.q2);
-    } else {
-      toastr.error(res.message);
-    }
-  });
+  window.open(`view.php?id=${id1}&compare_with=${id2}`, '_blank');
 }
 
 function renderComparison(q1, q2) {

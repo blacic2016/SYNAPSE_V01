@@ -21,10 +21,14 @@ if (!$token_valido) {
     }
 }
 
-// Lógica de remediación
+// Lógica de remediación y respaldo
 $log = [];
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fix_issues'])) {
-    $log = fixSystemIssues();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['fix_issues'])) {
+        $log = fixSystemIssues();
+    } elseif (isset($_POST['backup_back'])) {
+        $log = backupPreproduccionToBack();
+    }
 }
 
 $audit = runSystemAudit();

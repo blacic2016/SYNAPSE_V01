@@ -8,13 +8,32 @@ require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../src/auth.php';
 require_once __DIR__ . '/../../src/db.php';
 require_once __DIR__ . '/../../src/helpers.php';
+require_once __DIR__ . '/../../src/permissions_helper.php';
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_login();
+if (!has_role('SUPER_ADMIN') && !has_module_access('datacenter') && !has_module_access('vilaseca')) {
+    header("Location: " . PUBLIC_URL_PREFIX . "/dashboard.php");
+    exit();
+}
 $pdo = getPDO();
 
-// 1. Obtener lista de cuartos
-$rooms = $pdo->query("SELECT id, name FROM dc_rooms ORDER BY name ASC")->fetchAll(PDO::FETCH_ASSOC);
+$client_filter = trim($_GET['cliente'] ?? $_GET['client'] ?? '');
+if (empty($client_filter) && !has_role('SUPER_ADMIN') && has_module_access('vilaseca')) {
+    $client_filter = 'VILASECA';
+}
+
+// 1. Obtener lista de cuartos filtrados por cliente
+$roomsQuery = "SELECT id, name FROM dc_rooms WHERE 1=1";
+$roomsParams = [];
+if (!empty($client_filter)) {
+    $roomsQuery .= " AND (UPPER(client) = UPPER(?) OR client IS NULL OR client = '')";
+    $roomsParams[] = $client_filter;
+}
+$roomsQuery .= " ORDER BY name ASC";
+$stmtRooms = $pdo->prepare($roomsQuery);
+$stmtRooms->execute($roomsParams);
+$rooms = $stmtRooms->fetchAll(PDO::FETCH_ASSOC);
 
 // 2. Determinar cuarto seleccionado
 $room_id = (int)($_GET['room_id'] ?? ($rooms[0]['id'] ?? 0));
@@ -209,7 +228,7 @@ if ($room_id > 0) {
     }
 }
 
-$page_title = 'Análisis de Capacidad Datacenter';
+$page_title = 'Análisis de Disponibilidad';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
@@ -376,14 +395,35 @@ require_once __DIR__ . '/../partials/header.php';
 
 <div class="container-fluid pt-3 pb-5">
     <!-- Header -->
-    <div class="row mb-4 animate__animated animate__fadeInDown">
-        <div class="col-md-8">
+    <div class="row mb-4 animate__animated animate__fadeInDown align-items-center">
+        <div class="col-md-7">
             <h1 class="h3 font-weight-bold text-dark mb-1"><i class="fas fa-chart-pie text-success mr-2"></i> Análisis de Capacidad y Disponibilidad</h1>
             <p class="text-muted mb-0">Visualización de distribución espacial y nivel de ocupación de Racks en el Datacenter.</p>
         </div>
-        <div class="col-md-4 d-flex align-items-center justify-content-md-end flex-wrap" style="gap: 15px;">
+        <div class="col-md-5 d-flex align-items-center justify-content-md-end flex-wrap" style="gap: 10px;">
+            <?php if (!empty($client_filter)): ?>
+                <span class="badge badge-warning text-dark font-weight-bold px-3 py-2 shadow-sm">
+                    <i class="fas fa-building mr-1"></i>Cliente: <?php echo htmlspecialchars($client_filter); ?>
+                </span>
+                <?php if (strtoupper($client_filter) === 'VILASECA'): ?>
+                    <a href="<?php echo PUBLIC_URL_PREFIX; ?>/clientes/vilaseca/index.php" class="btn btn-outline-secondary btn-sm font-weight-bold">
+                        <i class="fas fa-arrow-left mr-1"></i>Vilaseca
+                    </a>
+                <?php endif; ?>
+                <a href="racks.php<?php echo '?cliente=' . urlencode($client_filter); ?>" class="btn btn-outline-warning text-dark btn-sm font-weight-bold">
+                    <i class="fas fa-server mr-1"></i>Racks
+                </a>
+            <?php endif; ?>
+
+            <a href="viewer_3d.php<?php echo ($room_id ? '?room_id=' . $room_id : '') . ($client_filter ? ($room_id ? '&' : '?') . 'cliente=' . urlencode($client_filter) : ''); ?>" class="btn btn-info btn-sm font-weight-bold shadow-sm">
+                <i class="fas fa-cube mr-1"></i>3DViewer
+            </a>
+
             <!-- Room Selection Form -->
             <form method="get" class="d-flex align-items-center mb-0">
+                <?php if (!empty($client_filter)): ?>
+                    <input type="hidden" name="cliente" value="<?php echo htmlspecialchars($client_filter); ?>">
+                <?php endif; ?>
                 <label class="mr-2 font-weight-bold text-secondary mb-0">Cuarto:</label>
                 <select name="room_id" class="form-control form-control-sm" style="width: 170px; border-radius: 20px;" onchange="this.form.submit()">
                     <?php if (empty($rooms)): ?>

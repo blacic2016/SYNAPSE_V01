@@ -106,11 +106,20 @@ $(function() {
     // Subida via AJAX
     $('#upload-form').on('submit', function(e) {
         e.preventDefault();
+
+        let fileInput = $('#mib_file')[0];
+        if (!fileInput.files || fileInput.files.length === 0) {
+            Swal.fire('Atención', 'Por favor selecciona un archivo MIB (.mib, .txt) para subir.', 'warning');
+            return;
+        }
+
         let formData = new FormData(this);
         formData.append('action', 'upload_mib');
 
         Swal.fire({
             title: 'Subiendo MIB...',
+            text: 'Procesando archivo en el servidor',
+            allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });
 
@@ -120,15 +129,24 @@ $(function() {
             data: formData,
             contentType: false,
             processData: false,
+            dataType: 'json',
             success: function(resp) {
-                if (resp.success) {
-                    Swal.fire('¡Éxito!', resp.message, 'success');
+                if (resp && resp.success) {
+                    Swal.fire('¡Éxito!', resp.message || 'MIB subida con éxito', 'success');
                     $('#upload-form')[0].reset();
                     $('.custom-file-label').html('Elegir archivo...');
                     loadMibs();
                 } else {
-                    Swal.fire('Error', resp.error, 'error');
+                    Swal.fire('Error', (resp && resp.error) ? resp.error : 'Ocurrió un error al procesar el archivo', 'error');
                 }
+            },
+            error: function(xhr, status, error) {
+                let errorMsg = 'Error en el servidor (' + (xhr.status || status) + ')';
+                try {
+                    let jsonErr = JSON.parse(xhr.responseText);
+                    if (jsonErr && jsonErr.error) errorMsg = jsonErr.error;
+                } catch(e){}
+                Swal.fire('Error de Comunicación', errorMsg, 'error');
             }
         });
     });

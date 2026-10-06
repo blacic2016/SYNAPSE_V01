@@ -8,12 +8,12 @@ require_once __DIR__ . '/../src/permissions_helper.php';
 
 // Validar login
 require_login();
-if (!has_module_access('diagrams')) {
+if (!has_module_access('diagrams') && !has_module_access('vilaseca')) {
     header("Location: dashboard.php");
     exit();
 }
 
-$page_title = "Modelos Visio (VSDX)";
+$page_title = "Diagramas de Red (Visio VSDX)";
 $hide_content_header = true;
 include 'partials/header.php';
 ?>
@@ -300,6 +300,14 @@ $(document).ready(function() {
     loadCIsList();
     loadDiagramsGrid();
 
+    // Auto-filter by URL client parameter if specified (e.g. ?cliente=VILASECA)
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientUrlParam = urlParams.get('cliente');
+    if (clientUrlParam) {
+        $('#search-diagram').val(clientUrlParam);
+        setTimeout(() => { filterDiagrams(clientUrlParam); }, 300);
+    }
+
     // Configurar selectores de búsqueda
     $('#search-diagram').on('input', function() {
         filterDiagrams($(this).val());
@@ -347,7 +355,8 @@ function loadCIsList() {
             cisList = res.cis;
             let options = '<option value="">-- Sin Vincular --</option>';
             cisList.forEach(ci => {
-                options += `<option value="${ci.id}">[${ci.category_name}] - ${ci.hostname} (${ci.ci_unique || 'S/UID'})</option>`;
+                let clientTag = ci.client_name ? ` (Cliente: ${ci.client_name})` : '';
+                options += `<option value="${ci.id}">[${ci.category_name}] - ${ci.hostname}${clientTag}</option>`;
             });
             $('#diagram-ci-assoc, #new-diagram-ci-assoc').html(options);
         }
@@ -397,19 +406,37 @@ function renderDiagramsGrid(diagrams) {
     diagrams.forEach(diag => {
         let ciBadge = '';
         if (diag.ci_hostname) {
+            let clientBadge = diag.client_name ? `
+                <div class="mt-1 pt-1 border-top text-muted d-flex align-items-center justify-content-between" style="font-size: 0.76rem;">
+                    <span><i class="fas fa-building text-primary mr-1"></i><strong>Cliente:</strong></span>
+                    <span class="badge badge-primary px-2 py-1 font-weight-bold" style="font-size: 0.72rem; letter-spacing: 0.3px;">${diag.client_name}</span>
+                </div>
+            ` : '';
+
             ciBadge = `
-                <div class="mt-2 p-2 rounded border small" style="background-color: rgba(23, 162, 184, 0.05);">
-                    <i class="fas fa-link text-info mr-1"></i>
-                    <strong>Asociado a:</strong><br>
-                    <a href="ci_builder.php?id=${diag.ci_instance_id}" target="_blank" class="text-info font-weight-bold">
-                        [${diag.category_name}] - ${diag.ci_hostname} (${diag.ci_unique || 'S/UID'})
-                    </a>
+                <div class="mt-2 p-2 rounded border small" style="background-color: rgba(23, 162, 184, 0.08); border-color: #bfe5ec !important;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-link text-info mr-1"></i>
+                            <strong>Componente CI:</strong><br>
+                            <a href="ci_builder.php?id=${diag.ci_instance_id}" target="_blank" class="text-info font-weight-bold">
+                                [${diag.category_name}] - ${diag.ci_hostname}
+                            </a>
+                        </div>
+                        <button class="btn btn-xs btn-outline-info font-weight-bold ml-1" onclick="editDiagramMeta(${diag.id}, event)" title="Cambiar CI o Metadatos">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    ${clientBadge}
                 </div>
             `;
         } else {
             ciBadge = `
-                <div class="mt-2 p-2 rounded border small text-muted bg-light">
-                    <i class="fas fa-unlink mr-1"></i> Sin vinculación a CI
+                <div class="mt-2 p-2 rounded border small d-flex justify-content-between align-items-center bg-light">
+                    <span class="text-muted"><i class="fas fa-unlink mr-1"></i> Sin vincular a CI</span>
+                    <button class="btn btn-xs btn-outline-primary font-weight-bold" onclick="editDiagramMeta(${diag.id}, event)">
+                        <i class="fas fa-link mr-1"></i> Vincular CI
+                    </button>
                 </div>
             `;
         }
@@ -424,15 +451,18 @@ function renderDiagramsGrid(diagrams) {
         let updatedDate = new Date(diag.updated_at).toLocaleString();
 
         html += `
-            <div class="col-md-4 mb-4 diagram-card" data-title="${diag.title.toLowerCase()}" data-desc="${(diag.description || '').toLowerCase()}" data-ci="${(diag.ci_hostname || '').toLowerCase()}">
-                <div class="card h-100 shadow-sm visio-card-item d-flex flex-column">
-                    <div class="card-body d-flex flex-column flex-grow-1">
-                        <div class="d-flex align-items-start justify-content-between">
+            <div class="col-md-4 mb-4 diagram-card" data-title="${diag.title.toLowerCase()}" data-desc="${(diag.description || '').toLowerCase()}" data-ci="${(diag.ci_hostname || '').toLowerCase()}" data-client="${(diag.client_name || '').toLowerCase()}">
+                <div class="card h-100 shadow-sm visio-card-item d-flex flex-column overflow-hidden" style="border-radius:10px;">
+                    <div style="height:145px; background:#0f172a; border-bottom:1px solid #1e293b; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;" class="p-2">
+                        <img src="api_visio.php?action=get_preview&id=${diag.id}" style="max-height:100%; max-width:100%; object-fit:contain; border-radius:4px;" class="shadow-2xs">
+                    </div>
+                    <div class="card-body d-flex flex-column flex-grow-1 p-3">
+                        <div class="d-flex align-items-start justify-content-between mb-1">
                             <h5 class="card-title font-weight-bold text-dark m-0" style="font-size: 1.05rem;">
                                 <i class="fas fa-project-diagram text-orange mr-2"></i>${diag.title}
                             </h5>
                         </div>
-                        <p class="card-text text-muted small mt-2 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-height: 48px;">
+                        <p class="card-text text-muted small mt-2 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; min-height: 44px;">
                             ${diag.description || 'Sin descripción.'}
                         </p>
                         ${ciBadge}
@@ -442,12 +472,15 @@ function renderDiagramsGrid(diagrams) {
                         </div>
                         ${origFile}
                     </div>
-                    <div class="card-footer bg-transparent border-top-0 d-flex justify-content-between p-3" style="gap: 8px;">
-                        <button class="btn btn-sm btn-outline-danger font-weight-bold" onclick="deleteDiagram(${diag.id}, event)">
-                            <i class="fas fa-trash-alt mr-1"></i>Eliminar
+                    <div class="card-footer bg-transparent border-top-0 d-flex justify-content-between p-3" style="gap: 6px;">
+                        <button class="btn btn-sm btn-outline-secondary font-weight-bold" onclick="editDiagramMeta(${diag.id}, event)" title="Modificar datos / Asociar CI">
+                            <i class="fas fa-edit mr-1"></i>Editar / CI
                         </button>
-                        <button class="btn btn-sm btn-primary font-weight-bold shadow-sm px-3" onclick="loadDiagram(${diag.id})">
+                        <button class="btn btn-sm btn-primary font-weight-bold shadow-sm px-2" onclick="loadDiagram(${diag.id})">
                             <i class="fas fa-folder-open mr-1"></i>Abrir Diagrama
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger font-weight-bold px-2" onclick="deleteDiagram(${diag.id}, event)" title="Eliminar diagrama">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
                     </div>
                 </div>
@@ -457,14 +490,92 @@ function renderDiagramsGrid(diagrams) {
     $('#diagrams-grid-container').html(html);
 }
 
+// Editar metadatos y asociación a CI de un diagrama existente
+function editDiagramMeta(diagramId, event) {
+    if (event) event.stopPropagation();
+
+    $.getJSON('api_visio.php', { action: 'get', id: diagramId }, function(res) {
+        if (!res.success || !res.diagram) {
+            Swal.fire('Error', 'No se pudieron obtener los datos del diagrama.', 'error');
+            return;
+        }
+
+        const diag = res.diagram;
+        let ciOptions = '<option value="">-- Sin Vincular --</option>';
+        cisList.forEach(ci => {
+            const selected = (diag.ci_instance_id == ci.id) ? 'selected' : '';
+            ciOptions += `<option value="${ci.id}" ${selected}>[${ci.category_name}] - ${ci.hostname} (${ci.ci_unique || 'S/UID'})</option>`;
+        });
+
+        Swal.fire({
+            title: '<i class="fas fa-edit text-orange mr-2"></i>Modificar Diagrama & Componente CI',
+            html: `
+                <div class="text-left font-weight-normal" style="font-size: 0.9rem;">
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold">Título del Diagrama *</label>
+                        <input type="text" id="swal-edit-title" class="form-control" value="${diag.title.replace(/"/g, '&quot;')}">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="font-weight-bold">Descripción / Notas</label>
+                        <textarea id="swal-edit-desc" class="form-control" rows="3">${diag.description || ''}</textarea>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold">Asociar a Componente (CI)</label>
+                        <select id="swal-edit-ci" class="form-control">
+                            ${ciOptions}
+                        </select>
+                        <small class="text-muted mt-1 d-block">Ligue este diagrama directamente a un Servidor, Switch, Rack o Componente en la CMDB.</small>
+                    </div>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-save mr-1"></i> Guardar Cambios',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                confirmButton: 'btn btn-primary font-weight-bold px-4',
+                cancelButton: 'btn btn-secondary font-weight-bold px-3'
+            },
+            preConfirm: () => {
+                let t = document.getElementById('swal-edit-title').value.trim();
+                let d = document.getElementById('swal-edit-desc').value.trim();
+                let c = document.getElementById('swal-edit-ci').value;
+                if (!t) {
+                    Swal.showValidationMessage('El título es obligatorio.');
+                    return false;
+                }
+                return { title: t, desc: d, ci: c };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post('api_visio.php', {
+                    action: 'update_meta',
+                    id: diagramId,
+                    title: result.value.title,
+                    description: result.value.desc,
+                    ci_instance_id: result.value.ci
+                }, function(updRes) {
+                    if (updRes.success) {
+                        toastr.success(updRes.message);
+                        loadDiagramsGrid();
+                    } else {
+                        Swal.fire('Error', updRes.error || 'No se pudo actualizar.', 'error');
+                    }
+                }, 'json');
+            }
+        });
+    });
+}
+
 // Filtrar tarjetas por búsqueda
 function filterDiagrams(q) {
     let query = q.toLowerCase().trim();
     $('.diagram-card').each(function() {
-        let title = $(this).data('title');
-        let desc = $(this).data('desc');
-        let ci = $(this).data('ci');
-        if (title.includes(query) || desc.includes(query) || ci.includes(query)) {
+        let title = $(this).data('title') || '';
+        let desc = $(this).data('desc') || '';
+        let ci = $(this).data('ci') || '';
+        let client = $(this).data('client') || '';
+        if (title.includes(query) || desc.includes(query) || ci.includes(query) || client.includes(query)) {
             $(this).show();
         } else {
             $(this).hide();
@@ -574,12 +685,27 @@ window.addEventListener('message', function(evt) {
                 document.getElementById('drawio-iframe').contentWindow.postMessage(JSON.stringify(loadAction), 'https://embed.diagrams.net');
                 pendingXMLToLoad = '';
             }
+        } else if (msg.event === 'load') {
+            // El diagrama ha terminado de cargarse y renderizarse en el lienzo
+            setTimeout(function() {
+                if (isIframeLoaded) {
+                    let exportAction = {
+                        action: 'export',
+                        format: 'xmlsvg',
+                        spinKey: 'saving'
+                    };
+                    let iframe = document.getElementById('drawio-iframe');
+                    if (iframe && iframe.contentWindow) {
+                        iframe.contentWindow.postMessage(JSON.stringify(exportAction), 'https://embed.diagrams.net');
+                    }
+                }
+            }, 800);
         } else if (msg.event === 'save') {
             // El usuario hizo clic en "Save" dentro del editor
-            saveDiagramToServer(msg.xml);
+            saveDiagramToServer(msg.xml, msg.data || null);
         } else if (msg.event === 'export') {
-            // Recibido como respuesta a nuestra petición de exportación
-            saveDiagramToServer(msg.xml);
+            // Recibido como respuesta a nuestra petición de exportación (con captura gráfica en msg.data)
+            saveDiagramToServer(msg.xml || activeDiagramXML, msg.data || null);
         } else if (msg.event === 'exit') {
             exitEditor();
         }
@@ -588,30 +714,40 @@ window.addEventListener('message', function(evt) {
     }
 });
 
-// Guardar cambios programáticamente pidiendo la exportación al iframe
+// Guardar cambios programáticamente pidiendo la exportación SVG al iframe
 function triggerSave() {
     let iframe = document.getElementById('drawio-iframe');
     if (iframe && iframe.contentWindow && isIframeLoaded) {
         let exportAction = {
             action: 'export',
-            format: 'xml',
+            format: 'xmlsvg',
             spinKey: 'saving'
         };
         iframe.contentWindow.postMessage(JSON.stringify(exportAction), 'https://embed.diagrams.net');
     } else {
-        Swal.fire('Atención', 'El visor de diagramas no está totalmente cargado.', 'warning');
+        if (activeDiagramXML) {
+            saveDiagramToServer(activeDiagramXML);
+        } else {
+            Swal.fire('Atención', 'El visor de diagramas no está totalmente cargado.', 'warning');
+        }
     }
 }
 
 // Realizar llamada AJAX para guardar el diagrama en base de datos
-function saveDiagramToServer(xml) {
+function saveDiagramToServer(xml, imageData = null) {
     let id = $('#diagram-id').val();
     let title = $('#diagram-title').val().trim();
     let description = $('#diagram-desc').val().trim();
     let ci_instance_id = $('#diagram-ci-assoc').val();
 
+    let xmlToSave = xml || activeDiagramXML;
+
     if (!title) {
         Swal.fire('Atención', 'El título es obligatorio.', 'warning');
+        return;
+    }
+    if (!xmlToSave) {
+        Swal.fire('Atención', 'El contenido del diagrama no puede estar vacío.', 'warning');
         return;
     }
 
@@ -622,16 +758,17 @@ function saveDiagramToServer(xml) {
         id: id,
         title: title,
         description: description,
-        xml_content: xml,
+        xml_content: xmlToSave,
         filename_original: activeOriginalFilename,
-        ci_instance_id: ci_instance_id
+        ci_instance_id: ci_instance_id,
+        image_data: imageData
     }, function(res) {
         if (res.success) {
             toastr.success(res.message);
             $('#save-status').text('Guardado').removeClass('badge-warning badge-secondary').addClass('badge-success');
             $('#diagram-id').val(res.id);
             activeDiagramId = res.id;
-            activeDiagramXML = xml;
+            activeDiagramXML = xmlToSave;
 
             $('#delete-diagram-btn').removeClass('d-none');
             $('#history-dropdown-wrapper').removeClass('d-none');

@@ -530,6 +530,28 @@ switch ($action) {
                         ]);
                     }
 
+                    // Copy attachments if any from old ID to new ID
+                    $stmt_att = $pdo->prepare("SELECT filename, filepath, filesize FROM cotizador_cotizaciones_adjuntos WHERE cotizacion_id = ?");
+                    $stmt_att->execute([$id]);
+                    $attachments = $stmt_att->fetchAll();
+                    if (!empty($attachments)) {
+                        $stmt_ins_att = $pdo->prepare("INSERT INTO cotizador_cotizaciones_adjuntos (cotizacion_id, filename, filepath, filesize) VALUES (?, ?, ?, ?)");
+                        $base_dir = dirname(dirname(__DIR__));
+                        foreach ($attachments as $att) {
+                            $old_path = $base_dir . '/' . $att['filepath'];
+                            $ext = pathinfo($att['filename'], PATHINFO_EXTENSION);
+                            $new_name = "ADJ_" . uniqid() . "." . $ext;
+                            $new_relative = "storage/uploads/" . $new_name;
+                            $new_path = $base_dir . '/' . $new_relative;
+                            if (file_exists($old_path)) {
+                                copy($old_path, $new_path);
+                                $stmt_ins_att->execute([$newId, $att['filename'], $new_relative, $att['filesize']]);
+                            } else {
+                                $stmt_ins_att->execute([$newId, $att['filename'], $att['filepath'], $att['filesize']]);
+                            }
+                        }
+                    }
+
                     $id = $newId;
                 } else {
                     // Just update current version
@@ -641,6 +663,158 @@ switch ($action) {
 
             echo json_encode(['success' => true, 'message' => 'Cotización aprobada y marcada como Enviada.']);
         } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        break;
+
+    case 'convert_to_project':
+        try {
+            $id = (int)($_POST['id'] ?? 0);
+            if ($id <= 0) {
+                throw new Exception("ID de cotización inválido.");
+            }
+
+            // Fetch quote
+            $stmt = $pdo->prepare("SELECT * FROM cotizador_cotizaciones WHERE id = ?");
+            $stmt->execute([$id]);
+            $quote = $stmt->fetch();
+            if (!$quote) {
+                throw new Exception("Cotización no encontrada.");
+            }
+
+            if ($quote['estado'] !== 'Enviada') {
+                throw new Exception("La cotización debe estar Aprobada (Enviada) para pasarse a proyecto.");
+            }
+
+            $pdo->beginTransaction();
+
+            // Try to find client CI or auto-create one
+            $client_ci_id = null;
+            $stmt_ci = $pdo->prepare("SELECT id FROM ci_instances WHERE hostname LIKE ? OR ci_unique LIKE ? LIMIT 1");
+            $stmt_ci->execute(['%' . $quote['cliente'] . '%', '%' . $quote['cliente'] . '%']);
+            $client_ci_id = $stmt_ci->fetchColumn();
+            if (!$client_ci_id && !empty($quote['cliente'])) {
+                $stmtCat = $pdo->query("SELECT id FROM ci_categories WHERE name LIKE '%Cliente%' ORDER BY id ASC LIMIT 1");
+                $cat_id = $stmtCat->fetchColumn() ?: 48;
+                $ci_code = 'SND-' . sprintf("%010d", rand(1000000, 999999999));
+                $stmt_ins_c = $pdo->prepare("INSERT INTO ci_instances (category_id, hostname, status, source, ci_unique) VALUES (?, ?, 'Activo', 'manual', ?)");
+                $stmt_ins_c->execute([$cat_id, $quote['cliente'], $ci_code]);
+                $client_ci_id = (int)$pdo->lastInsertId();
+            }
+
+            // Generate project code (proj-XX)
+            $stmt_code = $pdo->query("SELECT code FROM projects ORDER BY id DESC LIMIT 1");
+            $last_code = $stmt_code->fetchColumn();
+            $next_num = 1;
+            if ($last_code && preg_match('/proj-(\d+)/i', $last_code, $m)) {
+                $next_num = intval($m[1]) + 1;
+            }
+            $proj_code = 'proj-' . sprintf("%02d", $next_num);
+
+            $project_name = "Proyecto: " . $quote['cliente'] . ($quote['contrato'] ? " - " . $quote['contrato'] : "");
+            
+            // Insert project
+            $stmt_proj = $pdo->prepare("INSERT INTO projects 
+                (code, name, client_ci_id, amount, start_date, end_date, execution_date, assigned_personnel, work_type, working_days) 
+                VALUES (?, ?, ?, ?, ?, ?, NULL, ?, 'horas normales', 'Lunes,Martes,Miércoles,Jueves,Viernes')");
+            
+            $stmt_proj->execute([
+                $proj_code,
+                $project_name,
+                $client_ci_id,
+                $quote['total_precio'],
+                $quote['fecha'], // start date
+                date('Y-m-d', strtotime($quote['fecha'] . ' + 3 months')), // end date (default 3 months)
+                $quote['aprobado_por'] ?? ''
+            ]);
+            $project_id = $pdo->lastInsertId();
+
+            // Fetch quote details
+            $stmt_det = $pdo->prepare("SELECT * FROM cotizador_cotizaciones_detalles WHERE cotizacion_id = ? ORDER BY seccion ASC, id ASC");
+            $stmt_det->execute([$id]);
+            $details = $stmt_det->fetchAll();
+
+            // Group details by Section (Milestones)
+            $sections = [];
+            foreach ($details as $det) {
+                $sec = $det['seccion'];
+                if (!isset($sections[$sec])) {
+                    $sections[$sec] = [];
+                }
+                $sections[$sec][] = $det;
+            }
+
+            // Map sections to readable milestone names
+            $milestone_names = [
+                'Implementacion' => 'Implementación',
+                'MantPrev' => 'Mantenimiento Preventivo',
+                'MantCorr' => 'Mantenimiento Correctivo',
+                'Bolsa' => 'Bolsa de Horas'
+            ];
+
+            if (!function_exists('recalculateMilestoneProgressLocal')) {
+                function recalculateMilestoneProgressLocal($pdo, $milestone_id) {
+                    $stmt = $pdo->prepare("SELECT COUNT(*) as total, SUM(progress_percentage) as suma FROM project_tasks WHERE milestone_id = ?");
+                    $stmt->execute([$milestone_id]);
+                    $res = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $progress = 0;
+                    if ($res && $res['total'] > 0) {
+                        $progress = round($res['suma'] / $res['total'], 2);
+                    }
+                    $pdo->prepare("UPDATE project_milestones SET progress_percentage = ? WHERE id = ?")->execute([$progress, $milestone_id]);
+                }
+            }
+
+            // Insert milestones and tasks
+            $hit_index = 1;
+            foreach ($sections as $sec_code => $items) {
+                $mil_name = $milestone_names[$sec_code] ?? $sec_code;
+                
+                // hit-XXYY code
+                $hit_code = 'hit-' . sprintf("%02d", $next_num) . sprintf("%02d", $hit_index);
+                
+                $stmt_mil = $pdo->prepare("INSERT INTO project_milestones 
+                    (project_id, code, name, estimated_start_date, estimated_end_date, real_start_date, real_end_date, priority, importance, average_execution_time, status, progress_percentage) 
+                    VALUES (?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), NULL, NULL, 'Media', 'Media', 0, 'New', 0)");
+                $stmt_mil->execute([
+                    $project_id,
+                    $hit_code,
+                    $mil_name
+                ]);
+                $milestone_id = $pdo->lastInsertId();
+
+                // Insert tasks (req-XXYYZZZ)
+                $task_index = 1;
+                foreach ($items as $item) {
+                    $task_code = 'req-' . sprintf("%02d", $next_num) . sprintf("%02d", $hit_index) . sprintf("%03d", $task_index);
+                    $task_title = $item['marca_categoria'] . ' - ' . $item['actividad'] . ' (' . $item['detalle'] . ')';
+                    $task_hours = (float)($item['horas_laborables'] + $item['horas_no_laborables_50'] + $item['horas_no_laborables_100']);
+                    
+                    $stmt_task = $pdo->prepare("INSERT INTO project_tasks 
+                        (milestone_id, code, title, estimated_start_date, estimated_end_date, real_start_date, real_end_date, assigned_person, priority, importance, progress_percentage, average_execution_time, status) 
+                        VALUES (?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY), NULL, NULL, ?, 'Media', 'Media', 0, ?, 'New')");
+                    $stmt_task->execute([
+                        $milestone_id,
+                        $task_code,
+                        $task_title,
+                        $item['especialista_nivel'],
+                        $task_hours
+                    ]);
+                    $task_index++;
+                }
+
+                // Recalculate progress for this milestone
+                recalculateMilestoneProgressLocal($pdo, $milestone_id);
+                $hit_index++;
+            }
+
+            $pdo->commit();
+
+            echo json_encode(['success' => true, 'project_id' => $project_id, 'message' => 'Cotización convertida en Proyecto exitosamente. Código: ' . $proj_code]);
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
         break;
@@ -937,6 +1111,98 @@ switch ($action) {
                 'success' => true,
                 'message' => "Catálogo importado exitosamente. Se cargaron {$insertedCount} servicios."
             ]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        break;
+
+    case 'get_attachments':
+        try {
+            $quote_id = (int)($_GET['quote_id'] ?? 0);
+            if ($quote_id <= 0) {
+                throw new Exception("ID de cotización inválido.");
+            }
+            $stmt = $pdo->prepare("SELECT * FROM cotizador_cotizaciones_adjuntos WHERE cotizacion_id = ? ORDER BY uploaded_at DESC");
+            $stmt->execute([$quote_id]);
+            echo json_encode(['success' => true, 'data' => $stmt->fetchAll()]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        break;
+
+    case 'upload_attachment':
+        try {
+            $quote_id = (int)($_POST['quote_id'] ?? 0);
+            if ($quote_id <= 0) {
+                throw new Exception("ID de cotización inválido.");
+            }
+            if (!isset($_FILES['attachment_file']) || $_FILES['attachment_file']['error'] !== UPLOAD_ERR_OK) {
+                throw new Exception("Error al cargar el archivo.");
+            }
+            
+            $base_dir = dirname(dirname(__DIR__)); 
+            $upload_path = $base_dir . '/storage/uploads/';
+
+            if (!is_dir($upload_path)) {
+                if (!mkdir($upload_path, 0777, true)) {
+                    throw new Exception("No se pudo crear la carpeta de subidas.");
+                }
+            }
+
+            $filename = $_FILES['attachment_file']['name'];
+            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+            
+            $allowed = ['jpg', 'jpeg', 'png', 'pdf', 'xlsx', 'xls', 'docx', 'doc', 'txt', 'zip', 'rar', 'csv'];
+            if (!in_array($ext, $allowed)) {
+                throw new Exception("Formato no permitido. Formatos válidos: JPG, PNG, PDF, Excel, Word, TXT, ZIP, CSV.");
+            }
+
+            $new_name = "ADJ_" . uniqid() . "." . $ext;
+            $full_dest = $upload_path . $new_name;
+            $db_relative_path = "storage/uploads/" . $new_name;
+            $filesize = $_FILES['attachment_file']['size'];
+
+            if (!move_uploaded_file($_FILES['attachment_file']['tmp_name'], $full_dest)) {
+                throw new Exception("Error al mover el archivo al destino.");
+            }
+
+            $stmt = $pdo->prepare("INSERT INTO cotizador_cotizaciones_adjuntos (cotizacion_id, filename, filepath, filesize, uploaded_at) VALUES (?, ?, ?, ?, NOW())");
+            $stmt->execute([$quote_id, $filename, $db_relative_path, $filesize]);
+
+            echo json_encode(['success' => true, 'message' => 'Archivo adjunto guardado correctamente.']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        break;
+
+    case 'delete_attachment':
+        try {
+            $id = (int)($_POST['id'] ?? 0);
+            if ($id <= 0) {
+                throw new Exception("ID de archivo inválido.");
+            }
+            
+            $stmt = $pdo->prepare("SELECT * FROM cotizador_cotizaciones_adjuntos WHERE id = ?");
+            $stmt->execute([$id]);
+            $att = $stmt->fetch();
+            if (!$att) {
+                throw new Exception("Archivo no encontrado.");
+            }
+
+            $base_dir = dirname(dirname(__DIR__));
+            $filepath = $base_dir . '/' . $att['filepath'];
+            
+            $stmt_del = $pdo->prepare("DELETE FROM cotizador_cotizaciones_adjuntos WHERE id = ?");
+            $stmt_del->execute([$id]);
+
+            $stmt_check = $pdo->prepare("SELECT COUNT(*) FROM cotizador_cotizaciones_adjuntos WHERE filepath = ?");
+            $stmt_check->execute([$att['filepath']]);
+            $inUse = $stmt_check->fetchColumn();
+            if ($inUse == 0 && file_exists($filepath)) {
+                unlink($filepath);
+            }
+
+            echo json_encode(['success' => true, 'message' => 'Archivo adjunto eliminado.']);
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }

@@ -7,7 +7,8 @@ require_once __DIR__ . '/../src/auth.php';
 require_once __DIR__ . '/../src/helpers.php';
 
 require_login();
-if (!has_role(['SUPER_ADMIN'])) {
+require_once __DIR__ . '/../src/permissions_helper.php';
+if (!has_role(['SUPER_ADMIN']) && !has_module_access('user_management')) {
     echo json_encode(['success' => false, 'error' => 'No autorizado']);
     exit();
 }

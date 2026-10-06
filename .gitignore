@@ -1,0 +1,9 @@
+storage/sessions_fix/*
+!storage/sessions_fix/.gitkeep
+storage/sessions/*
+!storage/sessions/.gitkeep
+storage/logs/*.log
+*.log
+cookies*.txt
+cookies.txt
+*.tmp

@@ -1,27 +1,27 @@
 <div class="row">
-    <!-- PHP & EXTENSIONS -->
+    <!-- PHP, EXTENSIONS & CLI TOOLS -->
     <div class="col-md-6">
-        <div class="card card-primary card-outline">
+        <div class="card card-primary card-outline shadow-sm">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-server mr-1"></i> Entorno PHP</h3>
+                <h3 class="card-title"><i class="fas fa-server mr-1"></i> Entorno PHP y Herramientas del Sistema</h3>
             </div>
             <div class="card-body p-0">
-                <table class="table table-striped">
+                <table class="table table-striped mb-0">
                     <thead>
                         <tr>
-                            <th>Requisito</th>
-                            <th style="width: 100px">Estado</th>
+                            <th>Requisito / Herramienta</th>
+                            <th style="width: 120px" class="text-center">Estado</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>Versión de PHP (<?php echo $audit['php']['message']; ?>)</td>
-                            <td><span class="badge bg-<?php echo $audit['php']['status']; ?>"><?php echo $audit['php']['status'] == 'success' ? 'OK' : 'Baja'; ?></span></td>
+                            <td class="text-center"><span class="badge bg-<?php echo $audit['php']['status']; ?>"><?php echo $audit['php']['status'] == 'success' ? 'OK' : 'Baja'; ?></span></td>
                         </tr>
                         <?php foreach ($audit['extensions'] as $ext => $info): ?>
                         <tr>
-                            <td>Extensión <b><?php echo $ext; ?></b> <small class="text-muted">(<?php echo $info['description']; ?>)</small></td>
-                            <td>
+                            <td>Extensión PHP <b><?php echo $ext; ?></b> <small class="text-muted">(<?php echo $info['description']; ?>)</small></td>
+                            <td class="text-center">
                                 <?php if ($info['loaded']): ?>
                                     <span class="badge bg-success">Cargada</span>
                                 <?php else: ?>
@@ -30,6 +30,20 @@
                             </td>
                         </tr>
                         <?php endforeach; ?>
+                        <?php if (isset($audit['cli_tools'])): ?>
+                        <?php foreach ($audit['cli_tools'] as $tool => $info): ?>
+                        <tr>
+                            <td>Binario CLI <b><?php echo $tool; ?></b> <small class="text-muted">(<?php echo $info['description']; ?>)</small></td>
+                            <td class="text-center">
+                                <?php if ($info['exists']): ?>
+                                    <span class="badge bg-success">Instalado</span>
+                                <?php else: ?>
+                                    <span class="badge bg-warning text-dark">No hallado</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -38,32 +52,45 @@
 
     <!-- DIRECTORIES & CONNECTION -->
     <div class="col-md-6">
-            <div class="card card-info card-outline">
+        <div class="card card-info card-outline shadow-sm">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-folder-open mr-1"></i> Permisos y Archivos</h3>
+                <h3 class="card-title"><i class="fas fa-folder-open mr-1"></i> Permisos y Archivos de Sistema</h3>
             </div>
             <div class="card-body p-0">
-                <table class="table table-striped">
+                <table class="table table-striped mb-0">
                     <thead>
                         <tr>
-                            <th>Ruta de Carpeta</th>
-                            <th style="width: 100px">Estado</th>
+                            <th>Directorio / Repositorio</th>
+                            <th style="width: 140px" class="text-center">Estado Escritura</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($audit['directories'] as $name => $info): ?>
+                        <?php 
+                        $dir_labels = [
+                            'storage' => 'Almacenamiento (Storage)',
+                            'logs' => 'Logs del Sistema',
+                            'sessions' => 'Sesiones PHP',
+                            'uploads' => 'Archivos Adjuntos / Uploads',
+                            'snmp_builder' => 'Directorio SNMP Builder',
+                            'snmp_mibs' => 'Repositorio de MIBs SNMP',
+                            'vendor' => 'Librerías Composer (Vendor)',
+                            'gitlab_repo' => 'Repositorio GitLab'
+                        ];
+                        foreach ($audit['directories'] as $name => $info): 
+                            $label = $dir_labels[$name] ?? ucfirst($name);
+                        ?>
                         <tr>
                             <td>
-                                <code><?php echo $name; ?>/</code><br>
-                                <small class="text-muted"><?php echo $info['path']; ?></small>
+                                <strong><?php echo htmlspecialchars($label); ?></strong><br>
+                                <code class="small text-dark" style="word-break: break-all;"><?php echo htmlspecialchars($info['path']); ?></code>
                             </td>
-                            <td>
+                            <td class="text-center align-middle">
                                 <?php if ($info['writable']): ?>
-                                    <span class="badge bg-success">Escritura OK</span>
+                                    <span class="badge bg-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i> Escritura OK</span>
                                 <?php elseif($info['exists']): ?>
-                                    <span class="badge bg-danger">Sin Permisos</span>
+                                    <span class="badge bg-danger px-2 py-1"><i class="fas fa-lock mr-1"></i> Sin Permisos</span>
                                 <?php else: ?>
-                                    <span class="badge bg-danger">No Existe</span>
+                                    <span class="badge bg-danger px-2 py-1"><i class="fas fa-exclamation-triangle mr-1"></i> No Existe</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -177,6 +204,44 @@
                         <?php endif; ?>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RESPALDO INTEGRAL PREPODUCCION A BACK -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card card-outline card-info shadow-sm">
+            <div class="card-header bg-navy">
+                <h3 class="card-title font-weight-bold text-white mb-0">
+                    <i class="fas fa-hdd text-info mr-2"></i> Copia de Respaldo del Proyecto (PREPODUCCION &rarr; BACK)
+                </h3>
+            </div>
+            <div class="card-body bg-light">
+                <div class="row align-items-center">
+                    <div class="col-md-8 mb-2 mb-md-0">
+                        <p class="mb-1 font-weight-bold text-navy">
+                            Generar una copia exacta e integral de toda la suite del proyecto.
+                        </p>
+                        <small class="text-secondary d-block">
+                            <i class="fas fa-folder text-primary mr-1"></i> Origen: <code>/var/www/html/PROYECTOSONDA/PREPODUCCION</code>
+                        </small>
+                        <small class="text-secondary d-block">
+                            <i class="fas fa-folder-minus text-success mr-1"></i> Destino: <code>/var/www/html/PROYECTOSONDA/BACK</code>
+                        </small>
+                    </div>
+                    <div class="col-md-4 text-md-right text-center">
+                        <form method="POST" onsubmit="return confirm('¿Confirma que desea realizar la copia completa del proyecto desde PREPODUCCION hacia la carpeta BACK?');">
+                            <?php if (!empty($token_valido)): ?>
+                                <input type="hidden" name="token" value="<?php echo htmlspecialchars(SECURITY_TOKEN); ?>">
+                            <?php endif; ?>
+                            <button type="submit" name="backup_back" class="btn btn-info btn-lg font-weight-bold shadow px-4">
+                                <i class="fas fa-copy mr-2"></i> RESPALDO BACK
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -1,0 +1,7218 @@
+--- PAGE 1 ---
+
+--- PAGE 2 ---
+Este documento se presenta como una guía general de integración con la consola SERVICE MANAGEMENT. Se
+presentan algunas operaciones de manera detallada incluyendo datos de petición, parámetros, respuestas y códigos
+de error.
+Generalidades
+Generalidades
+Generalidades
+Generalidades
+A continuación, se listan algunas generalidades que deben tenerse en cuenta para el
+A continuación, se listan algunas generalidades que deben tenerse en cuenta para el
+correcto funcionamiento del API de Aranda SERVICE MANAGEMENT ASMS.
+correcto funcionamiento del API de Aranda SERVICE MANAGEMENT ASMS.
+Versión compatible con consola de Aranda SERVICE DESK 9.0.0.0 versión de base de datos 9.5.16
+Las operaciones sobre el API deben realizarse con usuarios que tengan los permisos correspondientes
+asignados desde Consola de 
+administración de Aranda SERVICE MANAGEMENT SUITE ASMS.
+Para realizar la petición a cualquier API es necesario usar el token de integración generado desde el sitio web.
+Para mayor información consulte la 
+Configuración tokens de integración
+El uso del API requiere licencias disponibles, las cuales tendrán el mismo comportamiento como si un
+especialista iniciara sesión 
+en la consola. Para utilizar la API en integraciones, genere un token con un usuario
+que tenga una licencia nombrada asignada. Este usuario debe ser exclusivo para la integración.
+En entornos multitenant, al consumir algunos endpoints, puede generarse el error “TenantNotFound”. En estos
+casos, se debe enviar el encabezado 
+x-aranda-tenant-alias
+x-aranda-tenant-alias
+ con el valor del tenant sobre el cual se va a consumir
+el endpoint.
+Descripción de operaciones
+Descripción de operaciones
+Descripción de operaciones
+Descripción de operaciones
+En esta sección se describe detalladamente, cómo se consume cada uno de los servicios correspondientes a cada
+método. Se incluyen detalles como URI, tipo de operación, parámetros (requeridos y opcionales) y sus tipos,
+respuestas, códigos y mensajes de error.
+Manejo de Caso
+Manejo de Caso
+Manejo de Caso
+Manejo de Caso
+En esta sección se describen las operaciones relacionadas con el manejo de casos (creación, edición, consulta).
+Creación de Caso
+Creación de Caso
+Esta operación crea un caso y al crearlo guarda los archivos adjuntos, tanto del caso, como de sus campos
+adicionales; después de guardarlos borra los archivos de la carpeta temporal creada para ello.
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: api/v9/item
+Tipo: POST
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+--- PAGE 3 ---
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item
+Parámetros:
+Parámetros:
+Nombre
+Nombre
+Tipo
+Tipo
+de
+de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+applicantId
+Int
+No
+Identificador del solicitante del caso.
+authorId
+Int
+No
+Identificador del autor del caso.
+categoryId
+Int
+Si
+Identificador de la categoría del caso.
+cause
+String
+No
+Descripción de la causa raíz del problema, aplicable
+únicamente cuando el tipo de ítem (itemType) es 2, lo que
+indica que se trata de un problema.
+ciId
+Int
+No
+Identificador del ítem de configuración (CI).
+ciName
+String
+No
+Nombre del ítem de configuración (CI).
+companyId
+Int
+No
+Identificador de la compañía.
+consoleType
+String
+Si
+Tipo de consola usada para crear el caso (Specialist= 1, Client
+= 2, Administrator= 3, CMDB = 4).
+customerId
+Int
+No
+Identificador del cliente.
+description
+String
+No
+Descripción del caso, puede incluir contenido HTML.
+groupId
+Int
+No
+Identificador del grupo de especialista asociado al caso.
+impactId
+Int
+No
+Identificador del impacto.
+itemType
+Int
+Si
+Tipo de caso: 
+1. Incidente
+2. Problema
+3. Cambio
+4. Requerimiento de servicio
+13. Liberación
+itemVersion
+Int
+No
+Versión del caso.
+locationId
+Int
+No
+Identificador de la ubicación.
+modelId
+Int
+Si
+Identificador del modelo operativo.
+priorityId
+Int
+No
+Identificador de la prioridad.
+projectId
+Int
+Si
+Identificador del proyecto.
+providerId
+Int
+No
+Identificador del proveedor.
+--- PAGE 4 ---
+reasonId
+Int
+No
+Identificador de la razón.
+registryTypeId
+Int
+No
+Tipo de registro del caso.
+responsibleId
+Int
+No
+Identificador del responsable del caso.
+serviceId
+Int
+Si
+Identificador del servicio.
+stateId
+Int
+Si
+Identificador del estado inicial del caso.
+subject
+String
+No
+Asunto del caso.
+urgencyId
+Int
+No
+Identificador de la urgencia
+listAdditionalField
+Array
+Si
+Lista de campos adicionales del caso. Si el caso a crear no
+requiere campos adicionales, colocar el arreglo vacío. Ej.
+“listAdditionalField”: []
+tempItemId
+Int
+No
+Identificador temporal del ítem. este debe ser negativo.
+Ejemplo: -1
+Nombre
+Nombre
+Tipo
+Tipo
+de
+de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+Cuerpo de la petición
+Cuerpo de la petición
+{
+"categoryId": 623, "cause": null, "ciId": null, "ciName": null, "companyId": 578,
+"consoleType": "specialist", "correctActions": null, "currentTime": 0, "customerId": null, "description": "Test postman ",
+ 
+"foregroundColorRgb": "", "followUpActions": null, "hasMoreInformation": false, "hasPendingSurvey": false, "estimatedCost":
+ 
+0,
+"realCost": 0, "recomendations": null, "impactId": 7203, "incorrectActions": null, "instance": 1632253928839, "isFeeAvailable":
+ 
+true, "itemType": 4,
+"itemVersion": 0, "knownError": null, "majorProblem": null, "modelId": 70,
+"unitId": null, "priorityReason": "", "projectId": 19,
+"providerId": null,
+"reasonId": null, "registryTypeId": 7199, "serviceId": 140,
+"stateId": 267,
+    "subject": "Prueba póstman",
+    "surveyToken": "",
+    "thirdParty": null,
+    "transformed": false,
+    "listAdditionalField": [
+        {
+            "boolValue": null,
+            "catalogId": null,
+            "dataSourceId": null,
+            "dateValue": null,
+            "description": "[ES] Nombre Aplicativo",             "enable": true,
+            "fieldId": 977,
+            "fieldType": 3,
+            "fieldTypeName": "List",
+            "floatValue": null,
+           "identifier": "A001",
+            "inputStream": null,
+            "intValue": 118,
+--- PAGE 5 ---
+            "itemId": null,
+            "mandatory": true,
+            "name": "[ES] Software 1",
+            "order": 1,
+            "projectId": null,
+            "stringValue": "Aranda Data Safe",
+            "type": null,
+            "url": null,
+            "visible": true
+        },
+        {
+             "boolValue": null,
+             "catalogId": null,
+             "dataSourceId": null,
+             "dateValue": null,
+             "description": "[ES] Nombre Aplicativo",             "enable": true,
+             "fieldId": 978,
+             "fieldType": 3,
+             "fieldTypeName": "List",
+             "floatValue": null,
+             "identifier": "A002",
+             "inputStream": null,
+             "intValue": 146,
+             "itemId": null,
+             "mandatory": true,
+             "name": "[ES] Software 2",
+             "order": 2,
+             "projectId": null,
+             "stringValue": "Aranda Virtual Support",             "type": null,
+             "url": null,
+             "visible": true
+         },
+         {
+             "boolValue": null,
+             "catalogId": null,
+             "dataSourceId": null,
+             "dateValue": null,
+             "description": "[ES] Nombre Aplicativo",             "enable": true,
+             "fieldId": 979,
+             "fieldType": 3,
+             "fieldTypeName": "List",
+             "floatValue": null,
+             "identifier": "A003",
+             "inputStream": null,
+             "intValue": 156,
+             "itemId": null,
+             "mandatory": true,
+--- PAGE 6 ---
+             "name": "[ES] Software 3",
+             "order": 3,
+             "projectId": null,
+             "stringValue": "Aranda Field Service",
+             "type": null,
+             "url": null,
+             "visible": true
+         },
+         {
+             "boolValue": null,
+             "catalogId": null,
+             "dataSourceId": null,
+             "dateValue": null,
+             "description": "[ES] Nombre Aplicativo",             "enable": true,
+             "fieldId": 980,
+             "fieldType": 3,
+             "fieldTypeName": "List",
+             "floatValue": null,
+             "identifier": "A004",
+             "inputStream": null,
+             "intValue": 176,
+             "itemId": null,
+             "mandatory": true,
+             "name": "[ES] Software 4",
+             "order": 4,
+             "projectId": null,
+             "stringValue": "Aranda Path Management",             "type": null,
+             "url": null,
+             "visible": true
+         }
+     ],
+     "authorId": 4832,
+    "tempItemId": -3
+}
+Respuesta
+Respuesta
+{
+      "id": 84486,
+      "idByProject": "RF-84486-19-407613" }
+Parámetros Response:
+Parámetros Response:
+--- PAGE 7 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+Id
+Int
+Identificador del caso
+idByProyect
+string
+Identificador del caso por
+proyecto
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro: ConsoleType
+400
+BadRequest
+\r\nNombre del parámetro: ItemType
+400
+BadRequest
+\r\nNombre del parámetro:
+ListAdditionalField
+400
+BadRequest
+\r\nNombre del parámetro: TempItemId
+400
+BadRequest
+InvalidItemType
+400
+BadRequest
+ModelIdIsEmpty
+400
+BadRequest
+RequestNeedsSomeArguments
+400
+BadRequest
+StateIdIsEmpty
+403
+Forbidden
+DoNotHavePermissionForThisAction
+500
+InternalServerError
+FailureAddItem
+Consulta de Casos
+Consulta de Casos
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/item/{ItemId}
+Tipo: GET
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/{ItemId}
+--- PAGE 8 ---
+Parámetros:
+Parámetros:
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+ItemId
+Número
+Si
+Identificador del
+caso
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Respuesta
+Respuesta
+{
+     "authorId": 4832,
+      "authorName": "Especialista 1",
+      "backgroundColorRgb": "0.174.239",     "calendarOlaId": null,
+      "calendarSlaId": 3,
+      "calendarUcId": null,
+      "canClosed": false,
+      "categoryHierarchy": "Tiempos Cat",     "categoryId": 623,
+      "categoryName": "Tiempos Cat",
+      "cause": "",
+"causeNoHtml": "",
+"ciId": null,
+"ciName": null,
+"closedDate": null,
+"commentary": "", "commentaryNoHtml": "", "companyId": 578,
+"companyName": "ACT Telematica", "constructionFinalDate": null, "constructionInitialDate": null, "contractId": null,
+"contractName": null, "correctActions": null,
+"cost": null,
+"countFiles": 0,
+"currentProgress": 0,
+"currentTime": 0,
+"customerId": null,
+"customerName": null,
+"description": "Test postman ", "descriptionNoHtml": "Test postman ", "duration": null,
+"effort": null,
+"emailOriginationDate": null, "estimatedCost": null, "estimatedDate": null, "estimatedTime": 0,
+"finalDate": null,
+"finalStatus": 0,
+"followUpActions": null, "foregroundColorRgb": "255.255.255", "groupId": 5,
+"groupName": "CYS - Desarrollo", "hasMoreInformation": false, "hasSurvey": false,
+"haveRisk": false,
+"id": 84486,
+"idByProject": "RF-84486-19-407613", "impactId": 7203,
+"impactName": "[ES] MEDIO", "incorrectActions": null,
+"initialDate": null,
+--- PAGE 9 ---
+"initialStatus": false, "instalationFinalDate": null, "instalationInitialDate": null, "interfaceId": null,
+"isClosed": false,
+"isFeeAvailable": true,
+"isVotingProcess": false,
+"itemType": 4,
+"itemTypeId": 4,
+"itemTypeName": "Service Request",
+"itemVersion": 3,
+"knownError": null,
+"locationId": null,
+"locationName": null,
+"majorProblem": null,
+"modelId": 70,
+"modelName": "[ES] Requerimientos PMO (2)", "modifiedDate": 1632254428340,
+"modifierId": 4832,
+"modifierName": "Especialista 1",
+"olaId": null,
+"olaName": null,
+"openedDate": 1632254058200,
+"parentId": null,
+"parentIdByProject": null,
+"parentItemType": null,
+"parentItemTypeId": null,
+"parentOpenedDate": null,
+"previousStateId": 267,
+"price": null,
+"priorityId": 9,
+"priorityName": "[ES] ALTA",
+"priorityReason": null,
+"progress": 0,
+"projectId": 19,
+"projectName": "Soporte - ASC",
+"providerId": null,
+"providerName": null,
+"psoFinalDate": null,
+"psoInitialDate": null,
+"realCost": null,
+"realDate": null,
+"reasonId": null,
+"reasonName": null,
+"receptorId": 6919,
+"receptorName": "Duvan Carmona", "recomendations": null,
+"registryTypeId": 7199,
+"registryTypeName": "[ES] Chat",
+"relation": null,
+"responsibleId": 4479,
+"responsibleName": "Carlos Eduardo Sanchez Parra", "rev": 3,
+--- PAGE 10 ---
+"riskId": null,
+      "riskName": null,
+      "serviceId": 140,
+      "serviceName": "Prueba Tiempos",     "slaId": 1,
+      "slaName": "Acuerdo Soporte",
+      "stateId": 267,
+      "stateName": "[ES] Registrado",
+      "subject": "Prueba póstman",
+      "surveyToken": null,
+      "templateId": null,
+      "testFinalDate": null,
+      "testInitialDate": null,
+      "thirdParty": null,
+      "type": 4,
+      "ucId": null,
+      "ucName": null,
+      "unitId": null,
+      "unitName": null,
+      "urgencyId": 5,
+      "urgencyName": "[ES] ALTA"
+}
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro: Id
+400
+BadRequest
+InvalidItemId
+403
+Forbidden
+DoNotHavePermissionForThisAction
+500
+InternalServerError
+FailureGetObject
+Edición Caso
+Edición Caso
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/item/{ItemId}
+Tipo: PUT
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+--- PAGE 11 ---
+https://{host}/ASMSAPI/api/v9/item/{ItemId}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+ItemId
+Número
+Si
+Identificador del caso
+itemType
+String
+Sí
+Tipo de caso
+consoleType
+String
+Sí
+Tipo de consola
+modelId
+Int
+Sí
+Identificador del modelo
+stateId
+Int
+Sí
+Identificador del estado
+listAdditionalField
+List
+Sí
+Solo son obligatorios los campos adicionales
+requeridos.
+itemVersion
+Int
+Sí
+Versión del caso
+Cuerpo de la petición
+Cuerpo de la petición
+{
+      "categoryId": 623,
+      "cause": "",
+      "ciId": 0,
+      "commentary": "",
+      "companyId": 578,
+      "consoleType": "specialist",
+      "constructionInitialDate": null,     "constructionFinalDate": null,
+      "correctActions": "",
+      "currentTime": 0,
+      "customerId": 0,
+      "description": "Test postman ",     "estimatedCost": 0,
+      "estimatedTime": 0,
+      "foregroundColorRgb": "",
+      "followUpActions": "",
+      "groupId": 5,
+      "hasMoreInformation": false,
+      "hasPendingSurvey": false,
+      "impactId": 7203,
+      "incorrectActions": "",
+      "instalationInitialDate": null,
+      "instalationFinalDate": null,
+      "instance": 1632254175313,
+      "isFeeAvailable": true,
+--- PAGE 12 ---
+      "itemType": 4,
+      "itemVersion": 2,
+      "knownError": null,
+      "majorProblem": null,
+      "modelId": 70,
+      "priorityId": 9,
+      "priorityReason": "",
+      "projectId": 19,
+      "providerId": null,
+      "psoInitialDate": null,
+      "psoFinalDate": null,
+      "realCost": 0,
+      "recomendations": "",
+      "registryTypeId": 7199,
+      "responsibleId": 4479,
+      "serviceId": 140,
+      "stateId": 267,
+      "subject": "Prueba póstman",
+      "surveyToken": "",
+      "testInitialDate": null,
+      "testFinalDate": null,
+      "thirdParty": false,
+      "transformed": false,
+      "unitId": null,
+      "urgencyId": 5,
+      "listAdditionalField": [
+          {
+              "boolValue": null,
+              "catalogId": null,
+              "dataSourceId": null,
+              "dateValue": null,
+              "description": "[ES] Nombre Aplicativo",             "enable": true,
+              "fieldId": 977,
+              "fieldType": 3,
+              "fieldTypeName": "List",
+              "floatValue": null,
+              "identifier": "A001",
+              "inputStream": null,
+              "intValue": 118,
+              "itemId": 84486,
+              "mandatory": true,
+              "name": "[ES] Software 1",
+              "order": 1,
+              "projectId": null,
+              "stringValue": "Aranda Data Safe",
+              "type": 4,
+              "url": null,
+--- PAGE 13 ---
+              "visible": true
+          },
+          {
+              "boolValue": null,
+              "catalogId": null,
+              "dataSourceId": null,
+              "dateValue": null,
+              "description": "[ES] Nombre Aplicativo",             "enable": true,
+              "fieldId": 978,
+              "fieldType": 3,
+              "fieldTypeName": "List",
+              "floatValue": null,
+             "identifier": "A002",
+             "inputStream": null,
+             "intValue": 146,
+             "itemId": 84486,
+             "mandatory": true,
+             "name": "[ES] Software 2",
+             "order": 2,
+             "projectId": null,
+             "stringValue": "Aranda Virtual Support",             "type": 4,
+             "url": null,
+             "visible": true
+          },
+          {
+             "boolValue": null,
+             "catalogId": null,
+             "dataSourceId": null,
+             "dateValue": null,
+             "description": "[ES] Nombre Aplicativo",             "enable": true,
+             "fieldId": 979,
+             "fieldType": 3,
+             "fieldTypeName": "List",
+             "floatValue": null,
+             "identifier": "A003",
+             "inputStream": null,
+             "intValue": 156,
+             "itemId": 84486,
+             "mandatory": true,
+             "name": "[ES] Software 3",
+             "order": 3,
+             "projectId": null,
+             "stringValue": "Aranda Field Service",
+             "type": 4,
+             "url": null,
+             "visible": true
+          },
+--- PAGE 14 ---
+          {
+              "boolValue": null,
+              "catalogId": null,
+              "dataSourceId": null,
+              "dateValue": null,
+              "description": "[ES] Nombre Aplicativo",             "enable": true,
+              "fieldId": 980,
+              "fieldType": 3,
+              "fieldTypeName": "List",             "floatValue": null,
+              "identifier": "A004",
+              "inputStream": null,
+              "intValue": 176,
+              "itemId": 84486,
+              "mandatory": true,
+              "name": "[ES] Software 4",
+              "order": 4,
+              "projectId": null,
+ 
+              "stringValue": "Aranda Path Management",             "type": 4,
+              "url": null,
+              "visible": true
+          }
+      ]
+}
+Respuesta
+Respuesta
+{
+      "itemVersion": 3,     "result": true
+}
+Parámetros Response
+Parámetros Response
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+result
+Boleano
+Resultado de la
+operación
+itemVersion
+Número
+Versión del caso
+Mensajes de error
+Mensajes de error
+--- PAGE 15 ---
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro:
+Consoletype
+400
+BadRequest
+\r\nNombre del parámetro: Id
+400
+BadRequest
+\r\nNombre del parámetro: Itemtype
+Lista de Casos
+Lista de Casos
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/item/search
+Tipo: POST
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/search
+Parámetros
+Parámetros
+--- PAGE 16 ---
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+projects
+Lista
+Si
+Listado de proyectos.
+project
+Número
+Si
+Identificador del proyecto.
+criteria
+Object
+Si
+Objeto con parámetro de búsqueda. 
+Nota:
+Nota:
+ Es obligatorio que el objeto se incluya en el cuerpo de la
+petición. Sin embargo, no es obligatorio que haya parámetros
+de búsqueda; estos pueden estar vacíos.
+fieldValue
+Texto
+No
+Campo por el que se quiere buscar
+fieldName
+Texto
+No
+Nombre del campo.
+operatorName
+Texto
+No
+Nombre del operador.
+operatorValue
+Texto
+No
+Valor del operador.
+value
+Texto
+No
+Valor de búsqueda.
+valueName
+Texto
+No
+Valor búsqueda
+type
+Texto
+No
+Valor del tipo de dato - 
+None = 0,
+ 
+ShortText = 1,
+ - 
+Datetime = 2,
+- 
+List = 3,
+ - 
+LongText = 4,
+ - 
+CheckBox = 5,
+ - 
+Numeric = 6,
+ -
+Recursive = 7,
+ - 
+List2 = 8,
+ - 
+Decimal = 9,
+ - 
+File = 10,
+ - 
+CatalogList
+= 11,
+ - 
+CatalogTree = 12
+filterText
+Texto
+No
+Texto por el que se desea buscar un caso dentro de un tipo de
+caso, cuando este filtro se usa solo éste es requerido.
+types
+Object
+No
+Listado de tipos de caso.
+itemType
+Texto
+No
+Tipo de caso.
+orderField
+Texto
+Si
+Parámetro por el que se requiere ordenar. 
+Nota:
+Nota:
+ Los parámetros por los cuales se puede realizar el
+ordenamiento son aquellos que están incluidos en la
+respuesta de la petición.
+orderType
+Texto
+Si
+Tipo de ordenamiento - 
+Asc
+ - 
+Desc
+pageSize
+Número
+Si
+Cantidad de datos a retornar para el paginado.
+pageIndex
+Número
+Si
+Número de página.
+viewId
+Número
+No
+Identificador de la vista.
+repository
+Texto
+No
+Identificador del repositorio, sino se envía se tomará por
+defecto el valor de abiertos.- 
+Opened = 1
+ - 
+Closed = 2
+ - 
+All = 3
+Cuerpo de la petición
+Cuerpo de la petición
+{
+      "criteria": [],
+      "level": 0,
+      "orderField": "openedDate",     "orderType": "desc",
+--- PAGE 17 ---
+      "pageIndex": 4,
+      "pageSize": 50,
+      "projects": [
+         {
+             "project": 25
+         },
+         {
+             "project": 19
+         }
+      ],
+      "repository": 1,
+      "types": [
+         {
+             "itemType": 2         },
+         {
+             "itemType": 1         },
+         {
+             "itemType": 4         },
+         {
+             "itemType": 3         },
+         {
+             "itemType": 13         }
+      ],
+      "viewId": -6
+}
+Respuesta
+Respuesta
+{
+      "content": [
+        {
+             "authorId": 4832,
+             "authorName": "Especialista 1",
+             "backgroundColorRgb": "0.174.239",
+             "buildingId": null,
+             "buildingName": null,
+             "categoryHierarchy": "Corrección de Reporte",             "categoryId": 520,
+             "categoryName": "Corrección de Reporte",
+             "ciAssetTag": null,
+             "ciId": null,
+             "ciName": null,
+             "ciSerial": null,
+             "cityId": null,
+             "cityName": null,
+             "closedDate": null,
+             "closenessToExpiration": 0,
+             "companyId": 421,
+--- PAGE 18 ---
+             "companyName": "ACH COLOMBIA",
+             "cost": null,
+             "countryId": null,
+             "countryName": null,
+             "currentprogress": 0,
+             "currenttime": 0,
+             "customerId": null,
+             "customerName": null,
+             "departmentCode": null,
+             "departmentCodeName": null,
+             "descriptionNoHtml": "CambioCuota2FONDO DE EMPLEADOS DE ARANDA SOFTWARE - FAS OFT\nN.I.T. 901067439-6
+              FORMATO DE ACTUALIZACIÓN DE CUOTA DE AHORRO FECHA MES DIA AÑO
+              INFORMACION PERSONAL Nombres Apellidos Documento de indentidad Teléfono Celular Correo Electrónico
+              TIPO DE AHORRO  (Seleccione con una X)        Ahorro Permanente   \ nAhorro Navideño \ nValor $ \ nPorcentaje %  \n
+              Tipo de descuento:    Quincenal               Mensual             Quincena 1               Quincena 2 AUTORIZACIONES \nAutorizo a
+ 
+Aranda Software  ,  a la cual me encuentro vinculado para que deduzca de mi salario mensual , las cuotas que aquí rel
+ 
+aciono, los cuales deberán ser entregados a FASOFT por concepto de ahorros.\nFirma
+                                                                                             
+Observaciones:\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_C. C.No.",
+             "duration": null,
+             "effort": null,
+             "estimatedTime": 1440,
+             "expectedDate": 1632340067323,
+             "finalDate": null,
+             "finalStateId": 0,
+             "floorId": null,
+             "floorName": null,
+             "foregroundColorRgb": "255.255.255",
+             "groupId": 2,
+             "groupName": "Soporte Nivel 1",
+             "id": 84482,
+             "idByProject": "RF-84482-19-407609",
+             "impactId": 1,
+             "impactName": "[ES] BAJO",
+             "initialDate": null,
+             "initialStatus": true,
+             "isClosed": false,
+             "isVotingProcess": false,
+             "isimported": false,
+             "itemType": 4,
+             "itemTypeName": "Requerimiento de Servicio",
+             "itemVersion": 1,
+             "knownError": null,
+             "majorProblem": null,
+             "modelId": 31,
+             "modelName": "[ES] RS Servicio Soporte",
+             "modifiedDate": 1632253667323,
+             "olaId": null,
+             "olaName": null,
+             "openedDate": 1632253667323,
+             "parentId": null,
+             "parentIdByProject": null,
+--- PAGE 19 ---
+             "parentItemType": null,
+             "parentItemTypeId": null,
+             "price": null,
+             "priorityId": 8,
+             "priorityName": "[ES] MEDIA",
+             "progress": 0,
+             "projectId": 19,
+             "projectName": "Soporte - ASC",
+             "providerId": null,
+             "providerName": null,
+             "realDate": null,
+             "reasonId": null,
+             "reasonName": null,
+             "receptorId": 4557,
+             "receptorName": "Victor Samuel Huertas Orjuela",
+             "registryTypeId": 7199,
+             "registryTypeName": "[ES] Chat",
+             "responsibleId": 4557,
+             "responsibleName": "Victor Samuel Huertas Orjuela",             "riskName": null,
+             "serviceId": 10,
+             "serviceName": "Reportes",
+             "slaId": 1,
+             "slaName": "Acuerdo Soporte",
+             "stateId": 25,
+             "stateName": "Registrado",
+             "subject": "Test postman",
+             "templateId": null,
+             "time": 0,
+             "ucId": null,
+             "ucName": null,
+             "unitId": null,
+             "unitName": null,
+             "urgencyId": 5,
+             "urgencyName": "[ES] ALTA"
+         }
+      ],
+      "totalItems": 36460,
+      "totalPage": 1
+}
+Parámetros Response
+Parámetros Response
+--- PAGE 20 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+totalItems
+Número
+Número total de ítems en la consulta.
+totalPage
+Número
+Número total de ítems por página
+content
+Lista
+Listado de objetos encontrados
+closenessToExpiration
+Enumerador
+OnProgress = 0, (<=79)
+ - 
+AlmostExpired = 1, ( entre 80 y 99)
+ -
+Expired = 2 (>= 100)
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro:
+TemplateId
+400
+BadRequest
+InvalidProjectsList
+400
+BadRequest
+NoPermission
+400
+BadRequest
+InvalidTypesList
+400
+BadRequest
+ProjectsListNeedsSomeArguments
+400
+BadRequest
+TypesListNeedsSomeArguments
+500
+InternalServerError
+FailureGetItems
+Adjuntar Archivos
+Adjuntar Archivos
+Para casos nuevos:
+Los adjuntos del ítem y de los campos adicionales se guardarán cuando se guarde este archivo.
+Para casos existentes:
+Los adjuntos del ítem se podrán guardar independiente de actualizar el caso.
+Los adjuntos de campos adicionales se guardarán cuando en el caso se le de la opción guardar.
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: api/v9/file
+Tipo: POST
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/file
+--- PAGE 21 ---
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+Data0
+ 
+Si
+Archivo que se adjunta
+FileItemId
+Número
+Si
+Identificador del caso
+FileItemType
+Texto
+Si
+Tipo de caso
+UploadType
+Texto
+Si
+Identifica si el archivo es del caso o de un campo adicional -
+Case = 0, - AdditionalField - 1
+AdditionalFieldId
+Número
+No
+Solo es obligatorio cuando el tipo de archivo es de campo
+adicional.
+Concept
+Texto
+Si
+Indica el concepto del ítem - Item = 0 - Activo = 6 - Article = 5
+Descripción
+Texto
+No
+Descripción con la que se va adjuntar el archivo
+Cuerpo de la petición
+Cuerpo de la petición
+Respuesta
+Respuesta
+[
+      {
+         "description": null,
+         "fileName": "ESTANDAR\_DE\_BASE\_DE\_DATOS\_V1.2.doc",         "info": null,
+         "result": true,
+         "url": null
+      }
+]
+Parámetros Response
+Parámetros Response
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+description
+Texto
+Descripción del archivo
+fileName
+Texto
+Nombre de archivo
+result
+Boleano
+Resultado de la
+operación
+url
+Text
+Url del archivo
+Mensajes de error
+Mensajes de error
+--- PAGE 22 ---
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureAddFile
+Agregar Notas
+Agregar Notas
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/item/{id}/note
+Tipo: POST
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/{id}/note
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Texto
+Sí
+Identificador del ítem
+description
+Texto
+Sí
+Contenido de la nota
+itemType
+Texto
+Sí
+Tipo del caso
+visible
+Booleano
+Sí
+Indica si la nota es pública o
+privada
+Cuerpo de la petición
+Cuerpo de la petición
+{
+    "description": "<p>Prueba postman</p>",
+    "itemType": 4,
+    "visible": true
+}
+Respuesta
+Respuesta
+{
+    "result": true
+}
+Parámetros Response
+Parámetros Response
+--- PAGE 23 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+result
+Booleano
+Indica si la operación tuvo
+éxito
+Mensajes de Error
+Mensajes de Error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureAddNote
+Obtener Estados
+Obtener Estados
+Detalles de la petición
+Detalles de la petición
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri:
+Uri:
+ /api/v9/model/{id}/{itemType}/states?stateId={stateId}&itemId={itemId}
+Tipo:
+Tipo:
+ GET
+Encabezados requeridos:
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/model/{id}/{itemType}/states?stateId={stateId}&itemId={itemId}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Número
+Sí
+Identificador del modelo.
+itemType
+Número
+Sí
+Tipo de caso
+1. Incidente
+2. Problema
+3. Cambio
+4. Requerimiento de
+servicio
+13. Liberación
+stateId
+Número
+No
+Identificador del estado.
+itemId
+Número
+No
+Identificador del caso.
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+--- PAGE 24 ---
+Respuesta
+Respuesta
+{
+   "content":[
+      {
+         "backgroundColorRgb":"0.174.239",
+         "description":"Estado inicial que se le asigna a un incidente que ha sido registrado por el usuario a través de los
+ 
+diferentes medios. El incidente contiene información inicial, por lo tanto el especialista deberá validar y completar la
+ 
+misma.",
+         "foregroundColorRgb":"255.255.255",
+         "haveRisk":false,
+         "id":25,
+         "isFinal":false,
+         "isVotingProcess":false,
+         "mandatoryNote":false,
+         "name":"Registrado",
+         "stageName":null
+      }
+   ],
+   "totalItems":1
+}
+Parámetros Respuesta
+Parámetros Respuesta
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Descripción
+Descripción
+backgroundColorRgb
+Texto
+Representación del color del estado en escala RGB
+description
+Texto
+Descripción del estado
+foregroundColorRgb
+Texto
+Color del estado actual en blanco o negro en escala RGB
+haveRisk
+Booleano
+Determina si el estado tiene un riesgo
+id
+Número
+Id del estado
+isFinal
+Booleano
+Determina si el estado es final
+isVotingProcess
+Booleano
+Determina si el estado necesita de un voto de aprobación
+mandatoryNote
+Booleano
+Determina si el estado necesita de una nota. No aplica para estados
+iniciales
+name
+Texto
+Nombre del estado
+stageName
+Texto
+Nombre del comportamiento del estado
+content
+Lista
+Listado de objetos encontrados en la búsqueda
+totalItems
+Número
+Número total de objetos encontrados
+Mensajes de Error
+Mensajes de Error
+--- PAGE 25 ---
+Código
+Código
+Estado
+Estado
+HTTP
+HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro: Id
+400
+BadRequest
+\r\nNombre del parámetro: ItemType
+400
+BadRequest
+{id} no es un valor válido para Int32.\r\nNombre del parámetro: Id
+400
+BadRequest
+{itemType} no es un valor válido para ArandaType.\r\nNombre del parámetro:
+ItemType
+400
+BadRequest
+{stateId} no es un valor válido para Int32.\r\nNombre del parámetro: StateId
+400
+BadRequest
+{itemId} no es un valor válido para Int32.\r\nNombre del parámetro: ItemId
+Borrar Archivos
+Borrar Archivos
+Para eliminar un adjunto de un campo adicional se debe actualizar el campo adicional con los siguientes campos en
+nulo o vacíos:
+"IntValue": null
+"StringValue": null
+"InputStream": null
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/file/{id}?uploadType={uploadType}
+Tipo: DELETE
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/file/{id}?uploadType={uploadType}
+Parámetros:
+Parámetros:
+--- PAGE 26 ---
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Int
+Si
+Identificador del archivo
+ItemType
+String
+Si
+Tipo de ítem
+ItemId
+Int
+Si
+Identificador del ítem
+FileName
+string
+No
+Nombre del archivo, solo es obligatorio cuando se elimina un
+archivo temporal.
+uploadType
+String
+Si
+Indica si el archivo se sube al caso o al campo adicional del caso
+Case = 0, AdditionalField - 1
+Cuerpo de la petición
+Cuerpo de la petición
+{
+      "itemId": 84486,     "itemType": 4
+}
+*Respuesta*
+{
+      "result": true }
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureDeleteFile
+Listar Archivos
+Listar Archivos
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/item/{id}/ﬁles?itemType={itemType}&uploadType={uploadType}&additionalFieldI d=
+{additionalFieldId}
+Tipo: GET
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/{id}/files?itemType={itemType}&uploadType={uploadType}&additionalFieldI d=
+{additionalFieldId}
+--- PAGE 27 ---
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Int
+Si
+Identificador del caso
+ItemType
+String
+Si
+Tipo de caso
+uploadType
+String
+Si
+Identifica si el archivo es del caso o de un campo adicional -
+Case = 0,
+ - 
+AdditionalField
+ - 
+1
+additionalFieldId
+int
+No
+Sólo es obligatorio cuando el tipo de archivo es de campos
+adicionales
+*Cuerpo de la petición
+ N/A
+Respuesta
+Respuesta
+{
+      "content": [
+         {
+             "date": 1632261914867,
+             "description": "Archivo postman estandar",
+             "id": 18325,
+             "isPublic": true,
+             "name": "ESTANDAR\_DE\_BASE\_DE\_DATOS\_V1.2.doc",             "size": 476160,
+             "url": null,
+             "userId": 4832,
+             "userName": "Especialista 1"
+         }
+      ],
+      "totalItems": 1
+}
+Parámetros Response
+Parámetros Response
+--- PAGE 28 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+content
+Lista
+Listado de objetos encontrados en la
+búsqueda.
+date
+Fecha
+Fecha en la que el archivo se adjuntó
+description
+Texto
+Descripción del archivo
+id
+Número
+Identificador del archivo
+isPublic
+Bolean
+Indica si el archivo es público o no
+name
+Texto
+Nombre del archivo
+size
+Número
+Tamaño del archivo
+totalItems
+Número
+Número total de objetos encontrados
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro: Id
+400
+BadRequest
+\r\nNombre del parámetro: Itemtype
+400
+BadRequest
+\r\nNombre del parámetro:
+Uploadtype
+400
+BadRequest
+InvalidAdditionalFieldId
+400
+BadRequest
+InvalidGetFiles
+400
+BadRequest
+InvalidItemType
+400
+BadRequest
+InvalidUploadType
+400
+BadRequest
+RequestNeedsSomeArguments
+403
+Forbidden
+DoNotHavePermissionForThisAction
+500
+InternalServerError
+FailureGetFiles
+Lista de Históricos
+Lista de Históricos
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/item/{id}/history/list?isClosed={isClosed}&consoleType={consoleType}&modelId={
+modelId}&statusId= 
+{statusId}
+Tipo: GET
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+--- PAGE 29 ---
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/{id}/history/list?isClosed={isClosed}&consoleType={consoleType}&modelId={
+ 
+modelId}&statusId=
+  {statusId}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+Id
+Texto
+Si
+Identificador del ítem
+isClosed
+Texto
+Si
+Indicador de privacidad
+consoleType
+Texto
+Si
+Tipo de consola
+modelId
+Texto
+Si
+Identificador del modelo
+statusId
+Texto
+Si
+Identificador del estado actual del
+caso
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Respuesta
+Respuesta
+{
+      "content": [
+         {
+             "actionId": 9,
+             "actionName": "Nota",
+             "authorId": 4832,
+             "authorName": "Especialista 1",
+             "created": 1632262444070,
+             "description": "<p>Prueba postmas</p>",
+             "descriptionNoHtml": "Prueba postmas\n",             "detail": null,
+             "itemId": 84486,
+             "reviewCode": null,
+             "visible": true
+         },
+         {
+             "actionId": 5,
+             "actionName": "Archivo añadido",
+             "authorId": 4832,
+--- PAGE 30 ---
+             "authorName": "Especialista 1",
+             "created": 1632261914927,
+             "description": "[{\"FieldName\":\"FileName\",\"IdentifierField\":null,\"OldValue\":\"\",\"Ne
+ 
+wValue\":\"ESTANDAR\_DE\_BASE\_DE\_DATOS\_V1.2.doc\",\"Type\":null,\"DataType\":null,\"Relate
+ 
+dItemId\":null,\"NewInstanceId\":null,\"OldInstanceId\":null,\"InstanceType\":null}]",
+             "descriptionNoHtml": null,
+             "detail": [
+                 {
+                     "dataType": null,
+                     "fieldName": "FileName",
+                     "newValue": "ESTANDAR\_DE\_BASE\_DE\_DATOS\_V1.2.doc",
+                     "oldValue": "",
+                     "relatedItemId": null,
+                     "type": null
+                 }
+             ],
+             "itemId": 84486,
+             "reviewCode": null,
+             "visible": true
+         },
+         {
+             "actionId": 6,
+             "actionName": "Archivo eliminado",
+             "authorId": 4832,
+             "authorName": "Especialista 1",
+             "created": 1632261337253,
+             "description": "[{\"FieldName\":\"FileName\",\"IdentifierField\":null,\"OldValue\":\"\",\"Ne
+ 
+wValue\":\"GraficoDeRelacionesCIS.docx\",
+             \"Type\":null,\"DataType\":null,\"RelatedItemId\":null,
+ 
+\"NewInstanceId\":null,\"OldInstanceId\":null,\"InstanceType\":null}]",
+             "descriptionNoHtml": null,
+             "detail": [
+                 {
+                     "dataType": null,
+                     "fieldName": "FileName",
+                     "newValue": "GraficoDeRelacionesCIS.docx",
+                     "oldValue": "",
+                     "relatedItemId": null,
+                     "type": null
+                 }
+             ],
+             "itemId": 84486,
+             "reviewCode": null,
+             - content-type: application/json  
+             - X-Authorization: Bearer {token}
+             "actionName": "Archivo eliminado",
+             "authorId": 4832,
+             "authorName": "Especialista 1",
+             "created": 1632261186380,
+             "description": "[{\"FieldName\":\"FileName\",\"IdentifierField\":null,\"OldValue\":\"\",\"Ne   
+--- PAGE 31 ---
+               wValue\":\"ESTANDAR\_DE\_BASE\_DE\_DATOS\_V1.2.doc\",\"Type\":null,\"DataType\":null,\"Relate
+ 
+dItemId\":null,\"NewInstanceId\":null,\"OldInstanceId\":null,\"InstanceType\":null}]",
+             "descriptionNoHtml": null,
+             "detail": [
+                 {
+                     "dataType": null,
+                     "fieldName": "FileName",
+                     "newValue": "ESTANDAR\_DE\_BASE\_DE\_DATOS\_V1.2.doc",
+                     "oldValue": "",
+                     "relatedItemId": null,
+                     "type": null
+                 }
+             ],
+             "itemId": 84486,
+             "reviewCode": null,
+             "visible": true
+         }
+             ],
+             "itemId": 84486,
+             "reviewCode": 1,
+             "visible": true
+         }
+      ],
+      "totalItems": 1
+}
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureGetHistory
+Agregar Tarea
+Agregar Tarea
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: api/v9/task
+Tipo: POST
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+--- PAGE 32 ---
+https://{host}/ASMSAPI/api/v9/task
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+parentId
+Número
+Si
+Identificador del caso al que se le relacionará la tarea.
+subject
+Texto
+Si
+Asunto de la tarea
+description
+Texto
+Si
+Descripción HTML de la tarea
+projectId
+Número
+Si
+Identificador del proyecto
+listAdditionalField
+Lista
+No
+Listado de campos adicionales
+modelId
+Número
+Si
+Identificador del modelo de la tarea
+consoleType
+Texto
+Si
+Tipo de consola - 
+Specialist = 1,
+ - 
+Client = 2,
+ - 
+Administrator
+- 
+3
+responsibleId
+Número
+No
+Id del usuario responsable, sino se envía, se tomará el Id
+por defecto.
+groupId
+Número
+No
+Id del grupo responsable, sino se envía se tomará el Id por
+defecto.
+relationTypeId
+Número
+Si
+Identificador tipo de relación entre el caso y la tarea
+startDate
+Fecha
+No
+Fecha de inicio de la tarea. Esta será calculada si se
+agrega el tiempo de duración.
+endDate
+Fecha
+Si
+Fecha de finalización. Esta será calculada si se agrega el
+tiempo de duración.
+duration
+Número
+Si
+Duración de la tarea.
+consoleType
+Texto
+ 
+ 
+Cuerpo de la petición
+Cuerpo de la petición
+{
+      "consoleType": "specialist",
+      "description": "<p>Hola</p>",     "endDate": 1632323155773,
+      "duration": 600,
+      "groupId": 5,
+      "hasPendingSurvey": false,
+      "instance": 1632287170697,
+      "isModified": true,
+      "itemType": 6,
+      "itemVersion": 0,
+      "listAdditionalField": [],
+--- PAGE 33 ---
+      "modelId": 62,
+      "parentId": 84411,
+      "projectId": 19,
+      "reasonId": 839,
+      "relationTypeId": 143,
+      "responsibleId": 4832,
+      "startDate": 1632287155773,     "stateId": 613,
+      "subject": "Hola ",
+      "tempId": -1
+}
+Respuesta
+Respuesta
+{
+      "Id": 11454,
+      "IdByProject": "Tarea 11454"
+      
+}
+Parametros Response:
+Parametros Response:
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+Id
+Int
+Identificador de la tarea
+IdByProject
+String
+Identificador por proyecto de la tarea
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro: Request
+400
+BadRequest
+\r\nNombre del parámetro:
+ConsoleType
+400
+BadRequest
+InvalidConsole
+400
+BadRequest
+ParentIdIsRequired
+400
+BadRequest
+InitialDateIsRequired
+400
+BadRequest
+FinalDateIsRequired
+400
+BadRequest
+DurationIsRequired
+400
+BadRequest
+InvalidParentId
+400
+BadRequest
+InvalidRelationTypeId
+500
+InternalServerError
+FailureAddTask
+--- PAGE 34 ---
+Lista de Tareas
+Lista de Tareas
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/item/{id}/type/{itemType}/relations/list?repository={repository}
+Tipo: POST
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/{id}/type/{itemType}/relations/list?repository={repository}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Número
+Si
+Identificador del caso
+itemType
+Número
+Si
+Tipo del caso
+repository
+Número
+Si
+Opened = 1, Closed - 2, All = 3.
+relatedItemType
+Número
+Si
+Tipo de caso relacionado
+isClosed
+Boleano
+Si
+Si el caso está cerrado
+isReverse
+Boleano
+No
+True si la búsqueda es para sus hijos. False si la búsqueda
+es hacia sus padres.
+relationTypeId
+Número
+No
+Identificador de la relación
+Cuerpo de la petición
+Cuerpo de la petición
+{
+      "isClosed": false,
+      "isReverse": null,
+      "relatedItemType": 6,     "relationTypeId": null 
+}
+Respuesta
+Respuesta
+{
+      "content": [
+--- PAGE 35 ---
+         {
+             "addInt1": 31680,
+             "addInt3": 84411,
+             "addInt4": null,
+             "addInt6": 1,
+             "addStr1": "IM-84411-19-100866",
+             "assetTag": null,
+             "authorId": 4826,
+             "authorName": "Cliente2",
+             "backgroundColorRgb": "255.212.0",             "brandName": null,
+             "categoryHierarchy": null,
+             "categoryId": 3,
+             "categoryName": "Aranda 360",
+             "checkOutDate": null,
+             "ciId": null,
+             "ciName": null,
+             "closedDate": null,
+             "companyId": null,
+             "companyName": null,
+             "content": null,
+             "created": null,
+             "createdDate": null,
+             "customerId": null,
+             "customerName": null,
+             "description": "mmm\n",
+             "groupId": 5,
+             "groupName": "CYS - Desarrollo",
+             "id": 84417,
+             "idByProject": "2076",
+             "identifier": null,
+             "interfaceId": null,
+             "isClosed": false,
+             "isInitStatus": false,
+             "isUserFavorite": false,
+             "ispublic": false,
+             "itemType": 6,
+             "itemTypeName": "Task",
+             "keyWords": null,
+             "lastModified": null,
+             "modelId": 62,
+             "modelName": "[ES] Tareas\_",
+             "modifierUserId": null,
+             "name": null,
+             "openedDate": 1630100444307,
+             "parentId": 0,
+             "projectId": 19,
+             "projectName": "Soporte - ASC",
+--- PAGE 36 ---
+             "published": 0,
+             "ratingTotal": null,
+             "reasonName": null,
+             "relationTypeId": 143,
+             "relationTypeIsReverse": false,
+             "relationTypeName": "Manual",
+             "responsibleId": 4826,
+             "responsibleName": "Cliente2",
+             "serial": null,
+             "serviceId": 1,
+             "serviceName": "Consulta de configuración y\/o manejo",             "stateColor": "255.212.0",
+             "stateId": 324,
+             "stateName": "[ES] en proceso",
+             "subject": "mm",
+             "title": null,
+             "totalHit": null,
+             "type": null,
+             "typeId": null,
+             "typeName": null
+         },
+         {
+             "addInt1": 18720,
+             "addInt3": 84411,
+             "addInt4": null,
+             "addInt6": 1,
+             "addStr1": "IM-84411-19-100866",
+             "assetTag": null,
+             "authorId": 4826,
+             "authorName": "Cliente2",
+             "backgroundColorRgb": "204.204.204",
+             "brandName": null,
+             "categoryHierarchy": null,
+             "categoryId": 3,
+             "categoryName": "Aranda 360",
+             "checkOutDate": null,
+             "ciId": null,
+             "ciName": null,
+             "closedDate": null,
+             "companyId": null,
+             "companyName": null,
+             "content": null,
+             "created": null,
+             "createdDate": null,
+             "customerId": null,
+             "customerName": null,
+             "description": "aaaa\n",
+             "groupId": 5,
+--- PAGE 37 ---
+             "groupName": "CYS - Desarrollo",
+             "id": 84420,
+             "idByProject": "2077",
+             "identifier": null,
+             "interfaceId": null,
+             "isClosed": false,
+             "isInitStatus": true,
+             "isUserFavorite": false,
+             "ispublic": false,
+             "itemType": 6,
+             "itemTypeName": "Task",
+             "keyWords": null,
+             "lastModified": null,
+             "modelId": 149,
+             "modelName": "[ES] Ingreso de personal10",
+             "modifierUserId": null,
+             "name": null,
+             "openedDate": 1630104764183,
+             "parentId": 0,
+             "projectId": 19,
+             "projectName": "Soporte - ASC",
+             "published": 0,
+             "ratingTotal": null,
+             "reasonName": null,
+             "relationTypeId": 73,
+             "relationTypeIsReverse": false,
+             "relationTypeName": "Automática",
+             "responsibleId": 4826,
+             "responsibleName": "Cliente2",
+             "serial": null,
+             "serviceId": 1,
+             "serviceName": "Consulta de configuración y\/o manejo",             "stateColor": "204.204.204",
+             "stateId": 6527,
+             "stateName": "[ES] estado t2",
+             "subject": "aaa",
+             "title": null,
+             "totalHit": null,
+             "type": null,
+             "typeId": null,
+             "typeName": null
+         }
+      ],
+      "totalItems": 2 
+}
+Mensajes de error
+Mensajes de error
+--- PAGE 38 ---
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+InvalidRelations
+400
+BadRequest
+IsReverseIsRequired
+400
+BadRequest
+ValidationError
+500
+InternalServerError
+FailureGetRelations
+Agregar Relaciones
+Agregar Relaciones
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/item/{id}/relation
+Tipo: POST
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/{id}/relation
+Parámetros:
+Parámetros:
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Número
+Si
+Identificador del caso
+itemType
+Texto
+Si
+Tipo de caso
+relatedItemType
+Texto
+Si
+Tipo de caso a relacionar
+relatedItemId
+Número
+Si
+Identificador del ítem a relacionar
+relationTypeId
+Número
+Si
+Identificador del tipo de relación; no es obligatorio para el
+tipo de relación con artículos.
+isSolution
+bool
+No
+Indica si un artículo es solución; solo es obligatorio para
+cuando se va a relacionar un artículo con el caso
+typeIsReverse
+bool
+No
+Solo es obligatorio para cuando los tipos de caso son: -
+Incidents
+ - 
+Problem
+ - 
+Change
+ - 
+Release
+ - 
+ServiceCall
+ - 
+Task
+ -
+Maintenance
+--- PAGE 39 ---
+Cuerpo de la petición
+Cuerpo de la petición
+Ejemplo de relación de **incidente** con **artículo**. {
+"itemType":"Incidents", "relatedItemType":"Article", "relatedItemId":1704, "isSolution":"true"
+}
+Ejemplo de cuerpo de la relación de ***Incidente*** con ***ServiceCall***: {
+"itemType":"1",
+"relatedItemType":"1",
+"relatedItemId":3328,
+"relationTypeId":8,
+"typeIsReverse":"false"
+}
+Ejemplo de ítem con ***ci***
+{
+"itemType":"Incidents",
+"relatedItemType":"Ci",
+"relatedItemId":890,
+"relationTypeId":65,
+"typeIsReverse":"false" }
+*Respuesta*
+{
+    "result": true }
+Parámetros Response
+Parámetros Response
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+result
+Booleano
+Indica si la operación se realizó con
+éxito
+Mensajes de error
+Mensajes de error
+--- PAGE 40 ---
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro: Id
+400
+BadRequest
+InvalidItemType
+400
+BadRequest
+InvalidRelatedItemId
+400
+BadRequest
+InvalidRelatedItemType
+400
+BadRequest
+InvalidRelationTypeId
+400
+BadRequest
+InvalidProjectId
+400
+BadRequest
+RequestNeedsSomeArguments
+403
+Forbidden
+DoNotHavePermissionForThisAction
+500
+InternalServerError
+FailureAddRelatedItem
+Lista de Relaciones
+Lista de Relaciones
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: / api/v9/item/{id}/type/{itemType}/relations/list?repository={repository}
+Tipo: POST
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/ api/v9/item/{id}/type/{itemType}/relations/list?repository={repository}
+Parámetros
+Parámetros
+--- PAGE 41 ---
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+Id
+Número
+Si
+Identificador del caso.
+itemType
+Texto
+Si
+Tipo del caso
+relatedItemType
+Texto
+Si
+Tipo de caso a relacionar. Cuando NO se envía se listarán
+todos los tipos de casos relacionados a un ítem.
+repository
+Texto
+Si
+Indica si son abiertos - cerrados Valores:- 
+Opened = 1,
+ -
+Closed = 2,
+ - 
+All = 3
+ En caso de no ir por defecto se asignará
+Opened.
+relationTypeId
+Número
+No
+Identificador del tipo de relación, cuando no se envía se
+listaran todos los tipo de relación
+isReverse
+Booleano
+No
+Para la única relación que 
+SI
+SI
+ es obligatoria es para la
+relación que se haría entre casos.- 
+true = Listado de padres
+- 
+false = listado de hijos
+language
+Texto
+Si
+Idioma del sistema - 
+Esp = 0,
+ - 
+Ing = 1,
+ - 
+Por = 2,
+ - 
+Pt = 3
+isClosed
+Booleano
+Si
+Indica si el caso al que se le están buscando las relaciones
+está abierto o cerrado.
+Cuerpo de la petición
+Cuerpo de la petición
+Casos relacionado con todos los tipos de casos
+Casos relacionado con todos los tipos de casos
+- api/v9/item/17828/type/1/relations/list?repository=&language=0
+- api/v9/item/17828/type/incidents/relations/list?repository=&language=esp
+- Body:
+{
+`   `“isClosed”:false }
+- **Casos con tipos de casos y tipo de relación**
+- *Incidents:*
+- *Problem:*
+- *Change:*
+- *Release:*
+- *ServiceCall:*
+- *Maintenance:*
+- api/v9/item/17828/type/1/relations/list?repository=&language=0
+- api/v9/item/17828/type/incidents/relations/list?repository=&language=e sp
+- Body:
+*{*
+*"isReverse":false,*
+*"relatedItemType":2,*
+*"relationTypeId":6,*
+`              `*"isClosed":false*
+*}*
+- **Casos con tipos de casos SIN tipo de relación.**
+- *Incidents:*
+- *Problem:*
+- *Change:*
+- *Release:*
+- *ServiceCall:*
+- *Maintenance:*
+- api/v9/item/18261/type/1/relations/list?repository=3&language=0
+- api/v9/item/18261/type/incidents/relations/list?repository=&language=esp
+- Body:
+*{*
+--- PAGE 42 ---
+*"isReverse":false,*
+*"relatedItemType":3,*
+`              `*"isClosed":false*
+*}*
+- **Casos con solo el tipo de caso relacionado.**
+- *Incidents:*
+- *Problem:*
+- *Change:*
+- *Release:*
+- *ServiceCall:*
+- *Maintenance:*
+- api/v9/item/18261/type/1/relations/list?repository=3&language=0
+- api/v9/item/18261/type/incidents/relations/list?repository=&language=esp
+- Body:
+{
+"relatedItemType":3,
+`              `"isClosed":false
+}
+- **Casos relacionados con:**
+- Ci:
+- Packages:
+- Tipo de relación
+- api/v9/item/17828/type/1/relations/list?repository=&language=0
+- api/v9/item/17828/type/incidents/relations/list?repository=&lang uage=0
+- Body :
+{
+"relatedItemType":21,
+`              `"relationTypeId":40,
+`              `"isClosed":false
+}
+- Todos los tipos de relación
+- api/v9/item/17828/type/1/relations/list?repository=&language=0
+- api/v9/item/17828/type/incidents/relations/list?repository=&lang uage=0
+- Body :
+{
+"relatedItemType":21,
+`              `"isClosed":false
+}
+- Article:  
+- Tipo de relación
+- api/v9/item/17828/type/1/relations/list?repository=&language=0
+- api/v9/item/17828/type/incidents/relations/list?repository=&lang uage=0
+- Body :
+{
+"relatedItemType":7,
+"relationTypeId":36,
+`              `"isClosed":false
+}
+- Todos los tipos de relación
+- api/v9/item/17828/type/1/relations/list?repository=&language=0
+- api/v9/item/17828/type/incidents/relations/list?repository=&lang uage=0
+- Body :
+{
+"relatedItemType":7,
+`              `"isClosed":false
+}
+Respuesta
+{
+      "content": [
+--- PAGE 43 ---
+       {
+            "assetTag": null,
+            "authorId": null,
+            "backgroundColorRgb": null,
+            "brandName": null,
+            "categoryId": null,
+            "categoryName": null,
+            "checkOutDate": null,
+            "closedDate": null,
+            "companyId": null,
+            "companyName": null,
+            "content": "",
+            "created": null,
+            "createdDate": null,
+            "description": "APROVALS",
+            "groupId": null,
+            "id": 1698,
+            "idByProject": null,
+            "identifier": "APROVALS",
+            "interfaceId": null,
+            "ispublic": false,
+            "itemType": 7,
+            "itemTypeName": "Artículo",
+            "keyWords": "",
+            "lastModified": 1504708702607,             "modifierUserId": null,
+            "name": null,
+            "openedDate": 1493661749783,
+            "parentId": 0,
+            "published": 0,
+            "ratingTotal": 0,
+            "relationTypeId": 36,
+            "relationTypeIsReverse": false,
+            "relationTypeName": "Soluciona",             "responsibleId": null,
+            "responsibleName": null,             "serial": null,
+            "serviceId": null,
+            "serviceName": null,
+            "stateColor": "21.94.214",             "stateId": 1866,
+            "stateName": "Nuevo",
+            "subject": null,
+            "title": "APROVALS",
+            "totalHit": null,
+            "type": null,
+            "typeId": 1091,
+            "typeName": "FAQ"
+`      }     
+],
+` `"totalItems": 1
+--- PAGE 44 ---
+}
+Parámetros Response:
+Parámetros Response:
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+content
+Lista
+Listado de objetos encontrados en la
+búsqueda.
+totalItems
+Número
+Número total de objetos encontrados
+##Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro: Id
+400
+BadRequest
+\r\nNombre del parámetro:
+ItemType
+400
+BadRequest
+InvalidProjectId
+400
+BadRequest
+InvalidRelations
+400
+BadRequest
+IsClosedIsRequired
+400
+BadRequest
+IsReverseIsRequired
+400
+BadRequest
+RelatedItemTypeIsRequired
+400
+BadRequest
+RequestNeedsSomeArguments
+403
+Forbidden
+DoNotHavePermissionForThisAction
+500
+InternalServerError
+FailureGetRelations
+Eliminar Relaciones
+Eliminar Relaciones
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: api/v9/item/{id}/{itemType}/{relatedItemId}/{relatedItemType}/relation/?relationTypeId=
+{relationTypeId}&isReverse={isReverse}&isSolution={isSolution}&isClosed={isClosed}
+Tipo: DELETE
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+--- PAGE 45 ---
+https://{host}/ASMSAPI/v9/item/{id}/{itemType}/{relatedItemId}/{relatedItemType}/relation/?relationTypeId=
+{relationTypeId}&isReverse={isReverse}&isSolution={isSolution}&isClosed={isClosed}
+Parámetros:
+Parámetros:
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Número
+Si
+Identificador del caso
+itemType
+Texto
+Si
+Tipo de caso
+relatedItemType
+Texto
+Si
+Tipo de caso a relacionar
+relatedItemId
+Número
+Si
+Identificador del ítem a relacionar
+relationTypeId
+Número
+Si
+Identificador del tipo de relación, para la única relación que
+no es obligatoria es para la relación entre Caso y artículos.
+isSolution
+bool
+No
+Para la única relación que SÍ obligatoria es para la que se
+haría entre casos.
+IsReverse
+bool
+No
+Solo es obligatorio para cuando los tipos de caso son: -
+Incidents
+ - 
+Problem
+ - 
+Change
+ - 
+Release
+ - 
+ServiceCall
+ - 
+Task
+ -
+Maintenance
+IsClosed
+bool
+Si
+Establece si el caso que se va a relacionar se encuentra en
+estado cerrado o abierto.
+Ejemplos de uri
+Ejemplos de uri
+Eliminar relaciones de casos con:
+Incidents
+Incidents
+api/v9/item/104081/incidents/104082/incidents/relation/?relationTypeId=140&isReverse=true&isClosed=false
+CI
+CI
+api/v9/item/104081/incidents/146/ci/relation/?
+relationTypeId=40&isReverse=null&isSolution=false&isClosed=false
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Respuesta
+Respuesta
+El servicio retorna un Json con la siguiente información:
+{ 
+“result”: true }
+Parámetros Response:
+Parámetros Response:
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+result
+Booleano
+Indica si la operación se realizó con
+éxito
+Mensajes de error
+Mensajes de error
+--- PAGE 46 ---
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro: Id
+400
+BadRequest
+\r\nNombre del parámetro: ItemType
+400
+BadRequest
+\r\nNombre del parámetro: RelatedItemId
+400
+BadRequest
+\r\nNombre del parámetro:
+RelatedItemtype
+400
+BadRequest
+RequestNeedsSomeArguments
+403
+Forbidden
+DoNotHavePermissionForThisAction
+500
+InternalServerError
+FailureDeleteRelatedItem
+Obtener Módelo por Categoría
+Obtener Módelo por Categoría
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: api/v9/item/{itemType}/categories/{categoryId}/service/{serviceId}/model
+Tipo: GET
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/{itemType}/categories/{categoryId}/service/{serviceId}/model
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+itemType
+Número
+Si
+Tipo de caso
+categoryId
+Número
+Si
+Identificador de la categoría
+serviceId
+Número
+Si
+Identificador del servicio
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Respuesta
+Respuesta
+--- PAGE 47 ---
+{
+      "help": "<h1 style=\"color: #202124; font-family: 'Google Sans', Roboto, sans-serif; font-
+       size: 2rem; line-height: 2.5rem; margin-bottom: 0.5rem;\">RS Servicio Soporte<\/h1>",
+      "id": 31,
+      "name": "[ES] RS Servicio Soporte",
+      "script": "<!DOCTYPE html><html lang=\"es\"><head><title>CambioCuota2<\/title><\/head><b ody><table class=\"tb1\">
+<tbody><tr><td class=\"td1\"><img alt=\"\" src=\"fasoft.png\" style=\"w idth: 200px;height: 90px ; padding: 1px; margin:
+ 
+1px;\" \/><\/td><td class=\"td2\"><p class=\"p1\" >FONDO DE EMPLEADOS DE ARANDA SOFTWARE - FASOFT<\/p><br \/>
+<article class=\"art1\">N.I. T. 901067439- 6<\/article><br \/><br \/><article>FORMATO DE ACTUALIZACI&Oacute;N DE
+ 
+CUOTA DE AHORRO< \/article><div><table class=\"date-
+small\" border=\"1\"><tbody><tr><th colspan=\"3\">FECHA                                <\/th><\/tr><tr><td class=\"size-td\">MES<\/td><td
+ 
+class=\"size-td\">DIA<\/td><td class=\"size- td\">A&Ntilde;O<\/td><\/tr><tr class=\"tr1\"><td class=\"size-
+td1\"><input class=\"inp1\" type=\"text\" maxlength=\"2\" placeholder=\"MM\" \/><\/td><td clas s=\"size-
+td2\"><input class=\"inp2\" type=\"text\" maxlength=\"2\" placeholder=\"DD\" \/><\/td><td class =\"size-
+td3\"><input class=\"inp3\" type=\"text\" maxlength=\"4\" placeholder=\"AAAA\" \/><\/td><\/tr> <\/tbody><\/table><\/div>
+<\/td><\/tr><\/tbody><\/table><table class=\"infpers\" width=\"816px \" border=\"1\" style=\"border-
+collapse: collapse;\"><tbody><tr><td class=\"tdinf1\" colspan=\"2\">INFORMACION PERSONAL<\/ td><\/tr><tr><td
+ 
+class=\"tdinf2\"><div class=\"tdinf4\">Nombres<\/div><div><input type=\"text\"  class=\"inp4\" maxlength=\"30\" \/><\/div>
+<\/td><td class=\"tdinf3\"><div class=\"tdinf5\">Apell idos<\/div><div><input type=\"text\" class=\"inp5\" maxlength=\"30\"
+ 
+\/><\/div><\/td><\/tr><\/t body><\/table><table class=\"infpers2\" width=\"816px\" border=\"1\" style=\"border-
+collapse: collapse;\"><tbody><tr><td class=\"tdinf6\" style=\"width: 160px;\"><div class=\"tdinf7\ ">Documento de
+ 
+indentidad<\/div><div><input type=\"text\" class=\"inp6\" maxlength=\"30\" \/ ><\/div><\/td><td class=\"tdinf8\"
+ 
+style=\"width: 160px;\"><div class=\"tdinf9\">Tel&eacute;fono
+<\/div><div><input type=\"text\" class=\"inp7\" maxlength=\"18\" \/><\/div><\/td><td class=\"tdi nf10\" style=\"width:
+ 
+160px;\"><div class=\"tdinf11\">Celular<\/div><div><input type=\"text\" cla ss=\"inp8\" maxlength=\"18\" \/><\/div><\/td><td
+ 
+class=\"tdinf12\"><div class=\"tdinf13\">Corre
+- Electr&oacute;nico<\/div><div><input type=\"text\" class=\"inp9\" maxlength=\"50\" \/><\/div> <\/td><\/tr><\/tbody>
+<\/table><table class=\"Tabla3\" width=\"816px\" border=\"1\"><tbody><t r><th colspan=\"2\" class=\"tdahorro1\">
+                    
+TIPO DE AHORRO <br \/>                    (Seleccio ne con una X)                    <\/th><\/tr><tr><td class=\"opc1\" style=\"width:
+ 
+408px;\"><p class=\"op cah1\">Ahorro Permanente        <input type=\"text\" class=\"inp10\" \/><\/p><\/td><td class=\"o pc2\"
+ 
+style=\"width: 408px;\"><p class=\"opcah2\">Ahorro Navide&ntilde;o <input type=\"text\" class=\"inp11\" \/><\/p><\/td>
+<\/tr><\/tbody><\/table><table width=\"816px\" border=\"1px\"> <tbody><tr><td class=\"tdblank\"><\/td><\/tr><\/tbody>
+<\/table><table class=\"Tabla4\" width=\ "816px\" border=\"1\"><tbody><tr><td class=\"opc3\" style=\"width: 408px;\"><p
+ 
+class=\"opcah3 \">Valor $ <input type=\"text\" class=\"inp12\" \/><\/p><\/td><td class=\"opc4\" style=\"width: 4 08px;\"><p
+ 
+class=\"opcah4\">Porcentaje %  <input type=\"text\" class=\"inp13\" \/><\/p><\/td>< \/tr><tr><td colspan=\"2\"
+ 
+class=\"opc5\">Tipo de descuento: &nbsp; &nbsp; &nbsp; &nbsp; &nb sp; &nbsp; &nbsp; &nbsp; &nbsp;  Quincenal <input
+ 
+type=\"text\" class=\"opcah5\" \/>&nbsp; &n bsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Mensual <input type=\"text\"
+ 
+class=\"opcah6\" \/>&nb sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Quincena 1 <input type=\"text\" class=\"opcah7\" \/>&
+ 
+nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Quincena 2 <input type=\"text\" class=\"opca h8\" \/><\/td><\/tr><tr>
+<td class=\"autorizaciones\" align=\"center\" colspan=\"4\"><p id=\"p2\" >AUTORIZACIONES <\/p><br \/><p>Autorizo a
+ 
+Aranda Software  , a la cual me encuentro vinculad
+- para que deduzca de mi salario mensual , las cuotas que aqu&iacute; relaciono, los cuales deber &aacute;n ser
+ 
+entregados a FASOFT por concepto de ahorros.<\/p><br \/><div class=\"caja1\"><ar ticle id=\"sign1\">Firma &nbsp; &nbsp;
+ 
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nb sp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+ 
+&nbsp; &nbsp; &nbsp; &nbsp; & nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+ 
+&nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Observacion es:<\/article><br
+ 
+\/><br \/><br \/><br \/><br \/><div class=\"firma1\">\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+ 
+\_\_\_\_\_\_\_\_\_\_\_\_<\/div><div class=\"CC\">C.C.No.<\/div><\/div><\/td><\/tr><\/tbody><\/table><\/ body><\/html>"
+}
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500**
+BadRequest**
+FailureGetModelByCategory
+Listar casos padres relacionados con relación complementaria
+Listar casos padres relacionados con relación complementaria
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: 
+/api/v9/item/list/parent/{childId}/close
+Tipo: GET
+Encabezados requeridos:
+content-type: application/json
+--- PAGE 48 ---
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/list/parent/{childId}/close
+Parámetros
+Parámetros
+ 
+ 
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+ 
+childId
+Número
+Sí
+Identificador del caso que se
+cerró.
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Respuesta
+Respuesta
+  {
+     "content":[
+        {
+       "id": 1,
+       "itemType": 2,
+       "idbyProject": "RF-240"
+         }
+     ],
+     "totalItems":1
+  }
+Parámetros Respuesta
+Parámetros Respuesta
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+id
+Número
+Identificador del caso
+itemType
+Número
+Tipo del caso
+idbyProject
+Texto
+Identificador por proyecto del
+caso
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+{ ‘exceptionMessage’: ‘xxxxxxxxx’, ‘message’: ‘FailureCloseRelatedParent’,
+‘serviceName’: ‘ItemREST’, ‘operation’: ‘CloseRelatedParent’ }
+Cerrar casos padres relacionados con relación complementaria
+Cerrar casos padres relacionados con relación complementaria
+Detalles de la petición
+Detalles de la petición
+--- PAGE 49 ---
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri
+Uri
+: /api/v9/item/close/related/parent
+Tipo
+Tipo
+: PUT
+Encabezados requeridos
+Encabezados requeridos
+:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/close/related/parent
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+childId
+Número
+Sí
+Identificador del caso que se cerró.
+commentary
+Texto
+Sí
+Comentario el cual se le va a asociar a todos los casos padres
+que se puedan cerrar.
+Cuerpo de la petición
+Cuerpo de la petición
+{
+  "childId": 5648,
+  "commentary": "Se soluciona caso hijo"
+}
+Respuesta
+Respuesta
+{
+   "content":[
+      {
+         "projectId": 1,
+         "message": "Success",
+         "idbyProject": "RF-240"
+       }
+   ],
+   "totalItems": 1
+}
+Parámetros Respuesta
+Parámetros Respuesta
+--- PAGE 50 ---
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Descripción
+Descripción
+projectId
+Número
+Identificador del proyecto.
+message
+Texto
+Indica el error que pudo ocurrir, al intentar cerrar el caso. Si no hay error
+retorna “Success”.
+idbyProject
+Texto
+Identificador por proyecto del caso.
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+{ ‘exceptionMessage’: ‘xxxxxxxxx’, ‘message’: ‘FailureCloseRelatedParent’,
+‘serviceName’: ‘ItemREST’, ‘operation’: ‘CloseRelatedParent’ }
+Manejo de Usuarios
+Manejo de Usuarios
+Manejo de Usuarios
+Manejo de Usuarios
+Búsqueda de usuario por tipo de elemento
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/user/{id}/search?itemType={itemType}&projectId={projectId}&isIncluded={isIncluded}&criteria=
+{criteria}
+Tipo: GET
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/user/{id}/search?itemType={itemType}&projectId={projectId}&isIncluded=
+{isIncluded}&criteria={criteria}
+Parámetros
+Parámetros
+--- PAGE 51 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Número
+Si
+Identificador del valor (ID de grupo, ID de grupo de clientes, ID
+de compañía, etc.) para la búsqueda de usuarios según el tipo
+de elemento (itemType)
+itemType
+Enumerador
+Si
+Tipo de búsqueda - 
+Ci = 21
+ - 
+ClientGroup = 64
+ - 
+Company = 38
+ -
+Group = 49
+ - 
+License = 68
+projectId
+Número
+Si
+Identificador del proyecto
+isIncluded
+Booleano
+No
+Indica el tipo de usuarios a retornar en la búsqueda. 
+- true: Retorna los usuarios asociados al projectId y al
+elemento definido por itemType e id. 
+- false: Retorna los usuarios del proyecto que no están
+asociados al elemento definido por itemType e id.
+criteria
+Texto
+No
+Texto de búsqueda de usuario
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Ejemplos de uri
+api/v9/user/17/search?itemType=group&projectId=2&isIncluded=true&criteria=abdy
+api/v9/user/17/search?itemType=group&projectId=2&isIncluded=true&criteria=
+api/v9/user/17/search?itemType=group&projectId=2&isIncluded=true
+Respuesta
+Respuesta
+{
+      "content": [
+        {
+                    "email": "tri@pri.comx",             "id": 150,
+                    "name": "Abdy Sanjur",             "userName": "ASANJUR"         }
+      ],
+      "totalItems": 1
+}
+Parámetros de respuesta
+Parámetros de respuesta
+--- PAGE 52 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+totalItems
+Número
+Número total de objetos
+encontrados
+content
+Lista
+Listado de objetos
+email
+Texto
+Correo electrónico del usuario
+id
+Número
+Identificador del usuario
+name
+Texto
+Nombre del usuario
+userName
+Texto
+Alias del usuario
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureSearchUsers
+400
+BadRequest
+InvalidTypeForSearch
+Edición de Usuarios
+Edición de Usuarios
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: api/v9/user/{id}
+Tipo: PUT
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/user/{id}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+active
+Número
+Si
+Indica si usuario está activo o no
+name
+Texto
+Si
+Nombre completo del usuario
+userName
+Texto
+Si
+ 
+--- PAGE 53 ---
+userName
+Texto
+Si
+ 
+password
+Texto
+Si
+Contraseña
+projectId
+Número
+Si
+Identificador del proyecto
+stateId
+Número
+Si
+Identificador del estado
+listAdditionalField
+Lista
+Si
+Listado de campos adicionales
+consoleType
+Enumerador
+Si
+Identificador del tipo de consola -
+Specialist = 1,
+ - 
+Client = 2,
+ - 
+Administrator
+- 
+3
+registerType
+Enumerador
+Si
+Identificador del tipo de registro - 
+Client =
+37,
+ - 
+Specialist = 53,
+chiefId
+Número
+No
+Identificador del jefe inmediato
+address1
+Texto
+No
+Dirección 1
+address2
+Texto
+No
+Dirección 2
+address3
+Texto
+No
+Dirección 3
+birthDate
+Número 
+(Tiempo UNIX
+(Tiempo UNIX
+en
+en
+ 
+milisegundos)
+milisegundos)
+No
+Fecha de nacimiento
+buildingId
+Número
+No
+Identificador del edificio
+cityId
+Número
+No
+Identificador de la ciudad
+companyId
+Número
+No
+Identificador de la sucursal
+countryId
+Número
+No
+Identificador del país
+departmentCode
+Número
+No
+Identificador del departamento
+departmentNumber
+Número
+No
+Identificador del n° de departamento
+documentNumber
+Número
+No
+Número de documento
+documentTypeId
+Número
+No
+Identificador del tipo de documento
+email
+Texto
+No
+Correo electrónico
+ext
+Texto
+No
+Número de extensión
+fax
+Texto
+No
+Número de Fax
+floorId
+Número
+No
+Identificador del piso
+guidLDAP
+Texto
+No
+ 
+jobId
+Número
+No
+Identificador del cargo
+mobil
+Texto
+No
+Número de teléfono celular
+phone1
+Texto
+No
+Número de teléfono 1
+phone2
+Texto
+No
+Número de teléfono 2
+phone3
+Texto
+No
+Número de teléfono 3
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+--- PAGE 54 ---
+phone3
+Texto
+No
+Número de teléfono 3
+siteId
+Número
+No
+Identificador de la sede
+chiefId
+Número
+No
+Identificador jefe inmediato
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+Cuerpo de la petición
+Cuerpo de la petición
+{
+      "active": 1,
+      "birthDate": 315122400000,
+      "name": "Usuario ASMS",
+      "userName": "usuario.asms",
+      "chiefId": 1,
+      "consoleType": "Administrator",
+      "registerType": "Specialist",
+      "email": "usuario.asms@gmail.com",     
+      
+      "projectId": 2,
+      "stateId": 1,
+      "phone1": "5226987415",
+      "departmentNumber": null,
+      "documentNumber": "11234567",
+      "documentTypeId": 270,
+      "listAdditionalField": []
+}
+**Respuesta**
+{
+  "Result": true
+}
+Parámetros de respuesta
+Parámetros de respuesta
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+result
+boolean
+Resultado de la
+operación
+Mensajes de error
+Mensajes de error
+--- PAGE 55 ---
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureUpdateUser
+400
+BadRequest
+InvalidConsole
+400
+BadRequest
+InvalidRegisterType
+400
+BadRequest
+InvalidStateId
+400
+BadRequest
+InvalidProjectId
+400
+BadRequest
+InvalidAdditionalFieldValue
+400
+BadRequest
+AdditionalFieldIsRequired
+400
+BadRequest
+IsRequired (campos de Interfaz)
+Creación de Usuarios
+Creación de Usuarios
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/user
+Tipo: POST
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/user
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+active
+Número
+Si
+Indica si usuario está activo o no
+name
+Texto
+Si
+Nombre completo del usuario
+userName
+Texto
+Si
+ 
+password
+Texto
+Si
+Contraseña
+projectId
+Número
+Si
+Identificador del proyecto
+stateId
+Número
+Si
+Identificador del estado
+--- PAGE 56 ---
+listAdditionalField
+Lista
+Si
+Listado de campos adicionales
+consoleType
+Enumerador
+Si
+dentificador del tipo de consola -
+Specialist = 1,
+ - 
+Client = 2,
+ - 
+Administrator
+- 
+3
+registerType
+Enumerador
+Si
+Identificador del tipo de registro - 
+Client =
+37,
+ - 
+Specialist = 53,
+chiefId
+Número
+No
+Identificador del jefe inmediato
+address1
+Texto
+No
+Dirección 1
+address2
+Texto
+No
+Dirección 2
+address3
+Texto
+No
+Dirección 3
+birthDate
+Número 
+(Tiempo UNIX
+en milisegundos)
+No
+Fecha de nacimiento
+buildingId
+Número
+No
+Identificador del edificio
+cityId
+Número
+No
+Identificador de la ciudad
+companyId
+Número
+No
+Identificador de la sucursal
+countryId
+Número
+No
+Identificador del país
+departmentCode
+Número
+No
+Identificador del departamento
+departmentNumber
+Número
+No
+Identificador del n° de departamento
+documentNumber
+Número
+No
+Número de documento
+documentTypeId
+Número
+No
+Identificador del tipo de documento
+email
+Texto
+No
+Correo electrónico
+ext
+Texto
+No
+Número de extensión
+fax
+Texto
+No
+Número de Fax
+floorId
+Número
+No
+Identificador del piso
+guidLDAP
+Texto
+No
+ 
+jobId
+Número
+No
+Identificador del cargo
+mobil
+Texto
+No
+Número de teléfono celular
+phone1
+Texto
+No
+Número de teléfono 1
+phone2
+Texto
+No
+Número de teléfono 2
+phone3
+Texto
+No
+Número de teléfono 3
+siteId
+Número
+No
+Identificador de la sede
+chiefId
+Número
+No
+Identificador jefe inmediato
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+--- PAGE 57 ---
+Cuerpo de la petición
+Cuerpo de la petición
+{
+      "active": 1,
+      "birthDate": 315122400000,
+      "name": "Usuario ASMS",
+      "userName": "usuario.asms",
+      "chiefId": 1,
+      "consoleType": "Administrator",
+      "registerType": "specialist",
+      "projectId": 19,
+      "stateId": 1,
+      "email": "test@gmail.com",     
+      
+      "password": "Aranda123",
+      "listAdditionalField": []
+}
+Respuesta
+Respuesta
+{
+      "id": 4848,
+      "result": true 
+      
+}
+Parámetros de respuesta
+Parámetros de respuesta
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+id
+Número
+Identificador del usuario
+result
+Boleano
+Resultado de la
+operación
+Mensajes de error
+Mensajes de error
+--- PAGE 58 ---
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureAddUser
+400
+BadRequest
+InvalidConsole
+400
+BadRequest
+InvalidRegisterType
+400
+BadRequest
+InvalidStateId
+400
+BadRequest
+InvalidProjectId
+400
+BadRequest
+InvalidAdditionalFieldValue
+400
+BadRequest
+AdditionalFieldIsRequired
+Detalle de Usuario
+Detalle de Usuario
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/user?id={id}
+Tipo: GET
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/user?id={id}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+Id
+Int
+No
+Identificador del usuario, sino se envía se toma el id del usuario que
+esté logueado.
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Respuesta
+Respuesta
+{
+      "active": 1,
+--- PAGE 59 ---
+      "address1": "Direecion 1 - 10",
+      "address2": "Direecion 2 -20",
+      "address3": "Direecion 3 -30",
+      "birthDate": 605854800000,
+      "buildingId": 7316,
+      "buildingName": "Edificio Aranda",
+      "chargeName": "Desarrollador Back",
+      "chiefId": 1,
+      
+      "chiefName": "APPLICATION ADMINISTRATOR",
+      "cityId": 7237,
+      "cityName": "Bogota, D.C.",
+      "companyId": 7276,
+      "companyName": "Aranda Software",
+      "conversationReference": false,
+      "countryId": 7212,
+      "countryName": "Colombia",
+      "cultureName": "es",
+      "departmentCode": 7314,
+      "departmentCodeName": "Departamento 1",
+      "departmentName": "Desarrollo",
+      "departmentNumber": 7284,
+      "documentNumber": "1032654894",
+      "documentType": "7312",
+      "documentTypeId": 7312,
+      "documentTypeName": "Cédula de ciudadanía",     "email": "testcys@arandasoft.com",
+      "ext": "Ext 08",
+      "fax": "Fx8798798",
+      "floorId": 7321,
+      "floorName": "Piso 1",
+      "id": 4832,
+      "isActive": true,
+      "jobId": 7323,
+      "jobName": "Desarrollador Back",
+      "licenses": {
+         "content": [
+                    {
+                 "id": 3,
+                 "name": "CHANGES",
+                 "proyectId": null
+                    },
+                    {
+                 "id": 4,
+                 "name": "SERVICECALLS",
+                 "proyectId": null
+                    },
+                    {
+                 "id": 1,
+--- PAGE 60 ---
+                 "name": "INCIDENTS",
+                 "proyectId": null
+                    },
+                    {
+                 "id": 2,
+                 "name": "PROBLEMS",
+                 "proyectId": null
+                    },
+                    {
+                 "id": 13,
+                 "name": "RELEASE",
+                 "proyectId": null
+                    }
+         ],
+         `"totalItems": 5
+      },
+      "mobil": "3205847210",
+      "name": "Especialista 1",
+      "phone1": "65432107",
+      "phone2": "7654321",
+      "phone3": "5432107",
+      "picture": "numero3.png",
+      "pictureId": 17917,
+      "projects": {
+`        "content": [
+                    {
+                 "description": "[ES] Desde Aranda Software estamos muy interesados en proteger a todos  nuestros clientes,
+ 
+miembros\nde nuestros canales aliados, colaboradores y sus respectivas familia s, ya que la crisis del virus\nCOVID-19 nos
+ 
+afecta a todos, por lo cual acatamos las",
+                 "hasActiveServices": false,
+                 "id": 25,
+                 "image": "admin (2).jpg",
+                 "imageId": null,
+                 "isActiveChat": false,
+                 "name": "[ES]ASMS"
+                    },
+                    {
+                 "description": "[ES] Proyecto para casos de pruebas",
+                 "hasActiveServices": false,
+                 "id": 19,
+                 "image": "CustomerSupport.jpg",
+                 "imageId": null,
+                 "isActiveChat": false,
+                 "name": "Soporte - ASC"
+                    }
+         ],
+         "totalItems": 2
+      },
+--- PAGE 61 ---
+      "providerId": 0,
+      "siteDescription": "Cra.69 No.98 A 11 C.C.Outlet Floresta Of.701",     "siteId": 7280,
+      "siteName": "Cra.69 No.98 A 11 C.C.Outlet Floresta Of.701",
+      "specialistsPermission": true,
+      "timeZone": "SA Pacific Standard Time",
+      "userName": "E1"
+}
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureGetDetail
+Búsqueda de usuarios
+Búsqueda de usuarios
+Detalles de la petición
+Detalles de la petición
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri:
+Uri:
+ /api/v9/user/searchAll?projectId={projectId}&serviceId={serviceId}&companyId={companyId}&itemType=
+{itemType}&criteria={criteria}
+Tipo:
+Tipo:
+ GET
+Encabezados requeridos:
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/user/searchAll?projectId={projectId}&serviceId={serviceId}&companyId=
+{companyId}&itemType={itemType}&criteria={criteria}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+itemType
+Enumerador
+Sí
+Tipo de búsqueda:
+• Client = 37
+• Specialist = 53
+projectId
+Número
+No
+Identificador del proyecto
+serviceId
+Número
+No
+Identificador del servicio
+companyId
+Número
+No
+Identificador de la compañía
+criteria
+Texto
+No
+Texto de búsqueda de usuario
+--- PAGE 62 ---
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Ejemplos de URI
+Ejemplos de URI
+/api/v9/user/searchAll?itemType=specialist&projectId=2&criteria=abdy
+/api/v9/user/searchAll?itemType=specialist&projectId=2&criteria=
+/api/v9/user/searchAll?itemType=specialist&projectId=2
+Respuesta
+Respuesta
+{
+    "content": [
+        {
+            "email": "tri@pri.comx",
+            "id": 150,
+            "name": "Abdy Sanjur",
+            "userName": "ASANJUR"
+        }
+    ],
+    "totalItems": 1
+}
+Parámetros de respuesta
+Parámetros de respuesta
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+totalItems
+Número
+Número total de objetos
+encontrados
+content
+Lista
+Listado de objetos
+email
+Texto
+Correo electrónico del usuario
+id
+Número
+Identificador del usuario
+name
+Texto
+Nombre del usuario
+userName
+Texto
+Alias del usuario
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureSearchUsers
+400
+BadRequest
+InvalidTypeForSearch
+Asociación de usuarios a compañía
+Asociación de usuarios a compañía
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: api/v9/company/{company_id}/associateusers
+Tipo: POST
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+--- PAGE 63 ---
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/company/{company_id}/associateusers
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+company_id
+Número
+Si
+Identificador único de la compañía.
+usersId
+Array[int]
+Si
+Lista de IDs de los usuarios que se asociarán a la compañía
+(máximo 100 usuarios). Si se envían más de 100 usuarios, solo
+se considerarán los primeros 100 IDs del array.
+Cuerpo de la petición
+Cuerpo de la petición
+{
+    "usersId": [
+        1,
+        3,
+        4,
+        5
+    ]
+}
+**Respuesta**
+200 OK
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado
+Estado
+HTTP
+HTTP
+Mensaje de error
+Mensaje de error
+409
+Conflict
+Se produce cuando alguno de los IDs enviados no existe en la base de datos o
+está asociado únicamente como especialista. Los clientes que sí existen serán
+asociados correctamente.
+404
+Not Found
+“message”: “CompanyIdInvalid” (el ID de la compañía no existe o se encuentra
+asociada únicamente como proveedor).
+400
+BadRequest
+“exceptionMessage”: “NoUsersProvided” (no se han proporcionado usuarios).
+Asociación de compañías a cliente
+Asociación de compañías a cliente
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: api/v9/user/{user_id}/companies
+Tipo: POST
+Encabezados requeridos:
+--- PAGE 64 ---
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/user/{user_id}/companies
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+user_id
+Número
+Si
+Identificador único del cliente.
+companiesId
+Array[int]
+Si
+Lista de IDs de las compañías que se asociarán al cliente
+(máximo 100 compañías). Si se envían más de 100 compañías,
+solo se considerarán los primeros 100 IDs del array.
+Cuerpo de la petición
+Cuerpo de la petición
+{
+    "companiesId": [
+        1,
+        3,
+        4,
+        5
+    ]
+}
+**Respuesta**
+200 OK
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado
+Estado
+HTTP
+HTTP
+Mensaje de error
+Mensaje de error
+409
+Conflict
+Se produce cuando alguno de los IDs enviados no existe en la base de datos o
+está asociado únicamente como proveedor. Sin embargo, las compañías que sí
+existen serán asociadas correctamente.
+404
+Not Found
+“message”: “ClientIdInvalid” (el ID del usuario no existe o se encuentra asociada
+únicamente como especialista).
+400
+BadRequest
+“exceptionMessage”: “NoCompaniesProvided” (no se han proporcionado
+compañías).
+--- PAGE 65 ---
+Manejo de Categorías
+Manejo de Categorías
+Manejo de Categorías
+Manejo de Categorías
+Lista de categorías
+Lista de categorías
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/item/{itemType}/services/{serviceId}/categories?dataType={dataType}&parentId= {parentId}
+Tipo: GET
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/{itemType}/services/{serviceId}/categories?dataType={dataType}&parentId=
+ 
+{parentId}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+itemType
+Texto
+Si
+Identificador del tipo de ítem
+serviceId
+Texto
+Si
+Identificador del servicio
+dataType
+Texto
+No
+Tipo de datos a listar 
+- 
+All = 0,
+ - 
+Child = 1,
+- 
+Parent = 2
+ Si no se envía se
+tomará por defecto listar los padres.
+parentId
+Número
+No
+Identificador del padre.
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Ejemplos URI:
+api/v9/item/incidents/services/2418/categories
+api/v9/item/incidents/services/2418/categories?dataType=all
+api/v9/item/incidents/services/2418/categories?dataType=parent
+api/v9/item/incidents/services/2418/categories?dataType=child&parentId=2
+Respuesta
+Respuesta
+**Listado de todos**
+    {
+    "content": [
+      {
+--- PAGE 66 ---
+                    "childrenCount": 3,
+                    "hasChild": true,
+                    "hierarchy": "Aranda Asset Management Server.Aranda Asset Management Server",             "hint": null,
+                    "id": 2,
+                    "imageIndex": 0,
+                    "name": "Aranda Asset Management Server",
+                    "parentId": null
+          },
+          {
+                    "childrenCount": 0,
+                    "hasChild": false,
+                    "hierarchy": "Aranda Asset Management Server.remote setup",
+                    "hint": null,
+                    "id": 24,
+                    "imageIndex": 0,
+                    "name": "remote setup",
+                    "parentId": 2
+          }
+    ],
+    "totalItems": 2
+}
+***Listado de hijos:***
+{
+      "content": [
+          {
+                    "childrenCount": 0,
+                    "hasChild": false,
+                    "hierarchy": "Aranda Asset Management Server.remote setup",             "hint": null,
+                    "id": 24,
+                    "imageIndex": 0,
+                    "name": "remote setup",
+                    "parentId": 2
+          },
+          {
+                    "childrenCount": 0,
+                    "hasChild": false,
+                    "hierarchy": "Aranda Asset Management ServerAranda Asset Management Server.dghfghfdh",
+                    "hint": null,
+                    "id": 5561,
+                    "imageIndex": 0,
+                    "name": "dghfghfdh",
+                    "parentId": 2
+          },
+          {
+                    "childrenCount": 0,             
+                    "hasChild": false,
+                    "hierarchy": "Aranda Asset Management ServerAranda Asset Management Server.bbbbb",             "hint": null,
+--- PAGE 67 ---
+                    "id": 6616,
+                    "imageIndex": 0,
+                    "name": "bbbbb",
+                    "parentId": 2
+          }
+      ],
+      "totalItems": 3
+}
+Listado de padres:
+Listado de padres:
+{
+      "content": [
+          {
+                    "childrenCount": 3,
+                    "hasChild": true,
+                    "hierarchy": "Aranda Asset Management Server.Aranda Asset Management Server",             "hint": null,
+                    "id": 2,
+                    "imageIndex": 0,
+                    "name": "Aranda Asset Management Server",
+                    "parentId": null
+          },
+          {
+                    "childrenCount": 0,
+                    "hasChild": false,
+                    "hierarchy": "Aranda DBImport.Aranda DBImport",
+                    "hint": null,
+                    "id": 130,
+                    "imageIndex": 0,
+                    "name": "Aranda DBImport1",
+                    "parentId": null
+          },
+          {
+                    "childrenCount": 0,
+                    "hasChild": false,
+                    "hierarchy": "Aranda 360 - Incidente.Aranda 360 - Incidente",             "hint": null,
+                    "id": 2338,
+                    "imageIndex": 0,
+                    "name": "Aranda 360 - Incidente",
+                    "parentId": null
+          }
+      ],
+      "totalItems": 3
+}
+Parámetros Response
+Parámetros Response
+--- PAGE 68 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+content
+Lista
+Listado de objetos encontrados
+totalItems
+Número
+Número total de registros
+encontrados
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+Is null\r\nNombre del parámetro:
+ItemType
+400
+BadRequest
+Is null\r\nNombre del parámetro: parentId
+400
+BadRequest
+Is null\r\nNombre del parámetro: serviceId
+500
+InternalServerError
+FailureGetCategoriesByService
+Manejo de Servicios
+Manejo de Servicios
+Manejo de Servicios
+Manejo de Servicios
+Lista de servicios Detalles de la petición
+Lista de servicios Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/project/{id}/{itemType}/services/search?console={console}&clientId={clientId}&co mpanyId=
+{companyId}&ciId={ciId}&application={application}&criteria={criteria}
+Tipo: GET
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/project/{id}/{itemType}/services/search?console={console}&clientId={clientId}&co
+ 
+mpanyId={companyId}&ciId={ciId}&application={application}&criteria={criteria}
+Parámetros
+Parámetros
+--- PAGE 69 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Número
+Si
+Identificador del proyecto
+itemType
+Número
+Si
+Tipo de caso
+console
+Número
+Si
+Tipo de consola, Specialist = 1, 
+Client = 2, Administrator =
+3
+clientId
+Número
+Si
+Identificador del cliente
+companyId
+Número
+No
+Identificador de la compañía
+ciId
+Número
+No
+Identificador del CI
+application
+Texto
+Si
+Nombre de aplicación, ASDK
+criteria
+Texto
+Si
+Texto a buscar
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Ejemplo URI:
+/api/v9/project/25/4/services/search?console=Specialist&clientId=&companyId=&ciId=&a
+pplication=ASDK&criteria=a
+**Respuesta**
+{
+      "content": [
+          {
+                    "id": 81,
+                    "name": "[ES] Cambios o sugerencias",             "proyectId": null
+          },
+          {
+                    "id": 136,
+                    "name": "[ES] Cambios New",
+                    "proyectId": null
+          },
+          {
+                    "id": 138,
+                    "name": "[ES] Servicio Carlos",
+                    "proyectId": null         }
+      ],
+      "totalItems": 3
+}
+Mensajes de error
+Mensajes de error
+--- PAGE 70 ---
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureGetServices
+Manejo de Campos Adicionales
+Manejo de Campos Adicionales
+Manejo de Campos Adicionales
+Manejo de Campos Adicionales
+Lista de campos adicionales
+Lista de campos adicionales
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/item/additionalfields
+Tipo: POST
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/item/additionalfields
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Número
+No
+Identificador del caso, este se envía en caso de requerir los
+valores de campos adicionales de un caso.
+itemType
+Texto
+Si
+Tipo de caso
+consoleType
+Texto
+Si
+Tipo de consola
+modelId
+Número
+Si
+Identificador del modelo
+stateId
+Número
+Si
+Identificador del estado
+categoryId
+Número
+No
+En caso de tener el dato se envía.
+Cuerpo de la petición
+Cuerpo de la petición
+Cuando es creación de caso
+--- PAGE 71 ---
+{
+      "categoryId": 520,     "itemType": 4,
+      "modelId": 31,
+      "stateId": 25,
+      "consoleType": "specialist" }
+Cuando se requiere conocer los datos adicionales de un caso: {
+"id":3018,
+"itemType":4,
+"modelId":31,
+"stateId":25,
+"categoryId":521,
+"consoleType":"specialist"
+}
+Respuesta
+Respuesta
+{
+      "content": [
+          {
+                    "boolValue": null,
+                    "catalogId": null,
+                    "dataSourceId": null,
+                    "dateValue": null,
+                    "description": "[ES] Campo que contiene el id compuesto del caso en V8",             "enable": false,
+                    "fieldId": 802,
+                    "fieldType": 1,
+                    "fieldTypeName": "ShortText",
+                    "floatValue": null,
+                    "identifier": "casov8",
+                    "inputStream": null,
+                    "intValue": null,
+                    "itemId": null,
+                    "mandatory": false,
+                    "name": "[ES] N° Caso en V8",
+                    "order": 1,
+                    "projectId": null,
+                    "stringValue": null,
+                    "type": null,
+                    "url": null,
+                    "visible": true
+          },
+          {
+                    "boolValue": null,
+                    "catalogId": null,
+                    "dataSourceId": null,
+                    "dateValue": null,
+                    "description": "[ES] Tiempo de desarrollo del reporte",             "enable": true,
+--- PAGE 72 ---
+                    "fieldId": 834,
+                    "fieldType": 14,
+                    "fieldTypeName": "Time",
+                    "floatValue": null,
+                    "identifier": "Tiempo de desarrollo del reporte",
+                    "inputStream": null,
+                    "intValue": null,
+                    "itemId": null,
+                    "mandatory": false,
+                    "name": "[ES] Tiempo de desarrollo del reporte",
+                    "order": 2,
+                    "projectId": null,
+                    "stringValue": null,
+                    "type": null,
+                    "url": null,
+                    "visible": true
+          }
+      ],
+      "totalItems": 2
+}
+Parámetros Response:
+Parámetros Response:
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+totalItems
+Número
+Total de objetos encontrados en la
+búsqueda
+totalPage
+Número
+Total de objetos por página
+content
+Lista
+Listado de objetos
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro: ItemType
+400
+BadRequest
+\r\nNombre del parámetro:
+ConsoleType
+400
+BadRequest
+InvalidStateId
+400
+BadRequest
+InvalidItemType
+400
+BadRequest
+RequestNeedsSomeArguments
+500
+InternalServerError
+FailureGetAdditionalFields
+Obtener Valores de un Campo Adicional Tipo Combo
+Obtener Valores de un Campo Adicional Tipo Combo
+--- PAGE 73 ---
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: api/v9/additionalfields/{id}/type/{fieldType}/values?dataType={dataType}&parentId={par entId}&catalogId=
+{catalogId}&userId={userId}
+Tipo: GET
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/additionalfields/{id}/type/{fieldType}/values?dataType={dataType}&parentId={par
+ 
+entId}&catalogId=  
+  {catalogId}&userId={userId}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Número
+Si
+Identificador del objeto tipo lista.
+fieldType
+Texto
+Si
+Tipo de datos - 
+List = 3
+ - 
+Recursive = 7
+ - 
+CatalogList = 11
+ -
+CatalogTree = 12
+dataType
+Texto
+No
+Tipo de datos a listar 
+- 
+All = 0,
+ - 
+Child = 1,
+ - 
+Parent = 2
+ Si no se envía
+se tomará por defecto listar los padres.
+parentId
+Número
+No
+Identificador del padre.
+catalogId
+Número
+No
+Tipo de catálogo - 
+CatalogList = 11
+ - 
+CatalogTree = 12
+UserId
+Número
+No
+Identificar del cliente del caso
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Ejemplos de uri
+api/v9/additionalsfields/5970/type/7/Values
+api/v9/additionalsfields/5970/type/7/Values?datatype=parent
+additionalsfields/5970/type/7/Values?dataType=child&parentId=2323
+api/v9/additionalsfields/5970/type/7/Values?datatype=all
+Respuesta
+Respuesta
+Listado de solo padres:
+{
+      "content": [
+--- PAGE 74 ---
+          {
+                    "catalogId": 0,
+                    "description": null,             "fieldId": 5970,
+                    "hasChild": true,
+                    "id": 2323,
+                    "key": null,
+                    "order": 0,
+                    "parentId": null,
+                    "status": 0,
+                    "value": "padre2"         },
+          {
+                    "catalogId": 0,
+                    "description": null,             "fieldId": 5970,
+                    "hasChild": true,
+                    "id": 2324,
+                    "key": null,
+                    "order": 0,
+                    "parentId": null,
+                    "status": 0,
+                    "value": "padre3"         }  
+      ],
+      "totalItems": 2
+}
+Listado de solo hijos:
+{
+      "content": [
+          {
+                    "catalogId": 0,
+                    "description": null,             "fieldId": 5970,
+                    "hasChild": false,             "id": 2328,
+                    "key": null,
+                    "order": 0,
+                    "parentId": 2327,             "status": 0,
+                    "value": "hijo311"         }
+      ],
+      "totalItems": 1
+}
+Listado de todos:
+{
+      "content": [
+          {
+                    "catalogId": 0,
+                    "description": null,             "fieldId": 5970,
+                    "hasChild": true,
+--- PAGE 75 ---
+                    "id": 2323,
+                    "key": null,
+                    "order": 0,
+                    "parentId": null,
+                    "status": 0,
+                    "value": "padre2"         },
+          {
+                    "catalogId": 0,
+                    "description": null,             "fieldId": 5970,
+                    "hasChild": true,
+                    "id": 2324,
+                    "key": null,
+                    "order": 0,
+                    "parentId": null,
+                    "status": 0,
+                    "value": "padre3"         },         
+          {
+                    "catalogId": 0,
+                    "description": null,             "fieldId": 5970,
+                    "hasChild": true,
+                    "id": 2327,
+                    "key": null,
+                    "order": 0,
+                    "parentId": 2324,
+                    "status": 0,
+                    "value": "hijo31"
+          },
+          {
+                    "catalogId": 0,
+                    "description": null,             "fieldId": 5970,
+                    "hasChild": false,
+                    "id": 2333,
+                    "key": null,
+                    "order": 0,
+                    "parentId": null,
+                    "status": 0,
+                    "value": "padre1"         }
+      ],
+      "totalItems": 9
+}
+Parámetros Response:
+Parámetros Response:
+--- PAGE 76 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+Id
+Int
+Identificador de la tarea
+IdByProject
+String
+Identificador por proyecto de la tarea
+totalItems
+Número
+Total de objetos 
+en la búsqueda
+totalPage
+Número
+Total de objetos por página
+content
+Listas
+Listado de objetos casos
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro: id
+400
+BadRequest
+\r\nNombre del parámetro:
+fieldType
+400
+BadRequest
+\r\nNombre del parámetro:
+catalogId
+400
+BadRequest
+\r\nNombre del parámetro: parentId
+400
+BadRequest
+InvalidFieldType
+403
+Forbidden
+DoNotHavePermissionForThisAction
+500
+InternalServerError
+FailureGetLookupValues
+Manejo de compañias
+Manejo de compañias
+Creación compañía
+Creación compañía
+Esta operación crea una compañía. Al crearlo, guarda los archivos adjuntos tanto del caso como de sus campos
+adicionales. Luego de guardarlos, los borra de la carpeta temporal creada para ello.
+Detalles de la petición
+Detalles de la petición
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri
+Uri
+: 
+/api/v9/company
+Tipo
+Tipo
+: POST
+Encabezados requeridos
+Encabezados requeridos
+:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+--- PAGE 77 ---
+https://{host}/ASMSAPI/api/v9/company
+`
+Parámetros
+Parámetros
+--- PAGE 78 ---
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+Address1
+Texto
+No
+Primer campo de dirección
+Address2
+Texto
+No
+Segundo campo de dirección
+Address3
+Texto
+No
+Tercer campo de dirección
+CityId
+Número
+No
+Identificador de la ciudad
+CityName
+Texto
+No
+Nombre descriptivo de la ciudad en la que está ubicada la
+compañía
+Contact
+Texto
+No
+Principal contacto de la compañía
+CountryId
+Número
+No
+Identificador del país donde está ubicada la compañía
+CountryName
+Texto
+Sí
+Nombre descriptivo del país donde está ubicada la compañía
+Description
+Texto
+No
+Acciones correctivas cuando el caso está marcado como
+problema mayor
+Email
+Texto
+No
+Correo electrónico del principal contacto de la compañía
+Ext
+Texto
+No
+Extensión telefónica del principal contacto de la compañía
+FaxNumber
+Texto
+No
+Número de fax del principal contacto de la compañía
+Id
+Número
+No
+Identificador de la compañía
+isActive
+Boolean
+No
+Verdadero si la compañía está activa
+Location
+Texto
+No
+Ubicación
+Mobil
+Texto
+No
+Número de teléfono móvil del principal contacto de la
+compañía
+Name
+Texto
+Sí
+Nombre descriptivo de la compañía
+Nit
+Texto
+Sí
+NIT (Número de identificación tributaria) de la compañía
+Phone1
+Texto
+No
+Primer teléfono de la compañía
+Phone2
+Texto
+Sí
+Segundo teléfono de la compañía
+Phone3
+Texto
+No
+Tercer teléfono de la compañía
+StatusId
+Número
+Sí
+Identificador del estado
+WebSiteURL
+Texto
+No
+URL del sitio web de la compañía
+ProjectId
+Número
+Sí
+Identificador del proyecto
+ConsoleType
+Número
+Sí
+Identificador de la consola de origen de la petición. Solo se
+permite la creación desde la consola de administración (Valor
+3)
+RegisterType
+Número
+Sí
+Tipo de registro a crear: Compañía = 38, Proveedor = 58
+--- PAGE 79 ---
+Campos adicionales (ListAdditionalField)
+Campos adicionales (ListAdditionalField)
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+boolValue
+Boolean
+No
+Valor booleano del campo adicional
+description
+Texto
+No
+Descripción del campo adicional
+enable
+Boolean
+Sí
+Determina si el campo adicional está activo
+order
+Número
+No
+Orden a tener en cuenta en el listado de campos
+adicionales
+dateValue
+Fecha
+No
+Valor fecha del campo adicional
+fieldId
+Número
+Sí
+Identificador del campo adicional
+fieldType
+Número
+Sí
+Tipo del campo adicional
+floatValue
+Número
+No
+Valor decimal del campo adicional
+identifier
+Texto
+No
+Identificador del campo adicional
+itemId
+Stream
+No
+Valor en bytes del archivo para el campo adicional
+intValue
+Número
+No
+Valor en número para el campo adicional
+stringValue
+Texto
+No
+Valor en texto del campo adicional
+mandatory
+Booleano
+Sí
+Si el campo adicional es obligatorio o no
+name
+Texto
+Sí
+Nombre identificativo del campo
+visible
+Booleano
+Sí
+El campo adicional debe ser visible o no en los formularios
+type
+Número
+No
+Tipo de objeto que representa al objeto padre
+Cuerpo de la petición
+Cuerpo de la petición
+{
+    "Address1": "",
+    "Address2": "",
+    "Address3": "",
+    "CityId": 4,
+    "CityName": "Cali",
+    "Contact": "Servicio al cliente",
+    "CountryId": 2,
+    "CountryName": "Colombia",
+    "Description": "Empresa Guia",
+    "Email": "correo@empresaguia.com",
+    "Ext": "",
+    "FaxNumber": "",
+    "Id": "",
+    "isActive": true,
+    "Location": "",
+    "Mobil": "3111111111",
+    "Name": "Guia",
+    "Nit": "80090000909",
+    "Phone1": "6022002020",
+    "Phone2": "6023003030",
+    "Phone3": "",
+    "StatusId": "1",
+    "WebSiteURL": "",
+    "ProjectId": "25",
+    "ConsoleType": 3,
+    "RegisterType": 38,
+    "listAdditionalField": [
+        {
+--- PAGE 80 ---
+            "boolValue": null,
+            "catalogId": null,
+            "dateValue": null,
+            "fieldId": 977,
+            "fieldType": 3,
+            "floatValue": null,
+            "identifier": "A001",
+            "inputStream": null,
+            "intValue": 118,
+            "stringValue": "Aranda Data Safe",
+            "mandatory": true
+        },
+        {
+            "boolValue": null,
+            "catalogId": null,
+            "dateValue": null,
+            "fieldId": 978,
+            "fieldType": 3,
+            "floatValue": null,
+            "inputStream": null,
+            "intValue": 146,
+            "mandatory": true,
+            "stringValue": "Aranda Virtual Support"
+        }
+    ]
+}
+Respuesta
+Respuesta
+{
+    "id": 1
+}
+Parámetros de Respuesta
+Parámetros de Respuesta
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+id
+Número
+Identificador de la
+compañía
+Mensajes de Error
+Mensajes de Error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+\r\nNombre del parámetro: ConsoleType
+400
+BadRequest
+\r\nNombre del parámetro: Name
+400
+BadRequest
+\r\nNombre del parámetro:
+RegisterType
+400
+BadRequest
+InvalidProjectId
+400
+BadRequest
+StateIdIsEmpty
+400
+BadRequest
+InvalidRegisterType
+400
+BadRequest
+InvalidConsole
+403
+Forbidden
+DoNotHavePermissionForThisAction
+500
+InternalServerError
+FailureAddCompany
+Edición de una compañía
+Edición de una compañía
+--- PAGE 81 ---
+Detalles de la petición
+Detalles de la petición
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri:
+Uri:
+ 
+api/v9/company/{id}
+Tipo:
+Tipo:
+ PUT
+Encabezados requeridos:
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/company/{id}
+Parámetros
+Parámetros
+--- PAGE 82 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+Address1
+Texto
+No
+Primer campo de dirección
+Address2
+Texto
+No
+Segundo campo de dirección
+Address3
+Texto
+No
+Tercer campo de dirección
+CityId
+Número
+No
+Identificador de la ciudad
+CityName
+Texto
+No
+Nombre descriptivo de la ciudad
+Contact
+Texto
+No
+Principal contacto de la compañía
+CountryId
+Número
+No
+Identificador del país
+CountryName
+Texto
+Sí
+Nombre descriptivo del país
+Description
+Texto
+No
+Descripción de acciones correctivas
+Email
+Texto
+No
+Correo electrónico del contacto principal
+Ext
+Texto
+No
+Extensión telefónica del contacto principal
+FaxNumber
+Texto
+No
+Número de fax del contacto principal
+Id
+Número
+Sí
+Identificador de la compañía
+isActive
+Booleano
+No
+Verdadero si la compañía está activa
+Location
+Texto
+No
+Ubicación
+Mobil
+Texto
+No
+Número de teléfono móvil del contacto principal
+Name
+Texto
+Sí
+Nombre descriptivo de la compañía
+Nit
+Texto
+Sí
+NIT (Número de identificación tributaria)
+Phone1
+Texto
+No
+Primer teléfono de la compañía
+Phone2
+Texto
+Sí
+Segundo teléfono de la compañía
+Phone3
+Texto
+No
+Tercer teléfono de la compañía
+StatusId
+Número
+Sí
+Identificador del estado
+WebSiteURL
+Número
+Sí
+URL del sitio web
+ProjectId
+Número
+Sí
+Identificador del proyecto
+ConsoleType
+Número
+Sí
+Identificador de la consola de origen de la petición
+RegisterType
+Número
+Sí
+Tipo de registro a crear
+ListAdditionalField}
+ListAdditionalField}
+--- PAGE 83 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+boolValue
+Booleano
+No
+Valor booleano del campo adicional
+description
+Texto
+No
+Descripción del campo adicional
+enable
+Booleano
+Sí
+Determina si el campo adicional está activo
+order
+Número
+No
+Orden en el listado de campos adicionales
+dateValue
+Fecha
+No
+Valor fecha del campo adicional
+fieldId
+Número
+Sí
+Identificador del campo adicional
+fieldType
+Número
+Sí
+Tipo del campo
+floatValue
+Número
+No
+Valor decimal del campo adicional
+identifier
+Texto
+No
+Identificador del campo adicional
+itemId
+Stream
+No
+Valor en bytes del archivo para el campo adicional
+intValue
+Número
+No
+Valor en número para el campo adicional
+stringValue
+Texto
+No
+Valor en texto del campo adicional
+mandatory
+Booleano
+Sí
+Si el campo adicional es obligatorio o no
+name
+Texto
+Sí
+Nombre identificativo del campo
+visible
+Booleano
+Sí
+El campo adicional debe ser visible o no en
+formularios
+type
+Número
+No
+Tipo de objeto que representa al objeto padre
+Cuerpo de la petición
+Cuerpo de la petición
+{
+    "Address1": "Calle 14 # 45 -12",
+    "Address2": "Edificio Guia",
+    "Address3": "",
+    "CityId": 4,
+    "CityName": "Cali",
+    "Contact": "Servicio al cliente",
+    "CountryId": 2,
+    "CountryName": "Colombia",
+    "Description": "Empresa Guia",
+    "Email": "correo@empresaguia.com",
+    "Ext": "",
+    "FaxNumber": "",
+    "Id": "1",
+    "isActive": true,
+    "Location": "",
+    "Mobil": "3111111111",
+    "Name": "Guia",
+    "Nit": "80090000909",
+    "Phone1": "6022002020",
+    "Phone2": "6023003030",
+    "Phone3": "",
+    "StatusId": "1",
+    "WebSiteURL": "http://www.empresaguia.com",
+    "ProjectId": "25",
+    "ConsoleType": 3,
+    "RegisterType": 38,
+    "listAdditionalField": [
+        {
+            "boolValue": null,
+            "catalogId": null,
+            "dateValue": null,
+--- PAGE 84 ---
+            "fieldId": 977,
+            "fieldType": 3,
+            "floatValue": null,
+            "identifier": "A001",
+            "inputStream": null,
+            "intValue": 118,
+            "stringValue": "Aranda Data Safe",
+            "mandatory": true
+        }
+    ]
+}
+Respuesta
+Respuesta
+{
+    "Result": true
+}
+Parámetros de Respuesta
+Parámetros de Respuesta
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+result
+booleano
+Resultado de la
+operación
+Mensajes de Error
+Mensajes de Error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+Nombre del parámetro: Id
+400
+BadRequest
+Nombre del parámetro: ConsoleType
+400
+BadRequest
+Nombre del parámetro: Name
+400
+BadRequest
+Nombre del parámetro:
+RegisterType
+400
+BadRequest
+InvalidProjectId
+400
+BadRequest
+StateIdIsEmpty
+400
+BadRequest
+InvalidRegisterType
+400
+BadRequest
+InvalidConsole
+403
+Forbidden
+DoNotHavePermissionForThisAction
+500
+InternalServerError
+FailureUpdateCompany
+Búsqueda de compañías
+Búsqueda de compañías
+Obtiene un listado de compañías o proveedores que coincidan con criterios de búsqueda.
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/company/search?itemType={itemType}&projectId={projectId}&clientId={clientId}&serviceId=
+{serviceId}&criteria={criteria}&filterCaseUser={filterCaseUser}
+Tipo: GET
+Encabezados requeridos:
+--- PAGE 85 ---
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/api/v9/company/search?itemType={itemType}&projectId={projectId}&clientId=
+{clientId}&serviceId={serviceId}&criteria={criteria}&filterCaseUser={filterCaseUser}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+itemType
+Enumerador
+Sí
+Tipo de búsqueda (
+Compañia = 38
+, 
+Proveedor = 52
+)
+projectId
+Número
+No
+Identificador del proyecto
+clientId
+Número
+No
+Identificador del cliente
+serviceId
+Número
+No
+Identificador del servicio
+criteria
+Texto
+No
+Texto de búsqueda de usuario
+filterCaseUser
+Texto
+No
+Determina si se debe hacer filtro previo por
+cliente
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Ejemplos de uri
+Ejemplos de uri
+api/v9/company/search?itemType=38&projectId=2&criteria=Guia
+api/v9/company/search?itemType=52&projectId=2
+api/v9/company/search?itemType=38&projectId=2&criteria=
+Respuesta
+Respuesta
+{
+    "content": [
+        {
+            "id": 1,
+            "locationId": 2,
+            "name": "Guia"
+        }
+    ],
+    "totalItems": 1
+}
+Parámetros de Respuesta
+Parámetros de Respuesta
+--- PAGE 86 ---
+Título
+Título
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+Id
+Número
+Id de la compañía
+location
+Texto
+Ubicación de la
+compañía
+name
+Texto
+Nombre de la compañía
+Mensajes de Error
+Mensajes de Error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+403
+Forbidden
+AccessDenied
+500
+InternalServerError
+FailureGetDetail
+Detalle de una compañía
+Detalle de una compañía
+Detalles de la Petición
+Detalles de la Petición
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri
+Uri
+: 
+/api/v9/company/{id}
+Tipo
+Tipo
+: GET
+Encabezados requeridos
+Encabezados requeridos
+:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/company/{id}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Número
+Sí
+Identificador de la
+compañía
+Cuerpo de la Petición
+Cuerpo de la Petición
+--- PAGE 87 ---
+N/A
+Ejemplos de Uri
+Ejemplos de Uri
+/api/v9/company/1
+Respuesta
+Respuesta
+{
+    "Address1": "",
+    "Address2": "",
+    "Address3": "",
+    "CityId": 4,
+    "CityName": "Cali",
+    "Contact": "Servicio al cliente",
+    "CountryId": 2,
+    "CountryName": "Colombia",
+    "Description": "Empresa Guia",
+    "Email": "correo@empresaguia.com",
+    "Ext": "",
+    "FaxNumber": "",
+    "Id": "",
+    "isActive": true,
+    "Location": "",
+    "Mobil": "3111111111",
+    "Name": "Guia",
+    "Nit": "80090000909",
+    "Phone1": "6022002020",
+    "Phone2": "6023003030",
+    "Phone3": "",
+    "StatusId": "1",
+    "WebSiteURL": "",
+    "ProjectId": "25",
+    "ConsoleType": 3,
+    "RegisterType": 38
+}
+Parámetros de Respuesta
+Parámetros de Respuesta
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+totalItems
+Número
+Número total de objetos encontrados
+content
+Lista
+Listado de objetos
+hasIntegration
+Texto
+Determina si la compañía tiene
+integraciones
+id
+Número
+Identificador del usuario
+locationId
+Número
+Identificador de la ubicación de la compañía
+name
+Texto
+Nombre de la compañía
+projectId
+Texto
+Identificador del proyecto asociado
+Mensajes de Error
+Mensajes de Error
+--- PAGE 88 ---
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureGetCompanies
+Lista de Campos Adicionales
+Lista de Campos Adicionales
+Detalles de la petición
+Detalles de la petición
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri:
+Uri:
+ 
+/api/v9/company/additionalfields
+Tipo:
+Tipo:
+ POST
+Encabezados requeridos:
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/company/additionalfield
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Número
+No
+Identificador de la compañía, se envía en caso de requerir los
+valores de campos adicionales de una compañía.
+itemType
+Texto
+Sí
+Tipo de caso. Valores posibles: 1. Incidente 2. Problema 3.
+Cambio 4. Requerimiento de servicio 13. Liberación
+consoleType
+Texto
+Sí
+Tipo de consola
+modelId
+Número
+Sí
+Identificador del modelo
+stateId
+Número
+Sí
+Identificador del estado
+categoryId
+Número
+No
+Identificador de la categoría, por el cual filtrar
+asdkWeb
+Booleano
+Sí
+Origen Web ASDK
+parentId
+Número
+No
+Indica qué folder contiene el servicio
+projectId
+Número
+No
+Identificador del proyecto, por el cual filtrar
+serviceId
+Número
+No
+Identificador del servicio, por el cual filtrar
+Cuerpo de la petición
+Cuerpo de la petición
+Cuando es creación de caso:
+Cuando es creación de caso:
+--- PAGE 89 ---
+  {
+      "asdkWeb": true,
+      "categoryId": 520,
+      "itemType": 4,
+      "modelId": 31,
+      "stateId": 25,
+      "consoleType": "specialist"
+  }
+Cuando se requiere conocer los datos adicionales de un caso:
+Cuando se requiere conocer los datos adicionales de un caso:
+{
+    "asdkWeb": true,
+    "id": 3018,
+    "itemType": 4,
+    "modelId": 31,
+    "stateId": 25,
+    "categoryId": 521,
+    "consoleType": "specialist"
+}
+respuesta
+respuesta
+{
+    "content": [
+        {
+            "boolValue": null,
+            "catalogId": null,
+            "dataSourceId": null,
+            "dateValue": null,
+            "description": "[ES] Campo que contiene el id compuesto del caso en V8",
+            "enable": false,
+            "fieldId": 802,
+            "fieldType": 1,
+            "fieldTypeName": "ShortText",
+            "floatValue": null,
+            "identifier": "casov8",
+            "inputStream": null,
+            "intValue": null,
+            "itemId": null,
+            "mandatory": false,
+            "name": "[ES] N° Caso en V8",
+            "order": 1,
+            "projectId": null,
+            "stringValue": null,
+            "type": null,
+            "url": null,
+            "visible": true
+        },
+        {
+            "boolValue": null,
+            "catalogId": null,
+            "dataSourceId": null,
+            "dateValue": null,
+            "description": "[ES] Tiempo de desarrollo del reporte",
+            "enable": true,
+            "fieldId": 834,
+            "fieldType": 14,
+            "fieldTypeName": "Time",
+            "floatValue": null,
+            "identifier": "Tiempo de desarrollo del reporte",
+            "inputStream": null,
+            "intValue": null,
+            "itemId": null,
+            "mandatory": false,
+            "name": "[ES] Tiempo de desarrollo del reporte",
+            "order": 2,
+            "projectId": null,
+            "stringValue": null,
+            "type": null,
+            "url": null,
+            "visible": true
+        }
+    ],
+    "totalItems": 2
+}
+Parámetros de Respuesta
+Parámetros de Respuesta
+--- PAGE 90 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+totalItems
+Número
+Total de objetos encontrados en la
+búsqueda
+totalPage
+Número
+Total de objetos por página
+content
+Lista
+Listado de objetos
+Content
+Content
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+boolValue
+Booleano
+Valor booleano del campo adicional
+catalogId
+Número
+Valor del catálogo del campo adicional
+dateValue
+Fecha
+Valor fecha del campo adicional
+fieldId
+Número
+Identificador del campo adicional
+fieldType
+Número
+Tipo del campo
+floatValue
+Número
+Valor decimal del campo adicional
+identifier
+Texto
+Identificador del campo adicional
+inputStream
+Stream
+Valor en bytes del archivo para el campo adicional
+intValue
+Número
+Valor en número del campo adicional
+stringValue
+Texto
+Valor en texto del campo adicional
+mandatory
+Booleano
+Si el campo adicional es obligatorio o no
+description
+Texto
+Descripción del campo
+name
+Texto
+Nombre del campo
+order
+Número
+Orden del campo
+dataSourceId
+Número
+Identificador de sección
+enable
+Booleano
+Determina si está habilitado o no
+fieldTypeName
+Texto
+Descripción del tipo del campo
+hasDependencies
+Booleano
+Determina si el campo adicional tiene dependencias
+length
+Número
+Máximo de caracteres permitidos para un texto corto
+restrictLevel
+Booleano
+Valida el último nivel
+itemId
+Número
+Identi
+--- PAGE 91 ---
+Mensajes de Error
+Mensajes de Error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BadRequest
+Nombre del parámetro: ItemType
+400
+BadRequest
+Nombre del parámetro:
+ConsoleType
+400
+BadRequest
+InvalidStateId
+400
+BadRequest
+InvalidItemType
+400
+BadRequest
+RequestNeedsSomeArguments
+500
+InternalServerError
+FailureGetAdditionalFields
+Búsqueda de compañías por nombre
+Búsqueda de compañías por nombre
+Obtiene un listado de compañías que coincidan con un nombre o parte de un nombre de compañía.
+Detalles de la petición
+Detalles de la petición
+URL Base: {host}/ASMSAPI/
+Uri: /api/v9/company/getbyname?companyName={companyName}&projectId={projectId}&matchName=
+{matchName}
+Tipo: GET
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/company/getbyname?companyName={companyName}&projectId=
+{projectId}&matchName={matchName}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+companyName
+Texto
+Sí
+Nombre completo o parcial de las compañías que se desean
+encontrar
+projectId
+Número
+No
+Identificador de proyecto
+matchName
+Booleano
+No
+Determina si la búsqueda debe ser exacta
+--- PAGE 92 ---
+Cuerpo de la petición
+Cuerpo de la petición
+N/A
+Ejemplos de uri
+Ejemplos de uri
+api/v9/company/getbyname?companyName=Guia&projectId=25&matchName=true
+Respuesta
+Respuesta
+Respuesta de ejemplo
+Respuesta de ejemplo
+{
+    "description": "Aranda software",
+    "Id": 2,
+    "isActive": true, 
+    "location": "",
+    "name": "Aranda Software",
+    "nit": "1",
+    "stateId": 1
+}
+Parámetros de respuesta
+Parámetros de respuesta
+Título
+Título
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+description
+Texto
+Descripción de la compañía
+Id
+Número
+Id de la compañía
+isActive
+Booleano
+Determina si la compañía está
+activa
+location
+Texto
+Ubicación de la compañía
+name
+Texto
+Nombre de la compañía
+nit
+Texto
+NIT de la compañía
+stateId
+Número
+Identificador del estado
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+400
+BacRequest
+IdNotEmpty
+500
+InternalServerError
+FailureGetCompanyByName
+Relacionar compañías a proyectos
+Relacionar compañías a proyectos
+Permite asociar uno o varios proyectos a una compañía.
+Detalles de la petición
+Detalles de la petición
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri
+Uri
+: 
+/api/v9/company/addproject
+Tipo
+Tipo
+: POST
+Encabezados requeridos
+Encabezados requeridos
+:
+--- PAGE 93 ---
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/company/addproject
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+Número
+Sí
+Identificador de la compañía
+projectsId
+Lista
+números
+Sí
+Listado de los identificadores de los
+proyectos
+Cuerpo de la petición
+Cuerpo de la petición
+{ 
+“Id”: 0, 
+“projectsId”: [] }
+Ejemplos de uri
+Ejemplos de uri
+api/v9/company/addproject
+ { 
+“Id”: 1, 
+“projectsId”: [25, 11, 1] }
+Respuesta
+Respuesta
+{
+    "Id": 1
+}
+Parámetros de respuesta
+Parámetros de respuesta
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+Id
+Número
+Identificador de la
+compañía
+Mensajes de error
+Mensajes de error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+500
+InternalServerError
+FailureAddProjectsToCompany
+Usuarios asociados a compañías
+Usuarios asociados a compañías
+Detalles de la petición
+Detalles de la petición
+--- PAGE 94 ---
+URL Base: {host}/ASMSAPI/
+URI: api/v9/user/{Id}/usercompanies
+Tipo: GET
+Encabezados requeridos: 
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/user/{Id}/usercompanies
+Parámetros:
+Parámetros:
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+id
+int
+si
+Identificador del
+usuario
+Cuerpo de la petición
+Cuerpo de la petición
+: 
+N/A
+Respuesta
+Respuesta
+{
+    "totalItems": 2,
+    "content": [
+        {
+            "companytId": 1,
+            "companyName": "Empresa AT",
+            "projects": [
+                {
+                    "projectId": 4,
+                    "projectName": "Soporte"
+                }
+            ]
+        },
+        {
+            "companytId": 6,
+            "companyName": "Empresa4",
+            "projects": [
+                {
+                    "projectId": 4,
+                    "projectName": "Soporte"
+                }
+            ]
+        }
+    ]
+}
+⚐
+ 
+Nota:
+Nota:
+ 
+La petición retorna la compañía asociada al usuario consultado y el proyecto al que pertenece.
+Parámetros
+Parámetros
+--- PAGE 95 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+companyId
+int
+Identificador de la compañía
+companyName
+string
+Nombre de la compañía
+projects
+list
+Lista de proyectos relacionados a la compañía
+projects.projectId
+int
+Identificador del proyecto relacionado a la
+compañía
+projects.projectName
+string
+Nombre del proyecto relacionado a la compañía
+Excepciones:
+Excepciones:
+Salida
+Salida
+Descripción
+Descripción
+exceptionMessage
+:
+“InvalidClientUser”,
+message
+: “FailureGetUserCompanies”,
+operation
+: “GetUserCompanies”,
+serviceName
+: “User”
+El usuario consultado no existe o no está definido como
+cliente
+Manejo de Catálogos
+Manejo de Catálogos
+Agregar valores a catálogos tipo árbol
+Agregar valores a catálogos tipo árbol
+Detalles de la Petición
+Detalles de la Petición
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri
+Uri
+: 
+/api/v9/catalog/{id}
+Tipo
+Tipo
+: POST
+Encabezados requeridos
+Encabezados requeridos
+:
+content-type: application/json
+X-Authorization: Bearer {token}
+## Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/catalog/{id}
+Parámetros
+Parámetros
+--- PAGE 96 ---
+Nombre
+Nombre
+Tipo de
+Tipo de
+dato
+dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+value
+Texto
+Sí
+Nombre del valor
+ParentId
+Número
+Condicional
+ID del elemento padre. Obligatorio para elementos hijos, opcional
+para elementos raíz
+Cuerpo de la petición
+Cuerpo de la petición
+{
+  "Value": "Colombia",
+  "ParentId": "217122"
+}
+Respuesta
+Respuesta
+{
+    "result": true
+}
+Parámetros Response
+Parámetros Response
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+result
+Booleano
+Indica si la operación tuvo
+éxito
+Mensajes de Error
+Mensajes de Error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+403
+Unauthorized
+DoNotHavePermissionForThisAction
+400
+Bad Request
+FailureAddCatalogValue
+Agregar valores a catálogos tipo lista
+Agregar valores a catálogos tipo lista
+Detalles de la Petición
+Detalles de la Petición
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri
+Uri
+: 
+/api/v9/catalog/{id}
+Tipo
+Tipo
+: POST
+Encabezados requeridos
+Encabezados requeridos
+:
+content-type: application/json
+X-Authorization: Bearer {token}
+## Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+--- PAGE 97 ---
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/catalog/{id}
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+value
+Texto
+Sí
+Nombre del
+valor
+ParentId
+Número
+NO
+ 
+Cuerpo de la petición
+Cuerpo de la petición
+{
+  "Value": "Colombia",
+  "ParentId": "217122"
+}
+Respuesta
+Respuesta
+{
+    "result": true
+}
+Parámetros Response
+Parámetros Response
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+result
+Booleano
+Indica si la operación tuvo
+éxito
+Mensajes de Error
+Mensajes de Error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+403
+Unauthorized
+DoNotHavePermissionForThisAction
+400
+Bad Request
+FailureAddCatalogValue
+Obtener valores de catálogos lista y árbol
+Obtener valores de catálogos lista y árbol
+Detalles de la Petición
+Detalles de la Petición
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri
+Uri
+: 
+/api/v9/catalog/type={type}
+Tipo
+Tipo
+: GET
+Encabezados requeridos
+Encabezados requeridos
+:
+content-type: application/json
+--- PAGE 98 ---
+X-Authorization: Bearer {token}
+## Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/catalog/type=0
+https://{host}/ASMSAPI/api/v9/catalog/type=1
+https://{host}/ASMSAPI/api/v9/catalog/type=2
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+type
+Número
+Sí
+valor: 0 muestra los catálogos árbol y lista
+valor: 1 muestra el catalogo lista
+valor: 2 muestra el catalogo arbol
+ParentId
+Número
+NO
+ 
+Cuerpo de la petición
+Cuerpo de la petición
+{
+  "Value": "Colombia",
+  "ParentId": "217122"
+}
+Respuesta
+Respuesta
+{
+  "totalItems": 3,
+  "content": [
+    {
+      "description": "",
+      "id": 12,
+      "isBuiltIn": true,
+      "name": "BRAND",
+      "parentId": null,
+      "status": 1,
+      "type": "N"
+    },
+    {
+      "description": "Descripción del segundo elemento",
+      "id": 13,
+      "isBuiltIn": false,
+      "name": "CATEGORY",
+      "parentId": 12,
+      "status": 1,
+      "type": "T"
+    },
+    {
+      "description": "Otro elemento de ejemplo",
+      "id": 14,
+      "isBuiltIn": false,
+      "name": "PRODUCT",
+      "parentId": null,
+      "status": 1,
+      "type": "N"
+    }
+  ]
+}
+Parámetros Response
+Parámetros Response
+--- PAGE 99 ---
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+result
+Booleano
+Indica si la operación tuvo
+éxito
+Mensajes de Error
+Mensajes de Error
+Código
+Código
+Estado HTTP
+Estado HTTP
+Mensaje de error
+Mensaje de error
+403
+Unauthorized
+DoNotHavePermissionForThisAction
+400
+Bad Request
+FailureAddCatalogValue
+Manejo de grupos
+Manejo de grupos
+Grupos por proyecto
+Grupos por proyecto
+Detalles de la petición
+Detalles de la petición
+URL Base
+URL Base
+: {host}/ASMSAPI/
+Uri:
+Uri:
+ 
+api/v9/group/GetGroupsByProjects
+Tipo:
+Tipo:
+ POST
+Encabezados requeridos:
+Encabezados requeridos:
+content-type: application/json
+X-Authorization: Bearer {token}
+Descripción de la URL
+Descripción de la URL
+{host}:
+{host}:
+ Representa el dominio del ambiente en el que se encuentra la API.
+ASMSAPI/:
+ASMSAPI/:
+ Prefijo fijo de la API.
+Uri:
+Uri:
+ Endpoint específico para la petición.
+⚐
+ 
+EJEMPLO URL:
+EJEMPLO URL:
+https://{host}/ASMSAPI/api/v9/group/GetGroupsByProjects
+Parámetros
+Parámetros
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Obligatorio
+Obligatorio
+Descripción
+Descripción
+filter
+Texto
+No
+Texto de búsqueda de grupos.
+projects
+Lista
+números
+Sí
+Listado de los identificadores de los
+proyectos.
+Cuerpo de la petición
+Cuerpo de la petición
+{
+    "filter":"Aranda",
+    "projects":[1,2]
+}
+--- PAGE 100 ---
+respuesta
+respuesta
+{
+    "content": [
+        {
+            "active":1,
+            "id":10,
+            "name":"Soporte Aranda"
+        }
+    ],
+    "totalItems":1
+}
+Parámetros de Respuesta
+Parámetros de Respuesta
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+totalItems
+Número
+Total de objetos encontrados en la
+búsqueda
+content
+Lista
+Listado de objetos
+Content
+Content
+Nombre
+Nombre
+Tipo de dato
+Tipo de dato
+Descripción
+Descripción
+active
+Booleano
+Si el grupo se encuentra activo o
+no
+id
+Número
+Identificador del grupo
+name
+Texto
+Nombre del grupo
