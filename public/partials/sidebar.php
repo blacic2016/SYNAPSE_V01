@@ -883,7 +883,7 @@ $current_sheet = $_GET['name'] ?? '';
         ?>
         <?php if ($has_any_admin_access): ?>
         <?php 
-          $admin_pages = ['sheet_configs.php', 'snmp_management.php', 'system_health.php', 'user_management.php', 'ci_builder.php', 'ci_categories.php', 'ci_relationships.php', 'activated_modules.php'];
+          $admin_pages = ['sheet_configs.php', 'snmp_management.php', 'system_health.php', 'db_manager.php', 'user_management.php', 'ci_builder.php', 'ci_categories.php', 'ci_relationships.php', 'activated_modules.php'];
           $is_admin_open = in_array($cur, $admin_pages);
         ?>
         <li class="nav-item <?php echo $is_admin_open ? 'menu-open' : ''; ?>">
@@ -957,6 +957,15 @@ $current_sheet = $_GET['name'] ?? '';
               <a href="<?php echo PUBLIC_URL_PREFIX; ?>/system_health.php" class="nav-link <?php echo $cur === 'system_health.php' ? 'active' : ''; ?>">
                 <i class="far fa-circle nav-icon text-danger"></i>
                 <p>Salud del Sistema</p>
+              </a>
+            </li>
+            <?php endif; ?>
+
+            <?php if (has_role('SUPER_ADMIN')): ?>
+            <li class="nav-item">
+              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/db_manager.php" class="nav-link <?php echo $cur === 'db_manager.php' ? 'active' : ''; ?>">
+                <i class="fas fa-database nav-icon text-warning"></i>
+                <p>Gestor y Respaldo BDD</p>
               </a>
             </li>
             <?php endif; ?>
