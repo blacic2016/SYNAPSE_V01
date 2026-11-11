@@ -1440,6 +1440,9 @@ body.dark-mode {
                                     <div class="d-flex justify-content-between mt-4">
                                         <button type="button" class="btn btn-secondary font-weight-bold" onclick="goToPmSurveyStep(6)"><i class="fas fa-arrow-left mr-1"></i> Atrás: Diagrama (Paso 6)</button>
                                         <div class="d-flex" style="gap:8px;">
+                                            <button type="button" class="btn btn-warning text-dark font-weight-bold px-3 shadow-2xs" onclick="openInformeSondaLive()" title="Generar Informe Oficial SONDA basado en plantilla 1.pdf con Diagrama de Conexiones">
+                                                <i class="fas fa-file-contract mr-1"></i> Informe SONDA (Plantilla 1.pdf)
+                                            </button>
                                             <button type="button" class="btn btn-outline-danger font-weight-bold px-3 shadow-2xs" onclick="triggerPmExecutivePrint()">
                                                 <i class="fas fa-file-pdf mr-1"></i> Exportar / Imprimir PDF
                                             </button>
@@ -1484,6 +1487,9 @@ body.dark-mode {
                                     </button>
                                     <button type="button" class="btn btn-outline-info font-weight-bold" onclick="editCurrentSelectedEquipment()" title="Editar este levantamiento en el Asistente">
                                         <i class="fas fa-edit mr-1"></i> Editar
+                                    </button>
+                                    <button type="button" class="btn btn-warning text-dark font-weight-bold shadow-sm" onclick="exportCurrentEquipmentInformeSonda()" title="Generar Informe Oficial SONDA (Plantilla 1.pdf con Diagrama de Conexiones)">
+                                        <i class="fas fa-file-contract mr-1"></i> Informe SONDA
                                     </button>
                                     <button type="button" class="btn btn-danger font-weight-bold shadow-sm" onclick="exportCurrentEquipmentPDF()" title="Revisar data del equipo y generar PDF para imprimir">
                                         <i class="fas fa-file-pdf mr-1"></i> Revisar Data & PDF
@@ -3987,6 +3993,14 @@ function exportCurrentEquipmentPDF() {
     exportPmSurveyPDF(g_currentEquipmentData.id);
 }
 
+function exportCurrentEquipmentInformeSonda() {
+    if (!g_currentEquipmentData || !g_currentEquipmentData.id) {
+        toastr.warning('Seleccione un equipo primero.');
+        return;
+    }
+    openInformeSonda(g_currentEquipmentData.id);
+}
+
 function exportCurrentEquipmentExcel() {
     if (!g_currentEquipmentData || !g_currentEquipmentData.id) {
         toastr.warning('Seleccione un equipo primero.');
@@ -4203,6 +4217,7 @@ function renderManualSurveysTable() {
                     <div class="btn-group btn-group-sm" role="group">
                         <button class="btn btn-outline-info font-weight-bold" onclick="openEquipmentPortmapping(${item.id})" title="Ver Equipos Portmapping (Gráfico y Conectividad)"><i class="fas fa-desktop"></i></button>
                         <button class="btn btn-outline-primary font-weight-bold" onclick="loadManualSurveyDetail(${item.id})" title="Editar"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-outline-warning text-dark font-weight-bold" onclick="openInformeSonda(${item.id})" title="Generar Informe SONDA (Plantilla 1.pdf con Diagrama de Conexiones)"><i class="fas fa-file-contract"></i></button>
                         <button class="btn btn-outline-danger font-weight-bold" onclick="exportPmSurveyPDF(${item.id})" title="Exportar PDF"><i class="fas fa-file-pdf"></i></button>
                         <button class="btn btn-outline-success font-weight-bold" onclick="exportPmSurveyExcel(${item.id})" title="Exportar Excel"><i class="fas fa-file-excel"></i></button>
                         <button class="btn btn-outline-secondary font-weight-bold" onclick="deletePmSurvey(${item.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
@@ -5634,6 +5649,9 @@ function renderPmStep5ReportAndPreview() {
                     <i class="fas fa-sliders-h text-primary mr-1"></i> Parámetros del Reporte Técnico Ejecutivo (7 Páginas)
                 </span>
                 <div class="d-flex align-items-center" style="gap:8px;">
+                    <button type="button" class="btn btn-sm btn-warning text-dark font-weight-bold px-3 shadow-2xs" onclick="openInformeSondaLive()" title="Generar Informe SONDA Oficial (Plantilla 1.pdf con Diagrama de Conexiones)">
+                        <i class="fas fa-file-contract mr-1"></i> Informe SONDA (Plantilla 1.pdf)
+                    </button>
                     <button type="button" class="btn btn-sm btn-success font-weight-bold px-3 shadow-2xs" onclick="savePmSurvey()">
                         <i class="fas fa-save mr-1"></i> Guardar Levantamiento
                     </button>
@@ -6360,7 +6378,21 @@ async function savePmSurvey() {
         const resp = await fetch('api_portmapping.php', { method: 'POST', body: data });
         const res = await resp.json();
         if (res.success) {
-            Swal.fire('Guardado Exitoso', 'El levantamiento de portmapping ha sido registrado correctamente.', 'success');
+            const savedId = res.id || (document.getElementById('pm_survey_id') ? document.getElementById('pm_survey_id').value : null);
+            Swal.fire({
+                title: '¡Levantamiento Guardado!',
+                text: 'El levantamiento de portmapping ha sido registrado correctamente.',
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-file-contract mr-1"></i> Generar Informe SONDA',
+                cancelButtonText: 'Cerrar',
+                confirmButtonColor: '#d97706',
+                cancelButtonColor: '#64748b'
+            }).then((result) => {
+                if (result.isConfirmed && savedId) {
+                    window.open(`informesonda.php?id=${savedId}`, '_blank');
+                }
+            });
             cancelPmSurvey();
             loadManualSurveys();
         } else {
@@ -6755,6 +6787,63 @@ function printEquipmentPdfDocument() {
 
 function exportPmSurveyPDF(surveyId) {
     openEquipmentPdfModal(surveyId);
+}
+
+function openInformeSonda(surveyId) {
+    if (!surveyId) {
+        if (g_currentEquipmentData && g_currentEquipmentData.id) {
+            surveyId = g_currentEquipmentData.id;
+        } else if (cachedManualSurveys && cachedManualSurveys.length > 0) {
+            surveyId = cachedManualSurveys[0].id;
+        }
+    }
+    if (!surveyId) {
+        toastr.warning('Seleccione un levantamiento para generar el Informe SONDA.');
+        return;
+    }
+    window.open(`informesonda.php?id=${surveyId}`, '_blank');
+}
+
+function openInformeSondaLive() {
+    const editId = document.getElementById('pm_survey_id')?.value;
+    if (editId && parseInt(editId) > 0) {
+        window.open(`informesonda.php?id=${editId}`, '_blank');
+        return;
+    }
+
+    const surveyData = {
+        client: document.getElementById('pm-survey-client')?.value || 'GRUPO VILASECA',
+        location: document.getElementById('pm-survey-location')?.value || 'Datacenter',
+        area: document.getElementById('pm-survey-area')?.value || 'Telecomunicaciones',
+        device_name: document.getElementById('pm-survey-device')?.value || 'SW-CORE-01',
+        device_type: document.getElementById('pm-survey-device-type')?.value || 'Switch',
+        rack: document.getElementById('pm-survey-rack')?.value || 'RACK-01',
+        ur_rack: document.getElementById('pm-survey-ur')?.value || '10',
+        vendor: document.getElementById('pm-survey-vendor')?.value || 'Aruba / Cisco',
+        model: document.getElementById('pm-survey-model')?.value || 'Managed Switch',
+        serial: document.getElementById('pm-survey-serial')?.value || 'SN-99881122',
+        ip_address: document.getElementById('pm-survey-ip')?.value || '192.168.10.1',
+        creation_date: document.getElementById('pm-survey-date')?.value || new Date().toISOString().slice(0, 10),
+        description: document.getElementById('pm-survey-description')?.value || '',
+        ports: pmSurveyPorts || [],
+        images: pmSurveyImages || [],
+        diagram: pmSurveyDiagram || null
+    };
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'informesonda.php';
+    form.target = '_blank';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'survey_data';
+    input.value = JSON.stringify(surveyData);
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
 }
 
 function exportPmSurveyExcel(surveyId) {
@@ -7383,9 +7472,15 @@ function executePortmappingImport() {
                             <p class="mb-1 text-success font-weight-bold"><i class="fas fa-check-circle mr-1"></i> ${res.message}</p>
                             ${detailsHtml}
                         </div>`,
-                    confirmButtonText: 'Aceptar',
-                    confirmButtonColor: '#101B31'
-                }).then(() => {
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-file-contract mr-1"></i> Generar Informe SONDA',
+                    cancelButtonText: 'Ir a Levantamientos',
+                    confirmButtonColor: '#d97706',
+                    cancelButtonColor: '#101B31'
+                }).then((r) => {
+                    if (r.isConfirmed && res.survey_id) {
+                        window.open(`informesonda.php?id=${res.survey_id}`, '_blank');
+                    }
                     if (typeof loadManualSurveys === 'function') {
                         loadManualSurveys();
                     }
@@ -8930,6 +9025,9 @@ function renderAnalysisInventoryTable(devsList) {
                     <div class="btn-group btn-group-sm">
                         <button class="btn btn-outline-primary font-weight-bold" onclick="openDeviceSurveyFromAnalysis(${item.id})" title="Abrir y mapear puertos">
                             <i class="fas fa-tools"></i> Mapear
+                        </button>
+                        <button class="btn btn-outline-warning text-dark font-weight-bold" onclick="openInformeSonda(${item.id})" title="Generar Informe SONDA">
+                            <i class="fas fa-file-contract"></i>
                         </button>
                         <button class="btn btn-outline-danger font-weight-bold" onclick="exportPmSurveyPDF(${item.id})" title="Exportar PDF">
                             <i class="fas fa-file-pdf"></i>
