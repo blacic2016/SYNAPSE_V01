@@ -248,8 +248,8 @@ require_once __DIR__ . '/../partials/header.php';
         transition: all 0.2s ease-in-out;
     }
     .dataTables_wrapper .dataTables_filter input:focus {
-        border-color: #ffc107;
-        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+        border-color: var(--color-accent, #1E40AF);
+        box-shadow: 0 0 0 0.2rem rgba(30, 64, 175, 0.2);
         outline: none;
     }
     .dataTables_wrapper .dataTables_length {
@@ -292,9 +292,9 @@ require_once __DIR__ . '/../partials/header.php';
         font-weight: 500;
     }
     .dataTables_wrapper .pagination .page-item.active .page-link {
-        background-color: #ffc107;
-        border-color: #ffc107;
-        color: #212529 !important;
+        background-color: var(--color-accent, #1E40AF);
+        border-color: var(--color-accent, #1E40AF);
+        color: #ffffff !important;
     }
 </style>
 
@@ -317,16 +317,16 @@ require_once __DIR__ . '/../partials/header.php';
     <!-- HEADER DE MÓDULO -->
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="gap: 12px;">
         <div>
-            <h4 class="font-weight-bold m-0 text-navy">
-                <i class="fas fa-server text-warning mr-2"></i>Gestión de Racks / Gabinetes de Datacenter
+            <h4 class="font-weight-bold m-0" style="color: var(--text-color);">
+                <i class="fas fa-server mr-2" style="color: var(--color-accent);"></i>Gestión de Racks / Gabinetes de Datacenter
             </h4>
             <p class="text-muted small m-0">
                 Administración de bastidores físicos, asignación geográfica por ciudad y ubicación, y mapeo de unidades U.
             </p>
         </div>
-        <div class="d-flex align-items-center" style="gap: 8px;">
+        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
             <?php if (!empty($client_filter)): ?>
-                <span class="badge badge-warning text-dark font-weight-bold px-3 py-2 shadow-sm" style="font-size: 0.85rem;">
+                <span class="badge badge-pill text-white font-weight-bold px-3 py-2 shadow-xs" style="background: var(--color-accent); font-size: 0.84rem;">
                     <i class="fas fa-building mr-1"></i>Cliente: <?php echo htmlspecialchars($client_filter); ?>
                 </span>
                 <?php if (strtoupper($client_filter) === 'VILASECA'): ?>
@@ -335,33 +335,33 @@ require_once __DIR__ . '/../partials/header.php';
                     </a>
                 <?php endif; ?>
             <?php endif; ?>
-            <a href="viewer_3d.php<?php echo $client_filter ? '?cliente=' . urlencode($client_filter) : ''; ?>" class="btn btn-info btn-sm font-weight-bold shadow-sm">
+            <a href="viewer_3d.php<?php echo $client_filter ? '?cliente=' . urlencode($client_filter) : ''; ?>" class="btn btn-outline-info btn-sm font-weight-bold shadow-xs">
                 <i class="fas fa-cube mr-1"></i> 3DViewer
             </a>
-            <button class="btn btn-primary btn-sm font-weight-bold shadow-sm" data-toggle="modal" data-target="#createRackModal">
+            <button class="btn btn-primary btn-sm font-weight-bold shadow-xs" data-toggle="modal" data-target="#createRackModal">
                 <i class="fas fa-plus mr-1"></i> Crear Nuevo Rack
             </button>
         </div>
     </div>
 
     <!-- TARJETA PRINCIPAL -->
-    <div class="card card-outline card-warning shadow-sm" style="border-radius: 10px; overflow: hidden;">
+    <div class="card card-outline card-primary shadow-xs" style="border-radius: 10px; overflow: hidden; border: 1px solid var(--border-grid);">
         <div class="card-header bg-light d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
             <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
                 <span class="font-weight-bold text-dark small"><i class="fas fa-filter text-muted mr-1"></i>Filtros:</span>
                 
                 <?php if ($room_filter): ?>
-                    <span class="badge badge-info px-2 py-1">
+                    <span class="badge badge-info px-2 py-1 font-weight-bold" style="background: #0284C7;">
                         Cuarto ID: <?php echo $room_filter; ?>
                         <a href="racks.php<?php echo $client_filter ? '?cliente=' . urlencode($client_filter) : ''; ?>" class="text-white ml-1">&times;</a>
                     </span>
                 <?php endif; ?>
 
                 <?php if (!empty($client_filter)): ?>
-                    <span class="badge badge-warning text-dark px-2 py-1">
+                    <span class="badge badge-pill text-white px-2 py-1 font-weight-bold" style="background: var(--color-accent);">
                         Cliente: <?php echo htmlspecialchars($client_filter); ?>
                         <?php if (has_role('SUPER_ADMIN')): ?>
-                            <a href="racks.php" class="text-dark ml-1">&times;</a>
+                            <a href="racks.php" class="text-white ml-1">&times;</a>
                         <?php endif; ?>
                     </span>
                 <?php endif; ?>

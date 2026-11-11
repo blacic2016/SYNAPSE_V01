@@ -621,8 +621,12 @@ switch ($action) {
         $area = $_POST['area'] ?? '';
         $device_name = $_POST['device_name'] ?? '';
         $device_label = $_POST['device_label'] ?? '';
-        $device_type = $_POST['device_type'] ?? '';
+        $device_type = mb_strtoupper(trim($_POST['device_type'] ?? ''), 'UTF-8');
+        if (empty($device_type)) {
+            $device_type = 'SWITCH';
+        }
         $vendor = trim($_POST['vendor'] ?? '');
+        $model = trim($_POST['model'] ?? '');
         $serial = trim($_POST['serial'] ?? '');
         if ($serial !== '' && empty($device_label)) {
             $device_label = $serial;
@@ -646,6 +650,9 @@ switch ($action) {
                 }
                 if (!empty($vendor) && empty($p['vendor_src'])) {
                     $p['vendor_src'] = $vendor;
+                }
+                if (!empty($model) && empty($p['model_src'])) {
+                    $p['model_src'] = $model;
                 }
                 if (!empty($serial) && empty($p['serial_src'])) {
                     $p['serial_src'] = $serial;
@@ -825,12 +832,12 @@ switch ($action) {
             $pdo->beginTransaction();
 
             if ($id) {
-                $stmt = $pdo->prepare("UPDATE manual_portmap_surveys SET client = ?, location = ?, area = ?, device_name = ?, device_label = ?, device_type = ?, vendor = ?, serial = ?, ports_count = ?, rack = ?, ur_rack = ?, ip_address = ?, snmp_community = ?, creation_date = ?, description = ?, ports_data_json = ?, images_json = ?, config_files_json = ?, diagram_json = ? WHERE id = ?");
-                $stmt->execute([$client, $location, $area, $device_name, $device_label, $device_type, $vendor, $serial, $ports_count, $rack, $ur_rack, $ip_address, $snmp_community, $creation_date, $description, $ports_data_json, $final_images_json, $config_files_json, $diagram_json, $id]);
+                $stmt = $pdo->prepare("UPDATE manual_portmap_surveys SET client = ?, location = ?, area = ?, device_name = ?, device_label = ?, device_type = ?, vendor = ?, model = ?, serial = ?, ports_count = ?, rack = ?, ur_rack = ?, ip_address = ?, snmp_community = ?, creation_date = ?, description = ?, ports_data_json = ?, images_json = ?, config_files_json = ?, diagram_json = ? WHERE id = ?");
+                $stmt->execute([$client, $location, $area, $device_name, $device_label, $device_type, $vendor, $model, $serial, $ports_count, $rack, $ur_rack, $ip_address, $snmp_community, $creation_date, $description, $ports_data_json, $final_images_json, $config_files_json, $diagram_json, $id]);
                 $survey_db_id = $id;
             } else {
-                $stmt = $pdo->prepare("INSERT INTO manual_portmap_surveys (client, location, area, device_name, device_label, device_type, vendor, serial, ports_count, rack, ur_rack, ip_address, snmp_community, creation_date, description, ports_data_json, images_json, config_files_json, diagram_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$client, $location, $area, $device_name, $device_label, $device_type, $vendor, $serial, $ports_count, $rack, $ur_rack, $ip_address, $snmp_community, $creation_date, $description, $ports_data_json, $final_images_json, $config_files_json, $diagram_json]);
+                $stmt = $pdo->prepare("INSERT INTO manual_portmap_surveys (client, location, area, device_name, device_label, device_type, vendor, model, serial, ports_count, rack, ur_rack, ip_address, snmp_community, creation_date, description, ports_data_json, images_json, config_files_json, diagram_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$client, $location, $area, $device_name, $device_label, $device_type, $vendor, $model, $serial, $ports_count, $rack, $ur_rack, $ip_address, $snmp_community, $creation_date, $description, $ports_data_json, $final_images_json, $config_files_json, $diagram_json]);
                 $survey_db_id = $pdo->lastInsertId();
             }
 
@@ -841,10 +848,16 @@ switch ($action) {
 
             $category_id = 39; // 03 Hardware CI
             $type_lower = strtolower(trim($device_type));
-            if ($type_lower === 'switch') {
+            if (strpos($type_lower, 'switch') !== false) {
                 $category_id = 1;
-            } elseif ($type_lower === 'router') {
+            } elseif (strpos($type_lower, 'router') !== false) {
                 $category_id = 43;
+            } elseif (strpos($type_lower, 'firewall') !== false) {
+                $category_id = 44;
+            } elseif (strpos($type_lower, 'patch') !== false) {
+                $category_id = 45;
+            } elseif (strpos($type_lower, 'servidor') !== false || strpos($type_lower, 'server') !== false) {
+                $category_id = 2;
             }
 
             $attributes = json_encode([
@@ -858,6 +871,7 @@ switch ($action) {
                 'ports_count' => $ports_count,
                 'device_type' => $device_type,
                 'vendor' => $vendor,
+                'model' => $model,
                 'serial' => $serial,
                 'manual_survey_id' => $survey_db_id
             ]);
@@ -902,7 +916,7 @@ switch ($action) {
 
     case 'get_manual_surveys':
         try {
-            $stmt = $pdo->query("SELECT id, client, location, area, device_name, device_label, device_type, vendor, serial, ports_count, rack, ur_rack, ip_address, snmp_community, creation_date, description, created_at FROM manual_portmap_surveys ORDER BY created_at DESC");
+            $stmt = $pdo->query("SELECT id, client, location, area, device_name, device_label, device_type, vendor, model, serial, ports_count, rack, ur_rack, ip_address, snmp_community, creation_date, description, created_at FROM manual_portmap_surveys ORDER BY created_at DESC");
             $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
             echo json_encode(['success' => true, 'data' => $data]);
         } catch (Exception $e) {
@@ -935,7 +949,10 @@ switch ($action) {
             $total_vacant_all = 0;
 
             foreach ($surveys as $s) {
-                $dev_type = trim($s['device_type'] ?: 'Otro');
+                $dev_type = mb_strtoupper(trim($s['device_type'] ?: 'OTRO'), 'UTF-8');
+                if (empty($dev_type)) {
+                    $dev_type = 'SWITCH';
+                }
                 $loc = trim($s['location'] ?: 'Sin Ubicación');
                 $rack = trim($s['rack'] ?: 'Sin Rack');
                 $declared_ports = (int)($s['ports_count'] ?: 0);
@@ -1519,13 +1536,13 @@ switch ($action) {
             sort($locations);
 
             // 2. Get distinct devices with location for client from active manual_portmap_surveys
-            $sql_dev = "SELECT DISTINCT device_name, location, device_type FROM manual_portmap_surveys WHERE UPPER(client) LIKE UPPER(:client) AND device_name IS NOT NULL AND device_name != '' ORDER BY device_name ASC";
+            $sql_dev = "SELECT DISTINCT device_name, location, UPPER(TRIM(device_type)) as device_type FROM manual_portmap_surveys WHERE UPPER(client) LIKE UPPER(:client) AND device_name IS NOT NULL AND device_name != '' ORDER BY device_name ASC";
             $stmt_dev = $pdo->prepare($sql_dev);
             $stmt_dev->execute([':client' => '%' . $client_param . '%']);
             $devices = $stmt_dev->fetchAll(PDO::FETCH_ASSOC);
 
             // Also check ci_instances associated with active surveys
-            $sql_ci_dev = "SELECT i.hostname as device_name, c.name as device_type, JSON_UNQUOTE(JSON_EXTRACT(i.attributes_json, '$.location')) as location 
+            $sql_ci_dev = "SELECT i.hostname as device_name, UPPER(TRIM(c.name)) as device_type, JSON_UNQUOTE(JSON_EXTRACT(i.attributes_json, '$.location')) as location 
                            FROM ci_instances i 
                            JOIN ci_categories c ON i.category_id = c.id 
                            JOIN manual_portmap_surveys s ON JSON_UNQUOTE(JSON_EXTRACT(i.attributes_json, '$.manual_survey_id')) = s.id
@@ -1537,6 +1554,7 @@ switch ($action) {
             $existing_names = array_map(function($d){ return $d['device_name']; }, $devices);
             foreach ($ci_devs as $cd) {
                 if (!empty($cd['device_name']) && !in_array($cd['device_name'], $existing_names)) {
+                    $cd['device_type'] = mb_strtoupper(trim($cd['device_type'] ?: 'HARDWARE'), 'UTF-8');
                     $devices[] = $cd;
                 }
             }
@@ -2057,6 +2075,7 @@ switch ($action) {
             'rack_type' => $_POST['custom_rack_type'] ?? '',
             'device_name' => $_POST['custom_device_name'] ?? '',
             'vendor' => $_POST['custom_vendor'] ?? '',
+            'model' => $_POST['custom_model'] ?? '',
             'serial' => $_POST['custom_serial'] ?? '',
             'device_type' => $_POST['custom_device_type'] ?? '',
             'ur' => $_POST['custom_ur'] ?? '',

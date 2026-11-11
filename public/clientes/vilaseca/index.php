@@ -37,7 +37,7 @@ foreach ($vl_racks as $vr) {
 }
 
 // 2. Análisis de Infraestructura y Relevamiento Vilaseca
-$vl_surveys_stmt = $pdo->prepare("SELECT id, client, location, area, device_name, device_label, device_type, ports_count, rack, ur_rack, ip_address, ports_data_json, created_at FROM manual_portmap_surveys WHERE UPPER(client) LIKE '%VILASECA%' ORDER BY location ASC, rack ASC, device_name ASC");
+$vl_surveys_stmt = $pdo->prepare("SELECT id, client, location, area, device_name, device_label, device_type, vendor, model, serial, ports_count, rack, ur_rack, ip_address, ports_data_json, created_at FROM manual_portmap_surveys WHERE UPPER(client) LIKE '%VILASECA%' ORDER BY location ASC, rack ASC, device_name ASC");
 $vl_surveys_stmt->execute();
 $vl_surveys_list = $vl_surveys_stmt->fetchAll(PDO::FETCH_ASSOC);
 $vl_surveys_count = count($vl_surveys_list);
@@ -51,14 +51,38 @@ $vl_areas = [];
 $vl_racks_list = [];
 $vl_all_devices = [];
 $vl_racks_agg = [];
+$vl_brands = [];
+$vl_models = [];
+$vl_vlans = [];
+$vl_vlan_port_counts = [];
 
 foreach ($vl_surveys_list as $s) {
-    $dev_type = trim($s['device_type'] ?: 'Switch');
+    $dev_type = mb_strtoupper(trim($s['device_type'] ?: 'SWITCH'), 'UTF-8');
+    if ($dev_type === '') {
+        $dev_type = 'SWITCH';
+    }
     $loc = trim($s['location'] ?: 'General');
     $ar = trim($s['area'] ?: 'General');
     $rk = trim($s['rack'] ?: 'Sin Rack');
+
+    // Normalización de Marca / Vendor
+    $raw_brand = trim((string)($s['vendor'] ?? ''));
+    $dev_brand = mb_strtoupper($raw_brand, 'UTF-8');
+    if ($dev_brand === '' || $dev_brand === 'N/A' || $dev_brand === '-' || $dev_brand === 'NULL' || $dev_brand === 'NINGUNO' || $dev_brand === 'SIN MARCA') {
+        $dev_brand = 'SIN MARCA';
+    }
+
+    // Normalización de Modelo / Model
+    $raw_model = trim((string)($s['model'] ?? ''));
+    $dev_model = mb_strtoupper($raw_model, 'UTF-8');
+    if ($dev_model === '' || $dev_model === 'N/A' || $dev_model === '-' || $dev_model === 'NULL' || $dev_model === 'NINGUNO' || $dev_model === 'SIN MODELO') {
+        $dev_model = 'SIN MODELO';
+    }
     
     $vl_types[$dev_type] = ($vl_types[$dev_type] ?? 0) + 1;
+    $vl_brands[$dev_brand] = ($vl_brands[$dev_brand] ?? 0) + 1;
+    $vl_models[$dev_model] = ($vl_models[$dev_model] ?? 0) + 1;
+
     if (!isset($vl_locations[$loc])) {
         $vl_locations[$loc] = ['devices' => 0, 'ports' => 0, 'occupied' => 0, 'vacant' => 0];
     }
@@ -75,6 +99,8 @@ foreach ($vl_surveys_list as $s) {
     $d_total = (int)($s['ports_count'] ?: 0);
     $d_occ = 0;
     $d_vac = 0;
+    $dev_vlans_set = [];
+    $dev_ports_with_vlan = 0;
 
     if (is_array($p_json) && count($p_json) > 0) {
         $d_total = count($p_json);
@@ -86,9 +112,40 @@ foreach ($vl_surveys_list as $s) {
             } else {
                 $d_vac++;
             }
+
+            // Detección de VLANs por puerto
+            $v_raw = trim((string)($p['vlan'] ?? ''));
+            if ($v_raw !== '' && $v_raw !== '0' && strtoupper($v_raw) !== 'N/A' && $v_raw !== '-') {
+                $parts = preg_split('/[,;\/\s]+/', $v_raw);
+                $has_port_vlan = false;
+                foreach ($parts as $vp) {
+                    $vp = trim($vp);
+                    if ($vp !== '' && $vp !== '0' && is_numeric($vp)) {
+                        $v_lbl = 'VLAN ' . $vp;
+                        $dev_vlans_set[$v_lbl] = true;
+                        $vl_vlan_port_counts[$v_lbl] = ($vl_vlan_port_counts[$v_lbl] ?? 0) + 1;
+                        $has_port_vlan = true;
+                    }
+                }
+                if ($has_port_vlan) {
+                    $dev_ports_with_vlan++;
+                }
+            }
         }
     } else {
         $d_vac = $d_total;
+    }
+
+    // Clasificación de VLAN a nivel de equipo
+    $dev_vlan_list = array_keys($dev_vlans_set);
+    if (empty($dev_vlan_list)) {
+        $dev_vlan_list = ['SIN VLAN'];
+        $vl_vlans['SIN VLAN'] = ($vl_vlans['SIN VLAN'] ?? 0) + 1;
+        $vl_vlan_port_counts['SIN VLAN'] = ($vl_vlan_port_counts['SIN VLAN'] ?? 0) + $d_total;
+    } else {
+        foreach ($dev_vlan_list as $vl_lbl) {
+            $vl_vlans[$vl_lbl] = ($vl_vlans[$vl_lbl] ?? 0) + 1;
+        }
     }
 
     $vl_total_ports += $d_total;
@@ -120,6 +177,10 @@ foreach ($vl_surveys_list as $s) {
         'area' => $ar,
         'rack' => $rk,
         'device_type' => $dev_type,
+        'vendor' => $dev_brand,
+        'model' => $dev_model,
+        'vlans' => $dev_vlan_list,
+        'ports_with_vlan' => $dev_ports_with_vlan,
         'ip_address' => $s['ip_address'] ?: 'Sin IP',
         'total' => $d_total,
         'ports_count' => $d_total,
@@ -130,6 +191,9 @@ foreach ($vl_surveys_list as $s) {
 }
 sort($vl_areas);
 sort($vl_racks_list);
+arsort($vl_brands);
+arsort($vl_models);
+arsort($vl_vlans);
 
 $vl_locations_count = count($vl_locations);
 $vl_occupancy_rate = $vl_total_ports > 0 ? round(($vl_occupied_ports / $vl_total_ports) * 100, 1) : 0;
@@ -146,7 +210,8 @@ $top_occupied = array_slice($top_occupied, 0, 5);
 // Sort Racks
 uasort($vl_racks_agg, fn($a, $b) => $b['devices_count'] <=> $a['devices_count']);
 
-$page_title = "VILASECA - Dashboard (Manage)";
+$page_title = "VILASECA - Centro de Infraestructura";
+$hide_content_header = true;
 require_once __DIR__ . '/../../partials/header.php';
 ?>
 <script src="<?php echo PUBLIC_URL_PREFIX; ?>/clientes/vilaseca/chart.umd.min.js?v=<?php echo filemtime(__DIR__ . '/chart.umd.min.js'); ?>"></script>
@@ -157,44 +222,69 @@ if (typeof Chart === 'undefined') {
 </script>
 
 <style>
-/* PANTONE CORPORATIVO SONDA */
+/* PALETA SOBRIA Y FUNCIONAL (ANTI-FATIGA VISUAL PARA PROYECTISTAS E INGENIEROS) */
 :root {
-    --sonda-navy: #101B31;
-    --sonda-navy-light: #1A2744;
-    --sonda-orange: #ff5c05;
-    --sonda-orange-hover: #e04e04;
-    --sonda-cyan: #00B8D4;
-    --sonda-green: #c0da20;
-    --sonda-border: #e3e6f0;
-    --sonda-bg: #f4f6f9;
+    --bg-canvas: #F8FAFC;        /* Slate 50: Lienzo principal */
+    --bg-surface: #FFFFFF;       /* Blanco Puro: Tarjetas, formularios y paneles */
+    --color-accent: #1E40AF;     /* Azul Cobalto Técnico: Botones primarios, estados activos */
+    --border-grid: #CBD5E1;      /* Gris Neutro: División, baldosas de 60x60 cm */
+    --status-metric: #0F766E;    /* Verde Azulado: Semáforo de validación TIA-942 */
+
+    /* Regla Tipográfica Estricta - Modo Claro (WCAG AAA) */
+    --text-color: #0F172A;       /* Negro profundo con contraste WCAG AAA */
+    --text-muted: #334155;       /* Slate oscuro de alto contraste */
+
+    --sonda-border: var(--border-grid);
+    --sonda-navy: #0F172A;
+    --sonda-orange: var(--color-accent);
+    --sonda-cyan: #0284C7;
+    --sonda-green: var(--status-metric);
+}
+
+body.dark-mode {
+    --bg-canvas: #0B1120;        /* Obsidian Deep: Lienzo principal */
+    --bg-surface: #1E293B;       /* Slate 800: Tarjetas, formularios y paneles */
+    --color-accent: #38BDF8;     /* Sky Blue: Botones primarios, estados activos */
+    --border-grid: #334155;      /* Slate 700: División, baldosas de 60x60 cm */
+    --status-metric: #14B8A6;    /* Teal Calidad: Semáforo de validación TIA-942 */
+
+    /* Regla Tipográfica Estricta - Modo Oscuro */
+    --text-color: #F8FAFC;       /* Blanco nítido */
+    --text-muted: #94A3B8;       /* Slate claro */
+
+    --sonda-border: var(--border-grid);
+    --sonda-navy: #0B1120;
+    --sonda-orange: var(--color-accent);
+    --sonda-cyan: #38BDF8;
+    --sonda-green: var(--status-metric);
 }
 
 /* CONTENEDOR PRINCIPAL */
 .vl-main-shell {
-    border-radius: 14px;
-    border: 1px solid var(--sonda-border);
-    box-shadow: 0 4px 20px rgba(16, 27, 49, 0.08);
-    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--border-grid);
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+    background: var(--bg-surface);
     overflow: hidden;
-    margin-top: 15px;
+    margin-top: 10px;
     margin-bottom: 30px;
 }
 
-/* CABECERA PANTONE SONDA */
+/* CABECERA EJECUTIVA SOBRIA */
 .vl-executive-header {
-    background: linear-gradient(135deg, #101B31 0%, #1A2744 50%, #243860 100%);
-    color: #ffffff;
-    padding: 22px 28px;
-    border-left: 5px solid var(--sonda-orange);
+    background: linear-gradient(135deg, #0B1120 0%, #0F172A 60%, #1E293B 100%);
+    color: #F8FAFC;
+    padding: 20px 24px;
+    border-left: 5px solid var(--color-accent);
 }
 
 .vl-header-tabs-bar {
-    background: #101B31;
+    background: #0B1120;
     padding: 10px 16px 0 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid #1E293B;
 }
 
-/* PESTAÑAS SONDA */
+/* PESTAÑAS TÉCNICAS */
 .vl-nav-tabs {
     border-bottom: none;
     display: flex;
@@ -212,16 +302,16 @@ if (typeof Chart === 'undefined') {
 }
 
 .vl-nav-tabs .nav-link {
-    color: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #CBD5E1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-bottom: none;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    padding: 12px 14px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 11px 14px;
     font-size: 0.85rem;
     font-weight: 600;
-    background-color: rgba(255, 255, 255, 0.06);
-    transition: all 0.25s ease-in-out;
+    background-color: rgba(255, 255, 255, 0.04);
+    transition: all 0.2s ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -230,18 +320,17 @@ if (typeof Chart === 'undefined') {
 }
 
 .vl-nav-tabs .nav-link:hover {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.25);
-    transform: translateY(-1px);
+    color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .vl-nav-tabs .nav-link.active {
-    color: var(--sonda-navy) !important;
-    background-color: #ffffff !important;
-    border-color: #ffffff !important;
+    color: var(--text-color) !important;
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-grid) !important;
     font-weight: 700 !important;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.08);
     position: relative;
 }
 
@@ -251,28 +340,28 @@ if (typeof Chart === 'undefined') {
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: var(--sonda-orange);
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    height: 3px;
+    background: var(--color-accent);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
-/* TARJETAS KPI PANTONE SONDA */
+/* TARJETAS KPI SOBRIAS */
 .stat-kpi-card {
-    border-radius: 12px;
-    border: 1px solid var(--sonda-border);
-    background: #ffffff;
-    box-shadow: 0 2px 10px rgba(16, 27, 49, 0.04);
-    padding: 16px 18px;
-    transition: all 0.25s ease-in-out;
+    border-radius: 10px;
+    border: 1px solid var(--border-grid);
+    background: var(--bg-surface);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    padding: 15px 18px;
+    transition: all 0.2s ease-in-out;
     position: relative;
     overflow: hidden;
     height: 100%;
 }
 
 .stat-kpi-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(16, 27, 49, 0.09);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 
 .stat-kpi-card::before {
@@ -284,24 +373,25 @@ if (typeof Chart === 'undefined') {
     height: 100%;
 }
 
-.stat-kpi-card.kpi-orange::before { background: var(--sonda-orange); }
-.stat-kpi-card.kpi-cyan::before { background: var(--sonda-cyan); }
-.stat-kpi-card.kpi-green::before { background: var(--sonda-green); }
-.stat-kpi-card.kpi-navy::before { background: var(--sonda-navy); }
+.stat-kpi-card.kpi-orange::before,
+.stat-kpi-card.kpi-blue::before { background: var(--color-accent); }
+.stat-kpi-card.kpi-cyan::before { background: #0284C7; }
+.stat-kpi-card.kpi-green::before { background: var(--status-metric); }
+.stat-kpi-card.kpi-navy::before { background: #334155; }
 
 .stat-kpi-num {
     font-size: 1.85rem;
     font-weight: 800;
     line-height: 1.1;
-    color: var(--sonda-navy);
+    color: var(--text-color);
 }
 
 .stat-kpi-label {
     font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: #64748b;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
     margin-bottom: 4px;
 }
 
@@ -316,10 +406,10 @@ if (typeof Chart === 'undefined') {
     font-weight: 800;
     font-size: 0.75rem;
 }
-.rank-gold { background: linear-gradient(135deg, #ffd700, #ffa500); color: #000; box-shadow: 0 2px 6px rgba(255, 215, 0, 0.4); }
-.rank-silver { background: linear-gradient(135deg, #e0e0e0, #bdbdbd); color: #000; }
-.rank-bronze { background: linear-gradient(135deg, #cd7f32, #a0522d); color: #fff; }
-.rank-normal { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.rank-gold { background: #F59E0B; color: #FFFFFF; }
+.rank-silver { background: #94A3B8; color: #FFFFFF; }
+.rank-bronze { background: #D97706; color: #FFFFFF; }
+.rank-normal { background: var(--bg-canvas); color: var(--text-muted); border: 1px solid var(--border-grid); }
 
 /* PASTILLAS DE SEDE */
 .pill-loc-btn {
@@ -329,38 +419,43 @@ if (typeof Chart === 'undefined') {
     padding: 5px 14px;
     transition: all 0.2s;
     cursor: pointer;
-    border: 1px solid #cbd5e1;
-    background: #ffffff;
-    color: #475569;
+    border: 1px solid var(--border-grid);
+    background: var(--bg-surface);
+    color: var(--text-muted);
 }
 .pill-loc-btn.active {
-    background: var(--sonda-navy) !important;
-    color: #ffffff !important;
-    border-color: var(--sonda-navy) !important;
-    box-shadow: 0 2px 8px rgba(16, 27, 49, 0.25);
+    background: var(--color-accent) !important;
+    color: #FFFFFF !important;
+    border-color: var(--color-accent) !important;
+    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
 }
 
 /* TABLAS Y BADGES */
 .vl-table thead th {
-    background: var(--sonda-navy);
-    color: #ffffff;
+    background: #0F172A;
+    color: #F8FAFC;
     text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 0.7px;
+    font-size: 0.72rem;
+    letter-spacing: 0.6px;
     font-weight: 700;
-    padding: 11px 14px;
+    padding: 10px 14px;
     border: none;
 }
+body.dark-mode .vl-table thead th {
+    background: #0B1120;
+}
 .vl-table tbody td {
-    padding: 10px 14px;
+    padding: 9px 14px;
     vertical-align: middle;
-    font-size: 0.82rem;
+    font-size: 0.84rem;
+    border-top: 1px solid var(--border-grid);
+    color: var(--text-color);
 }
 .vl-table tbody tr:hover {
-    background: #f8fafc;
+    background: rgba(30, 64, 175, 0.05);
 }
 
-/* PAGINACIÓN PANTONE SONDA */
+/* PAGINACIÓN SOBRIA */
 .sonda-pagination {
     display: flex;
     align-items: center;
@@ -379,39 +474,39 @@ if (typeof Chart === 'undefined') {
     padding: 0 10px;
     font-size: 0.82rem;
     font-weight: 700;
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: var(--sonda-navy);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-grid);
+    color: var(--text-color);
     cursor: pointer;
     transition: all 0.15s ease;
     user-select: none;
     margin: 0 2px;
 }
 .sonda-page-btn:hover:not(.disabled):not(.active) {
-    background: #f1f5f9;
-    border-color: var(--sonda-orange);
-    color: var(--sonda-orange);
+    background: var(--bg-canvas);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
 }
 .sonda-page-btn.active {
-    background: var(--sonda-orange) !important;
-    border-color: var(--sonda-orange) !important;
-    color: #ffffff !important;
-    box-shadow: 0 2px 6px rgba(255, 92, 5, 0.35);
+    background: var(--color-accent) !important;
+    border-color: var(--color-accent) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 6px rgba(30, 64, 175, 0.25);
 }
 .sonda-page-btn.disabled {
     opacity: 0.4;
     cursor: not-allowed;
-    background: #f8fafc;
-    border-color: #e2e8f0;
+    background: var(--bg-canvas);
+    border-color: var(--border-grid);
 }
 
 /* SIMULADOR DE PANEL FRONTAL */
 .switch-chassis {
-    background: var(--sonda-navy);
-    border: 1px solid #223554;
-    border-radius: 12px;
-    padding: 18px;
-    box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    background: #0F172A;
+    border: 1px solid #1E293B;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
 }
 .port-grid {
     display: flex;
@@ -433,34 +528,34 @@ if (typeof Chart === 'undefined') {
     border: 1px solid rgba(0,0,0,.2);
 }
 .port-cell.connected {
-    background: var(--sonda-green);
-    color: #101B31;
+    background: var(--status-metric);
+    color: #FFFFFF;
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(192, 218, 32, 0.4);
+    box-shadow: 0 1px 3px rgba(15, 118, 110, 0.4);
 }
 .port-cell.connected:hover {
-    transform: scale(1.2);
-    box-shadow: 0 0 12px rgba(192, 218, 32, 0.8);
+    transform: scale(1.15);
+    box-shadow: 0 0 10px rgba(15, 118, 110, 0.8);
     z-index: 5;
 }
 .port-cell.free {
     background: #334155;
-    color: #94a3b8;
+    color: #94A3B8;
 }
 .port-cell.damaged {
-    background: #ef4444;
+    background: #DC2626;
 }
 .port-detail-panel {
-    background: linear-gradient(135deg, #f0fdf4, #ffffff);
-    border: 1px solid #86efac;
-    border-radius: 10px;
-    padding: 18px;
-    margin-top: 14px;
-    animation: fadeIn .3s;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-grid);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 12px;
+    animation: fadeIn .25s;
 }
 
 @keyframes fadeIn {
-    from { opacity:0; transform: translateY(6px); }
+    from { opacity:0; transform: translateY(4px); }
     to { opacity:1; transform: translateY(0); }
 }
 </style>
@@ -469,37 +564,37 @@ if (typeof Chart === 'undefined') {
     <!-- CONTENEDOR PRINCIPAL EJECUTIVO -->
     <div class="vl-main-shell">
         
-        <!-- BANNER DE CABECERA PANTONE SONDA -->
+        <!-- BANNER DE CABECERA SOBRIO -->
         <div class="vl-executive-header d-flex justify-content-between align-items-center flex-wrap" style="gap: 14px;">
             <div>
                 <div class="d-flex align-items-center mb-1 flex-wrap" style="gap: 8px;">
-                    <span class="badge badge-pill px-2 py-1 font-weight-bold" style="background: var(--sonda-orange); color: #fff; font-size: 0.72rem; letter-spacing: 0.6px;">
+                    <span class="badge badge-pill px-2 py-1 font-weight-bold" style="background: var(--color-accent); color: #FFFFFF; font-size: 0.72rem; letter-spacing: 0.5px;">
                         <i class="fas fa-building mr-1"></i>VILASECA
                     </span>
-                    <span class="badge badge-pill px-2 py-1 font-weight-bold" style="background: var(--sonda-cyan); color: #101B31; font-size: 0.72rem; letter-spacing: 0.6px;">
-                        <i class="fas fa-network-wired mr-1"></i>SISTEMA CMDB SONDA
+                    <span class="badge badge-pill px-2 py-1 font-weight-bold" style="background: #1E293B; color: #38BDF8; border: 1px solid #334155; font-size: 0.72rem; letter-spacing: 0.5px;">
+                        <i class="fas fa-network-wired mr-1"></i>SISTEMA CMDB
                     </span>
-                    <span class="badge badge-pill px-2 py-1 font-weight-bold" style="background: var(--sonda-green); color: #101B31; font-size: 0.72rem;">
+                    <span class="badge badge-pill px-2 py-1 font-weight-bold" style="background: var(--status-metric); color: #FFFFFF; font-size: 0.72rem;">
                         <i class="fas fa-check-circle mr-1"></i>EN VIVO
                     </span>
                 </div>
-                <h3 class="m-0 font-weight-bold text-white" style="letter-spacing: -0.3px;">
-                    <i class="fas fa-chart-line mr-2" style="color: var(--sonda-orange);"></i>VILASECA - Dashboard (Manage)
-                </h3>
+                <h4 class="m-0 font-weight-bold text-white" style="letter-spacing: -0.3px;">
+                    <i class="fas fa-microchip mr-2" style="color: var(--color-accent);"></i>Gestión Técnica de Infraestructura y Capacidad
+                </h4>
                 <p class="m-0 text-white-50 small mt-1" style="font-size: 0.85rem;">
                     Consola ejecutiva principal: análisis de capacidad, ocupación física de puertos, densidad de bastidores y monitoreo de infraestructura.
                 </p>
             </div>
             
             <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
-                <button type="button" class="btn btn-sm font-weight-bold text-white shadow-sm" style="background: var(--sonda-orange);" onclick="exportVilasecaCSV()">
+                <button type="button" class="btn btn-sm font-weight-bold text-white shadow-sm" style="background: var(--color-accent);" onclick="exportVilasecaCSV()">
                     <i class="fas fa-file-excel mr-1"></i> Exportar CSV
                 </button>
-                <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php?cliente=VILASECA" class="btn btn-outline-light btn-sm font-weight-bold shadow-sm">
-                    <i class="fas fa-network-wired mr-1" style="color: var(--sonda-cyan);"></i> Portmapping
+                <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php?cliente=VILASECA&tab=analisis" class="btn btn-outline-light btn-sm font-weight-bold shadow-sm" title="Ir al Centro de Análisis y Mapeo de Puertos de Vilaseca">
+                    <i class="fas fa-network-wired mr-1" style="color: #38BDF8;"></i> Portmapping
                 </a>
                 <a href="<?php echo PUBLIC_URL_PREFIX; ?>/analisis_conexiones.php?cliente=VILASECA" class="btn btn-outline-light btn-sm font-weight-bold shadow-sm">
-                    <i class="fas fa-project-diagram mr-1" style="color: var(--sonda-green);"></i> Topología
+                    <i class="fas fa-project-diagram mr-1" style="color: #14B8A6;"></i> Topología
                 </a>
             </div>
         </div>
@@ -508,12 +603,12 @@ if (typeof Chart === 'undefined') {
         <div class="p-4">
                 
                 <!-- 🎯 FILTROS CONCATENADOS EN TIEMPO REAL (COLOCADOS PRIMERO) -->
-                <div class="card border shadow-sm mb-4" style="border-radius: 12px; border-left: 5px solid var(--sonda-orange) !important; background: #ffffff;">
-                    <div class="card-body p-3 bg-light" style="border-radius: 11px;">
+                <div class="card border shadow-sm mb-4" style="border-radius: 10px; border-left: 4px solid var(--color-accent) !important; background: var(--bg-surface); border-color: var(--border-grid);">
+                    <div class="card-body p-3" style="border-radius: 9px; background: var(--bg-canvas);">
                         <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap" style="gap: 8px;">
                             <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
                                 <span class="badge badge-pill text-white px-2 py-1 font-weight-bold" style="background: var(--sonda-navy); font-size: 0.72rem; letter-spacing: 0.5px;">
-                                    <i class="fas fa-sliders-h mr-1" style="color: var(--sonda-orange);"></i>FILTROS CONCATENADOS
+                                    <i class="fas fa-sliders-h mr-1" style="color: var(--color-accent);"></i>FILTROS CONCATENADOS
                                 </span>
                                 <small class="text-muted font-weight-bold">Filtros inteligentes en cascada: la selección de cualquier criterio actualiza KPIs, gráficos, racks y tablas en tiempo real.</small>
                                 <span class="badge badge-pill badge-warning text-dark font-weight-bold ml-1" id="vl-active-filters-count" style="display:none; font-size: 0.72rem;">0 activos</span>
@@ -720,6 +815,119 @@ if (typeof Chart === 'undefined') {
                     </div>
                 </div>
 
+                <!-- GRÁFICOS DE MARCA, MODELO Y VLANS ENCONTRADAS (PANTONE SONDA) -->
+                <div class="row mb-4">
+                    <!-- 1. EQUIPOS POR MARCA -->
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm" style="border-radius: 12px; height: 100%;">
+                            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center flex-wrap" style="gap: 8px;">
+                                <h6 class="font-weight-bold text-dark m-0">
+                                    <i class="fas fa-industry mr-2" style="color: var(--sonda-orange);"></i>Equipos por Marca
+                                </h6>
+                                <span class="badge badge-pill badge-light border text-muted font-weight-bold" id="vl-chart-brands-badge"><?php echo count($vl_brands); ?> Marcas</span>
+                            </div>
+                            <div class="card-body p-3">
+                                <div style="height: 220px; position: relative;" class="mb-3">
+                                    <canvas id="vl-chart-brands"></canvas>
+                                </div>
+                                <div class="vl-brands-legend-list pl-1" id="vl-brands-legend-list" style="max-height: 200px; overflow-y: auto;">
+                                    <?php 
+                                    $b_idx = 0;
+                                    $tot_devs = count($vl_all_devices);
+                                    foreach ($vl_brands as $b_name => $b_count): 
+                                        $col = $sonda_palette[$b_idx % count($sonda_palette)];
+                                        $pct = $tot_devs > 0 ? round(($b_count / $tot_devs) * 100) : 0;
+                                        $b_idx++;
+                                    ?>
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-center small font-weight-bold mb-1">
+                                            <span class="text-truncate mr-1"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:<?php echo $col; ?>;margin-right:6px;"></span><?php echo htmlspecialchars((string)$b_name); ?></span>
+                                            <span class="text-dark whitespace-nowrap"><strong><?php echo $b_count; ?></strong> <small class="text-muted">(<?php echo $pct; ?>%)</small></span>
+                                        </div>
+                                        <div class="progress" style="height: 6px; border-radius: 3px; background: #e2e8f0;">
+                                            <div class="progress-bar" style="width: <?php echo $pct; ?>%; background: <?php echo $col; ?>;"></div>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. EQUIPOS POR MODELO -->
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="card border-0 shadow-sm" style="border-radius: 12px; height: 100%;">
+                            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center flex-wrap" style="gap: 8px;">
+                                <h6 class="font-weight-bold text-dark m-0">
+                                    <i class="fas fa-microchip mr-2" style="color: var(--sonda-cyan);"></i>Equipos por Modelo
+                                </h6>
+                                <span class="badge badge-pill badge-light border text-muted font-weight-bold" id="vl-chart-models-badge"><?php echo count($vl_models); ?> Modelos</span>
+                            </div>
+                            <div class="card-body p-3">
+                                <div style="height: 220px; position: relative;" class="mb-3">
+                                    <canvas id="vl-chart-models"></canvas>
+                                </div>
+                                <div class="vl-models-legend-list pl-1" id="vl-models-legend-list" style="max-height: 200px; overflow-y: auto;">
+                                    <?php 
+                                    $m_idx = 0;
+                                    foreach ($vl_models as $m_name => $m_count): 
+                                        $col = $sonda_palette[$m_idx % count($sonda_palette)];
+                                        $pct = $tot_devs > 0 ? round(($m_count / $tot_devs) * 100) : 0;
+                                        $m_idx++;
+                                    ?>
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-center small font-weight-bold mb-1">
+                                            <span class="text-truncate mr-1"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:<?php echo $col; ?>;margin-right:6px;"></span><?php echo htmlspecialchars((string)$m_name); ?></span>
+                                            <span class="text-dark whitespace-nowrap"><strong><?php echo $m_count; ?></strong> <small class="text-muted">(<?php echo $pct; ?>%)</small></span>
+                                        </div>
+                                        <div class="progress" style="height: 6px; border-radius: 3px; background: #e2e8f0;">
+                                            <div class="progress-bar" style="width: <?php echo $pct; ?>%; background: <?php echo $col; ?>;"></div>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. VLANS ENCONTRADAS -->
+                    <div class="col-lg-4 col-md-12 mb-3">
+                        <div class="card border-0 shadow-sm" style="border-radius: 12px; height: 100%;">
+                            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center flex-wrap" style="gap: 8px;">
+                                <h6 class="font-weight-bold text-dark m-0">
+                                    <i class="fas fa-network-wired mr-2" style="color: #65a30d;"></i>VLANs Encontradas
+                                </h6>
+                                <span class="badge badge-pill badge-light border text-muted font-weight-bold" id="vl-chart-vlans-badge"><?php echo count($vl_vlans); ?> Segmentos</span>
+                            </div>
+                            <div class="card-body p-3">
+                                <div style="height: 220px; position: relative;" class="mb-3">
+                                    <canvas id="vl-chart-vlans"></canvas>
+                                </div>
+                                <div class="vl-vlans-legend-list pl-1" id="vl-vlans-legend-list" style="max-height: 200px; overflow-y: auto;">
+                                    <?php 
+                                    $v_idx = 0;
+                                    foreach ($vl_vlans as $v_name => $v_count): 
+                                        $col = ((string)$v_name === 'SIN VLAN') ? '#64748B' : $sonda_palette[$v_idx % count($sonda_palette)];
+                                        $pct = $tot_devs > 0 ? round(($v_count / $tot_devs) * 100) : 0;
+                                        $v_ports = $vl_vlan_port_counts[$v_name] ?? 0;
+                                        $v_idx++;
+                                    ?>
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-center small font-weight-bold mb-1">
+                                            <span class="text-truncate mr-1"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:<?php echo $col; ?>;margin-right:6px;"></span><?php echo htmlspecialchars((string)$v_name); ?></span>
+                                            <span class="text-dark whitespace-nowrap"><strong><?php echo $v_count; ?> eq</strong> <small class="text-muted">(<?php echo $v_ports; ?> ptos)</small></span>
+                                        </div>
+                                        <div class="progress" style="height: 6px; border-radius: 3px; background: #e2e8f0;">
+                                            <div class="progress-bar" style="width: <?php echo $pct; ?>%; background: <?php echo $col; ?>;"></div>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- LEADERBOARDS: TOP VACÍOS Y TOP LLENOS -->
                 <div class="row mb-4">
                     <!-- TOP PUERTOS VACÍOS (DISPONIBILIDAD) -->
@@ -868,7 +1076,7 @@ if (typeof Chart === 'undefined') {
                         </h6>
 <?php 
 $vl_total_devs = count($vl_all_devices);
-$vl_initial_page_size = 10;
+$vl_initial_page_size = 30;
 $vl_total_pages = $vl_total_devs > 0 ? (int)ceil($vl_total_devs / $vl_initial_page_size) : 1;
 ?>
                         <span class="badge badge-light border font-weight-bold text-muted" id="vl-table-count"><?php echo $vl_total_devs; ?> Equipos Listados</span>
@@ -880,10 +1088,9 @@ $vl_total_pages = $vl_total_devs > 0 ? (int)ceil($vl_total_devs / $vl_initial_pa
                             <div class="d-flex align-items-center" style="gap: 6px;">
                                 <label class="small text-muted font-weight-bold mb-0">Mostrar:</label>
                                 <select id="vl-inv-page-size" class="custom-select custom-select-sm font-weight-bold" style="width: auto;">
-                                    <option value="10" selected>10 por página</option>
-                                    <option value="25">25 por página</option>
-                                    <option value="50">50 por página</option>
-                                    <option value="-1">Todos los registros</option>
+                                    <option value="10">10 por página</option>
+                                    <option value="20">20 por página</option>
+                                    <option value="30" selected>30 por página (Máximo)</option>
                                 </select>
                             </div>
 
@@ -934,12 +1141,28 @@ $vl_total_pages = $vl_total_devs > 0 ? (int)ceil($vl_total_devs / $vl_initial_pa
                             <tbody>
                                 <?php foreach ($vl_all_devices as $dev_idx => $dev): 
                                     $badgeRateCls = $dev['rate'] >= 75 ? 'badge-danger' : ($dev['rate'] >= 40 ? 'badge-warning' : 'badge-success');
-                                    $isInitVisible = ($dev_idx < 10);
+                                    $isInitVisible = ($dev_idx < 30);
+                                    $vlansStr = implode(', ', $dev['vlans'] ?? ['SIN VLAN']);
                                 ?>
-                                <tr style="<?php echo $isInitVisible ? '' : 'display: none;'; ?>" data-id="<?php echo $dev['id']; ?>" data-loc="<?php echo htmlspecialchars($dev['location']); ?>" data-area="<?php echo htmlspecialchars($dev['area'] ?? 'General'); ?>" data-type="<?php echo htmlspecialchars($dev['device_type']); ?>" data-name="<?php echo htmlspecialchars($dev['device_name']); ?>" data-ip="<?php echo htmlspecialchars($dev['ip_address']); ?>" data-rack="<?php echo htmlspecialchars($dev['rack']); ?>">
+                                <tr style="<?php echo $isInitVisible ? '' : 'display: none;'; ?>" data-id="<?php echo $dev['id']; ?>" data-loc="<?php echo htmlspecialchars($dev['location']); ?>" data-area="<?php echo htmlspecialchars($dev['area'] ?? 'General'); ?>" data-type="<?php echo htmlspecialchars($dev['device_type']); ?>" data-vendor="<?php echo htmlspecialchars($dev['vendor']); ?>" data-model="<?php echo htmlspecialchars($dev['model']); ?>" data-vlans="<?php echo htmlspecialchars($vlansStr); ?>" data-name="<?php echo htmlspecialchars($dev['device_name']); ?>" data-ip="<?php echo htmlspecialchars($dev['ip_address']); ?>" data-rack="<?php echo htmlspecialchars($dev['rack']); ?>">
                                     <td class="font-weight-bold text-dark">
-                                        <i class="fas fa-server mr-2" style="color: var(--sonda-orange);"></i><?php echo htmlspecialchars($dev['device_name']); ?>
-                                        <small class="d-block text-muted">IP: <code><?php echo htmlspecialchars($dev['ip_address']); ?></code></small>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-server mr-2" style="color: var(--sonda-orange);"></i>
+                                            <span><?php echo htmlspecialchars($dev['device_name']); ?></span>
+                                        </div>
+                                        <div class="small text-muted mt-1">
+                                            IP: <code><?php echo htmlspecialchars($dev['ip_address']); ?></code>
+                                            &bull;
+                                            <span class="badge badge-light border text-dark font-weight-bold" title="Marca"><i class="fas fa-industry text-primary mr-1"></i><?php echo htmlspecialchars($dev['vendor']); ?></span>
+                                            <span class="badge badge-light border text-muted" title="Modelo"><i class="fas fa-microchip text-secondary mr-1"></i><?php echo htmlspecialchars($dev['model']); ?></span>
+                                            <?php if (!empty($dev['vlans']) && $dev['vlans'][0] !== 'SIN VLAN'): ?>
+                                                &bull;
+                                                <span class="badge badge-info" style="font-size:0.7rem;"><i class="fas fa-network-wired mr-1"></i><?php echo htmlspecialchars($vlansStr); ?></span>
+                                            <?php else: ?>
+                                                &bull;
+                                                <span class="badge badge-light border text-muted" style="font-size:0.7rem;">SIN VLAN</span>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                     <td><i class="fas fa-map-marker-alt text-danger mr-1 small"></i><?php echo htmlspecialchars($dev['location']); ?></td>
                                     <td><span class="badge badge-light border font-weight-bold"><?php echo htmlspecialchars($dev['rack']); ?></span></td>
@@ -991,6 +1214,10 @@ const VL_SERVER_DATA = {
     locations: <?php echo json_encode($vl_locations, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
     areas: <?php echo json_encode($vl_areas, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
     racks: <?php echo json_encode($vl_racks_list, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+    brands: <?php echo json_encode($vl_brands, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+    models: <?php echo json_encode($vl_models, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+    vlans: <?php echo json_encode($vl_vlans, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
+    vlan_port_counts: <?php echo json_encode($vl_vlan_port_counts, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>,
     all_devices: <?php echo json_encode($vl_all_devices, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>
 };
 </script>

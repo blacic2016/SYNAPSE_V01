@@ -236,19 +236,25 @@ if ($initial_rack_id <= 0 && !empty($racks)) {
     
     <style>
         :root {
-            --bg-canvas: #090d16;
-            --bg-panel: rgba(15, 23, 42, 0.96);
-            --bg-panel-solid: #0f172a;
-            --bg-toolbar: #111827;
-            --border-panel: rgba(255, 255, 255, 0.12);
-            --accent-cyan: #38bdf8;
-            --accent-cyan-glow: rgba(56, 189, 248, 0.4);
-            --accent-orange: #ff5c05;
-            --accent-yellow: #facc15;
-            --accent-green: #22c55e;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
+            /* Paleta Sobria DCIM (Modo Oscuro Técnico Anti-Fatiga Visual) */
+            --bg-canvas: #0B1120;        /* Obsidian Deep: Lienzo principal */
+            --bg-surface: #1E293B;       /* Slate 800: Tarjetas, formularios y paneles */
+            --color-accent: #38BDF8;     /* Sky Blue: Botones primarios, estados activos */
+            --border-grid: #334155;      /* Slate 700: División, baldosas de 60x60 cm */
+            --status-metric: #14B8A6;    /* Teal Calidad: Semáforo de validación TIA-942 */
+
+            --bg-panel: rgba(30, 41, 59, 0.96);
+            --bg-panel-solid: #1E293B;
+            --bg-toolbar: #0B1120;
+            --border-panel: #334155;
+            --accent-cyan: #38BDF8;
+            --accent-cyan-glow: rgba(56, 189, 248, 0.35);
+            --accent-orange: #38BDF8;
+            --accent-yellow: #38BDF8;
+            --accent-green: #14B8A6;
+            --text-primary: #F8FAFC;     /* Regla Tipográfica Estricta: letras blancas nítidas */
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
         }
 
         * {
@@ -275,7 +281,7 @@ if ($initial_rack_id <= 0 && !empty($racks)) {
             width: 100%;
             height: 100%;
             z-index: 1;
-            background: #090d16;
+            background: #0B1120;
         }
 
         /* UI Overlays */
@@ -403,10 +409,10 @@ if ($initial_rack_id <= 0 && !empty($racks)) {
         }
 
         .dc-btn.active {
-            background: linear-gradient(135deg, #ff5c05, #e04f00);
+            background: #1E40AF;
             color: #ffffff;
-            border-color: #ff5c05;
-            box-shadow: 0 0 10px rgba(255, 92, 5, 0.5);
+            border-color: #38BDF8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
         }
 
         .dc-btn-cyan {

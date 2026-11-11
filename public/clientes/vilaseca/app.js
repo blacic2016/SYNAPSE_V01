@@ -7,6 +7,7 @@ const API_CI = '../../api_ci.php';
 let vlSurveys = [];
 let vizChart = null, vizTypeChart = null;
 let overviewDoughnut = null, overviewBar = null;
+let overviewBrands = null, overviewModels = null, overviewVlans = null;
 let currentSurveyPorts = [];
 
 // Paginadores para tablas del módulo
@@ -73,7 +74,8 @@ function initTablePaginator(options) {
 
     function update() {
         let pageSize = parseInt(pageSizeSelect.val());
-        if (isNaN(pageSize)) pageSize = 10;
+        if (isNaN(pageSize) || pageSize <= 0) pageSize = 30;
+        if (pageSize > 30) pageSize = 30;
 
         const searchTerm = (searchInput.val() || '').toLowerCase().trim();
         const allRows = getRows();
@@ -97,7 +99,10 @@ function initTablePaginator(options) {
                 const dIp = ($row.data('ip') || '').toString().toLowerCase();
                 const dRack = ($row.data('rack') || '').toString().toLowerCase();
                 const dType = ($row.data('type') || '').toString().toLowerCase();
-                const fullText = text + ' ' + dLoc + ' ' + dName + ' ' + dIp + ' ' + dRack + ' ' + dType;
+                const dVendor = ($row.data('vendor') || '').toString().toLowerCase();
+                const dModel = ($row.data('model') || '').toString().toLowerCase();
+                const dVlans = ($row.data('vlans') || '').toString().toLowerCase();
+                const fullText = text + ' ' + dLoc + ' ' + dName + ' ' + dIp + ' ' + dRack + ' ' + dType + ' ' + dVendor + ' ' + dModel + ' ' + dVlans;
                 
                 const tokens = searchTerm.split(/\s+/);
                 textMatch = tokens.every(token => fullText.includes(token));
@@ -308,16 +313,15 @@ let g_currentFilteredDevices = [];
 let g_filteredDeviceIds = null;
 let g_isUpdatingFilters = false;
 
-// Paleta Oficial Pantone SONDA
+// Paleta Oficial Sobria y Funcional (Anti-Fatiga Visual)
 const SONDA_PALETTE = [
-    '#ff5c05', // Sonda Orange
-    '#00B8D4', // Sonda Cyan
-    '#101B31', // Sonda Navy
-    '#c0da20', // Sonda Lime Green
-    '#2a4365', // Navy Slate
-    '#e04e04', // Deep Orange
-    '#00838f', // Deep Cyan
-    '#64748b'  // Muted Slate
+    '#1E40AF', // Azul Cobalto Técnico
+    '#0F766E', // Verde Azulado TIA-942
+    '#0284C7', // Cobalt / Sky
+    '#334155', // Slate Neutro
+    '#14B8A6', // Teal Calidad
+    '#0F172A', // Slate Deep
+    '#64748B'  // Muted Slate
 ];
 
 // Inicialización de Gráficos Chart.js (instancias persistentes para actualización dinámica)
@@ -392,7 +396,7 @@ function initOverviewCharts() {
                     {
                         label: 'Equipos Relevados',
                         data: [0],
-                        backgroundColor: '#ff5c05',
+                        backgroundColor: '#1E40AF',
                         borderRadius: 6,
                         barPercentage: 0.65,
                         categoryPercentage: 0.7
@@ -400,7 +404,7 @@ function initOverviewCharts() {
                     {
                         label: 'Puertos Físicos',
                         data: [0],
-                        backgroundColor: '#00B8D4',
+                        backgroundColor: '#0F766E',
                         borderRadius: 6,
                         barPercentage: 0.65,
                         categoryPercentage: 0.7
@@ -432,6 +436,152 @@ function initOverviewCharts() {
                         beginAtZero: true,
                         grid: { color: '#f1f5f9' },
                         ticks: { font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 3. Doughnut: Equipos por Marca
+    let brandsCanvas = document.getElementById('vl-chart-brands');
+    if (brandsCanvas) {
+        if (overviewBrands) {
+            overviewBrands.destroy();
+            overviewBrands = null;
+        }
+        const brandsCtx = brandsCanvas.getContext ? brandsCanvas.getContext('2d') : brandsCanvas;
+        overviewBrands = new Chart(brandsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Cargando...'],
+                datasets: [{
+                    data: [1],
+                    backgroundColor: SONDA_PALETTE,
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: { size: 10, weight: '600', family: 'Kumbh Sans' },
+                            padding: 8,
+                            boxWidth: 12
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                let total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                let val = ctx.raw || 0;
+                                let pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                                return ` ${ctx.label}: ${val} (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 4. Horizontal Bar: Equipos por Modelo
+    let modelsCanvas = document.getElementById('vl-chart-models');
+    if (modelsCanvas) {
+        if (overviewModels) {
+            overviewModels.destroy();
+            overviewModels = null;
+        }
+        const modelsCtx = modelsCanvas.getContext ? modelsCanvas.getContext('2d') : modelsCanvas;
+        overviewModels = new Chart(modelsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Cargando...'],
+                datasets: [{
+                    label: 'Equipos',
+                    data: [0],
+                    backgroundColor: '#00B8D4',
+                    borderRadius: 4,
+                    barPercentage: 0.75,
+                    categoryPercentage: 0.8
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ` ${ctx.raw} Equipos`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: '#f1f5f9' },
+                        ticks: { font: { size: 10, weight: '600' }, precision: 0 }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { font: { size: 10, weight: '600' } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 5. Doughnut: VLANs Encontradas
+    let vlansCanvas = document.getElementById('vl-chart-vlans');
+    if (vlansCanvas) {
+        if (overviewVlans) {
+            overviewVlans.destroy();
+            overviewVlans = null;
+        }
+        const vlansCtx = vlansCanvas.getContext ? vlansCanvas.getContext('2d') : vlansCanvas;
+        overviewVlans = new Chart(vlansCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Cargando...'],
+                datasets: [{
+                    data: [1],
+                    backgroundColor: SONDA_PALETTE,
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: { size: 10, weight: '600', family: 'Kumbh Sans' },
+                            padding: 8,
+                            boxWidth: 12
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                let total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                let val = ctx.raw || 0;
+                                let pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                                return ` ${ctx.label}: ${val} (${pct}%)`;
+                            }
+                        }
                     }
                 }
             }
@@ -485,9 +635,9 @@ function applyAllFilters() {
         if (selLoc !== 'all' && (d.location || '') !== selLoc) return false;
         if (selArea !== 'all' && (d.area || '') !== selArea) return false;
         if (selRack !== 'all' && (d.rack || '') !== selRack) return false;
-        if (selType !== 'all' && (d.device_type || '') !== selType) return false;
+        if (selType !== 'all' && (d.device_type || '').toUpperCase() !== selType.toUpperCase()) return false;
         if (searchTokens.length > 0) {
-            const fullStr = `${d.device_name || ''} ${d.location || ''} ${d.area || ''} ${d.rack || ''} ${d.device_type || ''} ${d.ip_address || ''}`.toLowerCase();
+            const fullStr = `${d.device_name || ''} ${d.location || ''} ${d.area || ''} ${d.rack || ''} ${d.device_type || ''} ${d.vendor || ''} ${d.model || ''} ${(d.vlans || []).join(' ')} ${d.ip_address || ''}`.toLowerCase();
             if (!searchTokens.every(tok => fullStr.includes(tok))) return false;
         }
         return true;
@@ -528,7 +678,7 @@ function updateConcatenatedDropdowns(allDevs, curLoc, curArea, curRack, curType,
     const locCandidates = allDevs.filter(d => {
         if (curArea !== 'all' && (d.area || '') !== curArea) return false;
         if (curRack !== 'all' && (d.rack || '') !== curRack) return false;
-        if (curType !== 'all' && (d.device_type || '') !== curType) return false;
+        if (curType !== 'all' && (d.device_type || '').toUpperCase() !== curType.toUpperCase()) return false;
         return matchesSearch(d);
     });
     const locCounts = {};
@@ -542,7 +692,7 @@ function updateConcatenatedDropdowns(allDevs, curLoc, curArea, curRack, curType,
     const areaCandidates = allDevs.filter(d => {
         if (curLoc !== 'all' && (d.location || '') !== curLoc) return false;
         if (curRack !== 'all' && (d.rack || '') !== curRack) return false;
-        if (curType !== 'all' && (d.device_type || '') !== curType) return false;
+        if (curType !== 'all' && (d.device_type || '').toUpperCase() !== curType.toUpperCase()) return false;
         return matchesSearch(d);
     });
     const areaCounts = {};
@@ -556,7 +706,7 @@ function updateConcatenatedDropdowns(allDevs, curLoc, curArea, curRack, curType,
     const rackCandidates = allDevs.filter(d => {
         if (curLoc !== 'all' && (d.location || '') !== curLoc) return false;
         if (curArea !== 'all' && (d.area || '') !== curArea) return false;
-        if (curType !== 'all' && (d.device_type || '') !== curType) return false;
+        if (curType !== 'all' && (d.device_type || '').toUpperCase() !== curType.toUpperCase()) return false;
         return matchesSearch(d);
     });
     const rackCounts = {};
@@ -575,7 +725,7 @@ function updateConcatenatedDropdowns(allDevs, curLoc, curArea, curRack, curType,
     });
     const typeCounts = {};
     typeCandidates.forEach(d => {
-        const t = d.device_type || 'Switch';
+        const t = (d.device_type || 'SWITCH').toUpperCase();
         typeCounts[t] = (typeCounts[t] || 0) + 1;
     });
     rebuildSelect('#vl-filter-type', typeCounts, curType, 'Todos los Tipos');
@@ -656,7 +806,7 @@ function updateCharts(devs) {
     // 1. Doughnut: Equipos por Tipo
     const typesMap = {};
     devs.forEach(d => {
-        const t = d.device_type || 'Switch';
+        const t = (d.device_type || 'SWITCH').toUpperCase();
         typesMap[t] = (typesMap[t] || 0) + 1;
     });
 
@@ -742,6 +892,161 @@ function updateCharts(devs) {
         });
     }
     $('#vl-locs-legend-list').html(locsLegendHtml);
+
+    // 3. Doughnut: Equipos por Marca
+    const brandsMap = {};
+    devs.forEach(d => {
+        let b = (d.vendor || 'SIN MARCA').toUpperCase().trim();
+        if (!b || b === 'N/A' || b === '-' || b === 'NULL' || b === 'NINGUNO') b = 'SIN MARCA';
+        brandsMap[b] = (brandsMap[b] || 0) + 1;
+    });
+
+    const sortedBrands = Object.entries(brandsMap).sort((a, b) => b[1] - a[1]);
+    const brandLabels = sortedBrands.map(x => x[0]);
+    const brandValues = sortedBrands.map(x => x[1]);
+
+    $('#vl-chart-brands-badge').text(`${brandLabels.length} Marca${brandLabels.length !== 1 ? 's' : ''}`);
+
+    if (overviewBrands) {
+        overviewBrands.data.labels = brandLabels.length ? brandLabels : ['Sin datos'];
+        overviewBrands.data.datasets[0].data = brandValues.length ? brandValues : [0];
+        overviewBrands.data.datasets[0].backgroundColor = brandLabels.length ? brandLabels.map((lbl, idx) => {
+            return lbl === 'SIN MARCA' ? '#64748B' : SONDA_PALETTE[idx % SONDA_PALETTE.length];
+        }) : ['#e2e8f0'];
+        overviewBrands.update();
+    }
+
+    // Leyenda HTML de marcas
+    let brandsLegendHtml = '';
+    if (brandLabels.length === 0) {
+        brandsLegendHtml = '<div class="text-center py-4 text-muted small"><i class="fas fa-filter mr-1"></i>Sin marcas para el filtro seleccionado</div>';
+    } else {
+        sortedBrands.forEach(([bName, count], idx) => {
+            const col = (bName === 'SIN MARCA') ? '#64748B' : SONDA_PALETTE[idx % SONDA_PALETTE.length];
+            const pct = totDevs > 0 ? Math.round((count / totDevs) * 100) : 0;
+            brandsLegendHtml += `
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between align-items-center small font-weight-bold mb-1">
+                        <span class="text-truncate mr-1"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${col};margin-right:6px;"></span>${escH(bName)}</span>
+                        <span class="text-dark whitespace-nowrap"><strong>${count}</strong> <small class="text-muted">(${pct}%)</small></span>
+                    </div>
+                    <div class="progress" style="height: 6px; border-radius: 3px; background: #e2e8f0;">
+                        <div class="progress-bar" style="width: ${pct}%; background: ${col};"></div>
+                    </div>
+                </div>`;
+        });
+    }
+    $('#vl-brands-legend-list').html(brandsLegendHtml);
+
+    // 4. Horizontal Bar: Equipos por Modelo
+    const modelsMap = {};
+    devs.forEach(d => {
+        let m = (d.model || 'SIN MODELO').toUpperCase().trim();
+        if (!m || m === 'N/A' || m === '-' || m === 'NULL' || m === 'NINGUNO') m = 'SIN MODELO';
+        modelsMap[m] = (modelsMap[m] || 0) + 1;
+    });
+
+    const sortedModels = Object.entries(modelsMap).sort((a, b) => b[1] - a[1]);
+    const modelLabelsAll = sortedModels.map(x => x[0]);
+    const modelValuesAll = sortedModels.map(x => x[1]);
+
+    // Top 8 para el gráfico para legibilidad óptima
+    let chartModelLabels = [];
+    let chartModelValues = [];
+    let chartModelColors = [];
+    if (sortedModels.length > 8) {
+        const top7 = sortedModels.slice(0, 7);
+        const rest = sortedModels.slice(7);
+        const restSum = rest.reduce((sum, item) => sum + item[1], 0);
+        chartModelLabels = top7.map(x => x[0]).concat(['OTROS']);
+        chartModelValues = top7.map(x => x[1]).concat([restSum]);
+        chartModelColors = top7.map((x, idx) => (x[0] === 'SIN MODELO' ? '#64748B' : SONDA_PALETTE[idx % SONDA_PALETTE.length])).concat(['#94a3b8']);
+    } else {
+        chartModelLabels = modelLabelsAll;
+        chartModelValues = modelValuesAll;
+        chartModelColors = modelLabelsAll.map((lbl, idx) => (lbl === 'SIN MODELO' ? '#64748B' : SONDA_PALETTE[idx % SONDA_PALETTE.length]));
+    }
+
+    $('#vl-chart-models-badge').text(`${modelLabelsAll.length} Modelo${modelLabelsAll.length !== 1 ? 's' : ''}`);
+
+    if (overviewModels) {
+        overviewModels.data.labels = chartModelLabels.length ? chartModelLabels : ['Sin datos'];
+        overviewModels.data.datasets[0].data = chartModelValues.length ? chartModelValues : [0];
+        overviewModels.data.datasets[0].backgroundColor = chartModelLabels.length ? chartModelColors : ['#e2e8f0'];
+        overviewModels.update();
+    }
+
+    // Leyenda HTML de modelos (muestra todos en lista con scroll)
+    let modelsLegendHtml = '';
+    if (modelLabelsAll.length === 0) {
+        modelsLegendHtml = '<div class="text-center py-4 text-muted small"><i class="fas fa-filter mr-1"></i>Sin modelos para el filtro seleccionado</div>';
+    } else {
+        sortedModels.forEach(([mName, count], idx) => {
+            const col = (mName === 'SIN MODELO') ? '#64748B' : SONDA_PALETTE[idx % SONDA_PALETTE.length];
+            const pct = totDevs > 0 ? Math.round((count / totDevs) * 100) : 0;
+            modelsLegendHtml += `
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between align-items-center small font-weight-bold mb-1">
+                        <span class="text-truncate mr-1"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${col};margin-right:6px;"></span>${escH(mName)}</span>
+                        <span class="text-dark whitespace-nowrap"><strong>${count}</strong> <small class="text-muted">(${pct}%)</small></span>
+                    </div>
+                    <div class="progress" style="height: 6px; border-radius: 3px; background: #e2e8f0;">
+                        <div class="progress-bar" style="width: ${pct}%; background: ${col};"></div>
+                    </div>
+                </div>`;
+        });
+    }
+    $('#vl-models-legend-list').html(modelsLegendHtml);
+
+    // 5. Doughnut: VLANs Encontradas
+    const vlansMap = {};
+    devs.forEach(d => {
+        let vList = (d.vlans && Array.isArray(d.vlans) && d.vlans.length > 0) ? d.vlans : ['SIN VLAN'];
+        vList.forEach(v => {
+            let vName = v.toUpperCase().trim();
+            if (!vName || vName === 'N/A' || vName === '-') vName = 'SIN VLAN';
+            vlansMap[vName] = (vlansMap[vName] || 0) + 1;
+        });
+    });
+
+    const sortedVlans = Object.entries(vlansMap).sort((a, b) => b[1] - a[1]);
+    const vlanLabels = sortedVlans.map(x => x[0]);
+    const vlanValues = sortedVlans.map(x => x[1]);
+    const vlanColors = vlanLabels.map((lbl, idx) => {
+        if (lbl === 'SIN VLAN' || lbl === 'SINVLAN') return '#64748B';
+        return SONDA_PALETTE[idx % SONDA_PALETTE.length];
+    });
+
+    $('#vl-chart-vlans-badge').text(`${vlanLabels.length} Segmento${vlanLabels.length !== 1 ? 's' : ''}`);
+
+    if (overviewVlans) {
+        overviewVlans.data.labels = vlanLabels.length ? vlanLabels : ['Sin datos'];
+        overviewVlans.data.datasets[0].data = vlanValues.length ? vlanValues : [0];
+        overviewVlans.data.datasets[0].backgroundColor = vlanLabels.length ? vlanColors : ['#e2e8f0'];
+        overviewVlans.update();
+    }
+
+    // Leyenda HTML de VLANs
+    let vlansLegendHtml = '';
+    if (vlanLabels.length === 0) {
+        vlansLegendHtml = '<div class="text-center py-4 text-muted small"><i class="fas fa-filter mr-1"></i>Sin VLANs para el filtro seleccionado</div>';
+    } else {
+        sortedVlans.forEach(([vName, count], idx) => {
+            const col = (vName === 'SIN VLAN' || vName === 'SINVLAN') ? '#64748B' : SONDA_PALETTE[idx % SONDA_PALETTE.length];
+            const pct = totDevs > 0 ? Math.round((count / totDevs) * 100) : 0;
+            vlansLegendHtml += `
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between align-items-center small font-weight-bold mb-1">
+                        <span class="text-truncate mr-1"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${col};margin-right:6px;"></span>${escH(vName)}</span>
+                        <span class="text-dark whitespace-nowrap"><strong>${count} eq</strong> <small class="text-muted">(${pct}%)</small></span>
+                    </div>
+                    <div class="progress" style="height: 6px; border-radius: 3px; background: #e2e8f0;">
+                        <div class="progress-bar" style="width: ${pct}%; background: ${col};"></div>
+                    </div>
+                </div>`;
+        });
+    }
+    $('#vl-vlans-legend-list').html(vlansLegendHtml);
 }
 
 // 5. Actualizar Leaderboards
@@ -997,7 +1302,7 @@ function renderPortDiagram(survey, ports) {
                 <h5 class="font-weight-bold mb-1 text-dark"><i class="fas fa-server mr-2" style="color:var(--sonda-orange);"></i>${escH(survey.device_name)}</h5>
                 <div class="small text-muted">
                     <span class="mr-3"><i class="fas fa-map-marker-alt text-danger mr-1"></i>${escH(survey.location || 'Sede Central')}</span>
-                    <span class="mr-3"><i class="fas fa-cube text-info mr-1"></i>${escH(survey.device_type || 'Switch')}</span>
+                    <span class="mr-3"><i class="fas fa-cube text-info mr-1"></i>${escH((survey.device_type || 'SWITCH').toUpperCase())}</span>
                     <span class="mr-3"><i class="fas fa-layer-group text-warning mr-1"></i>Rack: <strong>${escH(survey.rack || 'RACK-01')}</strong></span>
                     <span><i class="fas fa-network-wired text-secondary mr-1"></i>IP: <code>${escH(survey.ip_address || 'Sin IP')}</code></span>
                 </div>
@@ -1124,20 +1429,20 @@ function showPortDetail(p) {
     let destDev = p.dest_device_name || p.dest_device || p.dest_dev || p.destination_device || 'Sin conexión activa';
     let destPort = p.dest_port_name || p.dest_port || p.destination_port || 'N/A';
     let cable = p.cable_type || p.cable || 'UTP Cat6A';
-    let color = p.color_code || p.color || p.cable_color || '#ff5c05';
+    let color = p.color_code || p.color || p.cable_color || '#1E40AF';
     let notes = p.notes || p.description || p.alias || p.physical_label || 'Sin observaciones registradas.';
     let status = (p.status || 'Activo');
 
     panel.html(`<div class="port-detail-panel shadow-sm">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="font-weight-bold mb-0 text-dark">
-                <i class="fas fa-ethernet text-success mr-2"></i>Detalle de Puerto: <span style="color:var(--sonda-orange);">${escH(pName)}</span>
+                <i class="fas fa-ethernet text-success mr-2"></i>Detalle de Puerto: <span style="color:var(--color-accent);">${escH(pName)}</span>
             </h6>
             <span class="badge ${status.toLowerCase() === 'down' ? 'badge-danger' : 'badge-success'} px-3 py-1 font-weight-bold">${escH(status)}</span>
         </div>
         <div class="row">
             <div class="col-md-3 mb-2"><small class="text-muted d-block font-weight-bold">EQUIPO ORIGEN</small><strong>${escH(pName)}</strong></div>
-            <div class="col-md-3 mb-2"><small class="text-muted d-block font-weight-bold">EQUIPO DESTINO</small><strong style="color:var(--sonda-orange);">${escH(destDev)}</strong></div>
+            <div class="col-md-3 mb-2"><small class="text-muted d-block font-weight-bold">EQUIPO DESTINO</small><strong style="color:var(--color-accent);">${escH(destDev)}</strong></div>
             <div class="col-md-3 mb-2"><small class="text-muted d-block font-weight-bold">PUERTO DESTINO</small><strong>${escH(destPort)}</strong></div>
             <div class="col-md-3 mb-2"><small class="text-muted d-block font-weight-bold">TIPO DE CABLE</small>
                 <span>${escH(cable)}</span>
@@ -1176,7 +1481,7 @@ function renderPortStats(portsList) {
     cards.html(`
         <div class="col-4"><div class="stat-kpi-card kpi-green text-center p-2"><div class="stat-kpi-num text-success" style="font-size:1.5rem;">${connected}</div><div class="stat-kpi-label" style="font-size:0.65rem;">Conectados</div></div></div>
         <div class="col-4"><div class="stat-kpi-card kpi-cyan text-center p-2"><div class="stat-kpi-num text-secondary" style="font-size:1.5rem;">${free}</div><div class="stat-kpi-label" style="font-size:0.65rem;">Disponibles</div></div></div>
-        <div class="col-4"><div class="stat-kpi-card text-center p-2" style="border-left:4px solid #ef4444 !important;"><div class="stat-kpi-num text-danger" style="font-size:1.5rem;">${damaged}</div><div class="stat-kpi-label" style="font-size:0.65rem;">Falla / Down</div></div></div>
+        <div class="col-4"><div class="stat-kpi-card text-center p-2" style="border-left:4px solid #DC2626 !important;"><div class="stat-kpi-num text-danger" style="font-size:1.5rem;">${damaged}</div><div class="stat-kpi-label" style="font-size:0.65rem;">Falla / Down</div></div></div>
     `);
 
     // Doughnut Chart - Utilization
@@ -1189,7 +1494,7 @@ function renderPortStats(portsList) {
                 labels: ['Conectados', 'Disponibles', 'Falla / Down'],
                 datasets: [{
                     data: [connected, free, damaged],
-                    backgroundColor: ['#c0da20', '#334155', '#ef4444'], // Sonda green, dark slate, red
+                    backgroundColor: ['#0F766E', '#CBD5E1', '#DC2626'],
                     borderWidth: 2,
                     borderColor: '#fff'
                 }]
@@ -1212,7 +1517,7 @@ function renderPortStats(portsList) {
     if (ctx2) {
         let labels = Object.keys(typeCount);
         let values = Object.values(typeCount);
-        let colors = ['#ff5c05', '#00B8D4', '#101B31', '#c0da20', '#2a4365'];
+        let colors = ['#1E40AF', '#0F766E', '#0284C7', '#334155', '#14B8A6'];
         vizTypeChart = new Chart(ctx2, {
             type: 'bar',
             data: {

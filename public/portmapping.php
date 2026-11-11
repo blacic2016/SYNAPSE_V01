@@ -16,12 +16,17 @@ if (!has_module_access('portmapping') && !has_module_access('vilaseca')) {
     exit;
 }
 
-if (isset($_GET['tab']) && $_GET['tab'] === 'analisis' && isset($_GET['cliente']) && strtoupper($_GET['cliente']) === 'VILASECA') {
-    header("Location: " . PUBLIC_URL_PREFIX . "/clientes/vilaseca/index.php");
-    exit;
-}
+$client_filter = trim($_GET['cliente'] ?? $_GET['client'] ?? '');
+$is_vilaseca = (strtoupper($client_filter) === 'VILASECA');
+$tab_filter = strtolower(trim($_GET['tab'] ?? ''));
+$is_asistente_tab = in_array($tab_filter, ['asistente', 'wizard']);
+$is_equipos_tab = in_array($tab_filter, ['equipos', 'equipo', 'equipos_portmapping']);
+$is_informe_tab = in_array($tab_filter, ['informe', 'config']);
+$is_analisis_tab = in_array($tab_filter, ['analisis', 'vilaseca', 'analisis_vilaseca']);
+$is_registros_tab = (!$is_asistente_tab && !$is_equipos_tab && !$is_informe_tab && !$is_analisis_tab);
+$active_tab = $is_asistente_tab ? 'asistente' : ($is_equipos_tab ? 'equipos' : ($is_informe_tab ? 'informe' : ($is_analisis_tab ? 'analisis' : 'registros')));
 
-$page_title = "Portmapping";
+$page_title = $is_vilaseca ? "VILASECA - Portmapping y Conectividad" : "Portmapping";
 $hide_content_header = true;
 require_once __DIR__ . '/partials/header.php';
 ?>
@@ -30,38 +35,66 @@ require_once __DIR__ . '/partials/header.php';
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-/* SISTEMA DE DISEÑO DE ALTA FIDELIDAD Y PALETA CORPORATIVA CMDB */
+/* SISTEMA DE DISEÑO DE ALTA FIDELIDAD Y PALETA CORPORATIVA SOBRIA */
 :root {
-    --navy-primary: #002B49;
-    --navy-secondary: #004080;
-    --navy-accent: #0056b3;
-    --passive-purple: #6f42c1;
-    --success-green: #28a745;
+    --bg-canvas: #F8FAFC;        /* Slate 50: Lienzo principal */
+    --bg-surface: #FFFFFF;       /* Blanco Puro: Tarjetas, formularios y paneles */
+    --color-accent: #1E40AF;     /* Azul Cobalto Técnico: Botones primarios, estados activos */
+    --border-grid: #CBD5E1;      /* Gris Neutro: División, baldosas de 60x60 cm */
+    --status-metric: #0F766E;    /* Verde Azulado: Semáforo de validación TIA-942 */
+
+    /* Regla Tipográfica Estricta - Modo Claro (WCAG AAA) */
+    --text-color: #0F172A;       /* Negro profundo con contraste WCAG AAA */
+    --text-muted: #334155;       /* Slate oscuro de alto contraste */
+
+    --navy-primary: #0F172A;
+    --navy-secondary: #1E293B;
+    --navy-accent: var(--color-accent);
+    --passive-purple: #475569;
+    --success-green: var(--status-metric);
 }
 
-/* ESTILOS EXCLUSIVOS DE LA PESTAÑA DE ANÁLISIS VILASECA */
+body.dark-mode {
+    --bg-canvas: #0B1120;        /* Obsidian Deep: Lienzo principal */
+    --bg-surface: #1E293B;       /* Slate 800: Tarjetas, formularios y paneles */
+    --color-accent: #38BDF8;     /* Sky Blue: Botones primarios, estados activos */
+    --border-grid: #334155;      /* Slate 700: División, baldosas de 60x60 cm */
+    --status-metric: #14B8A6;    /* Teal Calidad: Semáforo de validación TIA-942 */
+
+    /* Regla Tipográfica Estricta - Modo Oscuro */
+    --text-color: #F8FAFC;       /* Blanco nítido */
+    --text-muted: #94A3B8;       /* Slate claro */
+
+    --navy-primary: #0B1120;
+    --navy-secondary: #1E293B;
+    --navy-accent: var(--color-accent);
+    --passive-purple: #64748B;
+    --success-green: var(--status-metric);
+}
+
+/* ESTILOS DE ANÁLISIS */
 .analysis-header-card {
-    background: linear-gradient(135deg, #002B49 0%, #003a6c 50%, #0056b3 100%);
-    border-radius: 14px;
-    color: #ffffff;
-    box-shadow: 0 8px 24px rgba(0, 43, 73, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, #0B1120 0%, #0F172A 50%, #1E293B 100%);
+    border-radius: 12px;
+    color: #F8FAFC;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+    border: 1px solid var(--border-grid);
 }
 
 .stat-kpi-card {
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    box-shadow: 0 2px 10px rgba(0, 43, 73, 0.04);
-    padding: 16px 18px;
-    transition: all 0.25s ease-in-out;
+    border-radius: 10px;
+    border: 1px solid var(--border-grid);
+    background: var(--bg-surface);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    padding: 15px 18px;
+    transition: all 0.2s ease-in-out;
     position: relative;
     overflow: hidden;
 }
 
 .stat-kpi-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 43, 73, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 
 .stat-kpi-card::before {
@@ -73,17 +106,17 @@ require_once __DIR__ . '/partials/header.php';
     height: 100%;
 }
 
-.stat-kpi-card.kpi-blue::before { background: #0056b3; }
-.stat-kpi-card.kpi-green::before { background: #28a745; }
-.stat-kpi-card.kpi-orange::before { background: #fd7e14; }
-.stat-kpi-card.kpi-purple::before { background: #6f42c1; }
-.stat-kpi-card.kpi-cyan::before { background: #17a2b8; }
+.stat-kpi-card.kpi-blue::before { background: var(--color-accent); }
+.stat-kpi-card.kpi-green::before { background: var(--status-metric); }
+.stat-kpi-card.kpi-orange::before { background: #D97706; }
+.stat-kpi-card.kpi-purple::before { background: #475569; }
+.stat-kpi-card.kpi-cyan::before { background: #0284C7; }
 
 .stat-kpi-num {
     font-size: 2rem;
     font-weight: 800;
     line-height: 1.1;
-    color: #002B49;
+    color: var(--text-color);
 }
 
 .stat-kpi-label {
@@ -163,24 +196,26 @@ require_once __DIR__ . '/partials/header.php';
     color: var(--passive-purple) !important;
 }
 
-/* CONTENEDOR PRINCIPAL Y BARRA DE CABECERA CON PESTAÑAS Y ACCIONES */
+/* CONTENEDOR PRINCIPAL SIN DOBLE BORDE */
 .pm-main-card {
+    border: none !important;
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 16px rgba(0, 43, 73, 0.06);
-    overflow: hidden;
-    margin-top: 15px;
+    box-shadow: none !important;
+    overflow: visible;
+    margin-top: 10px;
     margin-bottom: 25px;
+    background: transparent !important;
 }
 
 .pm-header-bar {
-    background: linear-gradient(135deg, #002B49 0%, #004080 100%);
-    padding: 12px 16px 0 16px;
+    background: linear-gradient(135deg, #0B1120 0%, #1E293B 100%);
+    padding: 10px 16px 0 16px;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
+    border-bottom: 1px solid var(--border-grid);
 }
 
 /* DISTRIBUCIÓN EQUITATIVA Y MODERNA DE PESTAÑAS */
@@ -192,46 +227,71 @@ require_once __DIR__ . '/partials/header.php';
     margin-bottom: 0;
     padding-left: 0;
     list-style: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
 }
 
 .pm-nav-tabs .nav-item {
     flex: 1 1 0;
-    min-width: 140px;
+    min-width: 155px;
     text-align: center;
 }
 
 .pm-nav-tabs .nav-link {
-    color: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #94A3B8;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-bottom: none;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    padding: 12px 14px;
-    font-size: 0.92rem;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
     font-weight: 600;
-    background-color: rgba(255, 255, 255, 0.08);
-    transition: all 0.25s ease-in-out;
+    background-color: rgba(15, 23, 42, 0.45);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     white-space: nowrap;
+    text-decoration: none;
+}
+
+.pm-nav-tabs .nav-link .tab-index {
+    display: inline-block;
+    font-size: 0.70rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #CBD5E1;
+    transition: all 0.2s;
 }
 
 .pm-nav-tabs .nav-link:hover {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
+    color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.pm-nav-tabs .nav-link:hover .tab-index {
+    background: rgba(255, 255, 255, 0.18);
+    color: #FFFFFF;
 }
 
 .pm-nav-tabs .nav-link.active {
-    color: var(--navy-primary) !important;
-    background-color: #ffffff !important;
-    border-color: #ffffff !important;
+    color: var(--text-color) !important;
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-grid) !important;
     font-weight: 700 !important;
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.1);
     position: relative;
+}
+
+.pm-nav-tabs .nav-link.active .tab-index {
+    background: var(--color-accent);
+    color: #FFFFFF;
 }
 
 .pm-nav-tabs .nav-link.active::after {
@@ -240,25 +300,25 @@ require_once __DIR__ . '/partials/header.php';
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: var(--navy-accent);
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    height: 3px;
+    background: var(--color-accent);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
 /* BOTONES DE ACCIÓN EN CABECERA */
 .pm-action-buttons {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding-bottom: 10px;
+    gap: 8px;
+    padding-bottom: 8px;
 }
 
 .pm-action-buttons .btn {
-    border-radius: 8px;
+    border-radius: 7px;
     font-weight: 600;
-    font-size: 0.88rem;
-    padding: 7px 16px;
+    font-size: 0.82rem;
+    padding: 6px 14px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transition: all 0.2s ease;
 }
@@ -681,61 +741,150 @@ require_once __DIR__ . '/partials/header.php';
     background: #1e293b;
     color: #ffffff;
 }
+.sonda-page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    padding: 0 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    margin: 0 2px;
+}
+.sonda-page-btn:hover:not(.disabled):not(.active) {
+    background: #f1f5f9;
+    border-color: #002B49;
+    color: #002B49;
+}
+.sonda-page-btn.active {
+    background: #002B49 !important;
+    border-color: #002B49 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 6px rgba(0, 43, 73, 0.25);
+}
+.sonda-page-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    pointer-events: none;
+}
 </style>
 
 <!-- CONTENEDOR MÓDULO PORTMAPPING -->
 <div class="px-2">
+    <?php if ($is_vilaseca): ?>
+    <!-- BANNER EJECUTIVO VILASECA -->
+    <div class="pm-vilaseca-banner mb-3 p-3 d-flex justify-content-between align-items-center flex-wrap" style="background: linear-gradient(135deg, #0B1120 0%, #0F172A 50%, #1E293B 100%); border-radius: 12px; border: 1px solid var(--border-grid); box-shadow: 0 4px 18px rgba(15, 23, 42, 0.12); gap: 14px;">
+        <div>
+            <div class="d-flex align-items-center mb-1 flex-wrap" style="gap: 8px;">
+                <span class="badge badge-pill px-2 py-1 font-weight-bold" style="background: var(--color-accent); color: #FFFFFF; font-size: 0.72rem; letter-spacing: 0.5px;">
+                    <i class="fas fa-building mr-1"></i>VILASECA
+                </span>
+                <span class="badge badge-pill px-2 py-1 font-weight-bold" style="background: #1E293B; color: #38BDF8; border: 1px solid #334155; font-size: 0.72rem; letter-spacing: 0.5px;">
+                    <i class="fas fa-network-wired mr-1"></i>PORTMAPPING Y CONECTIVIDAD
+                </span>
+                <span class="badge badge-pill px-2 py-1 font-weight-bold" style="background: var(--status-metric); color: #FFFFFF; font-size: 0.72rem;">
+                    <i class="fas fa-check-circle mr-1"></i>AUDITORÍA EN VIVO
+                </span>
+            </div>
+            <h4 class="m-0 font-weight-bold text-white" style="letter-spacing: -0.3px;">
+                <i class="fas fa-project-diagram mr-2" style="color: var(--color-accent);"></i>Gestión de Conectividad Física y Portmapping
+            </h4>
+            <p class="m-0 text-white-50 small mt-1" style="font-size: 0.85rem;">
+                Matriz de puertos de equipos activos (Switch/Router) y pasivos (Patch Panel) para bastidores y salas de Grupo Vilaseca.
+            </p>
+        </div>
+        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+            <a href="<?php echo PUBLIC_URL_PREFIX; ?>/clientes/vilaseca/index.php" class="btn btn-outline-light btn-sm font-weight-bold shadow-sm">
+                <i class="fas fa-tachometer-alt mr-1" style="color: #38BDF8;"></i> Centro Vilaseca
+            </a>
+            <a href="<?php echo PUBLIC_URL_PREFIX; ?>/analisis_conexiones.php?cliente=VILASECA" class="btn btn-outline-light btn-sm font-weight-bold shadow-sm">
+                <i class="fas fa-project-diagram mr-1" style="color: #14B8A6;"></i> Topología
+            </a>
+            <a href="<?php echo PUBLIC_URL_PREFIX; ?>/datacenter/rooms.php?cliente=VILASECA" class="btn btn-outline-light btn-sm font-weight-bold shadow-sm">
+                <i class="fas fa-door-open mr-1" style="color: #F8FAFC;"></i> Salas DC
+            </a>
+            <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php" class="btn btn-outline-secondary btn-sm font-weight-bold text-white-50" title="Ver todos los clientes">
+                <i class="fas fa-times mr-1"></i> Ver Todos
+            </a>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <div class="card pm-main-card">
+        <!-- BARRA SUPERIOR DE PESTAÑAS (MODERNA Y EJECUTIVA) -->
         <div class="pm-header-bar">
-            <!-- PESTAÑAS EXCLUSIVAS DEL MÓDULO -->
             <ul class="nav pm-nav-tabs" id="pm-tabs" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="tab-survey-list" href="#survey-list-content" role="tab" onclick="loadManualSurveys(); return false;">
-                        <i class="fas fa-folder-open"></i> <span>01 Levantamientos Registrados</span>
+                    <a class="nav-link <?php echo ($active_tab === 'registros') ? 'active' : ''; ?>" id="tab-nav-survey-list" href="javascript:void(0)" onclick="activatePmTab('survey-list-content'); loadManualSurveys();" role="tab" aria-selected="<?php echo ($active_tab === 'registros') ? 'true' : 'false'; ?>">
+                        <span class="tab-index">01</span>
+                        <i class="fas fa-list-ul mr-1"></i>
+                        <span>Levantamientos</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="tab-survey-wizard" href="#survey-wizard-content" role="tab" onclick="switchToNewPmSurveyTab(); return false;">
-                        <i class="fas fa-magic"></i> <span>02 Asistente de Mapeo</span>
+                    <a class="nav-link <?php echo ($active_tab === 'asistente') ? 'active' : ''; ?>" id="tab-nav-survey-wizard" href="javascript:void(0)" onclick="activatePmTab('survey-wizard-content');" role="tab" aria-selected="<?php echo ($active_tab === 'asistente') ? 'true' : 'false'; ?>">
+                        <span class="tab-index">02</span>
+                        <i class="fas fa-magic mr-1"></i>
+                        <span>Asistente de Mapeo</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="tab-report-config" href="#report-config-content" role="tab" onclick="loadReportConfigTab(); return false;">
-                        <i class="fas fa-sliders-h"></i> <span>03 Configuración del Informe</span>
+                    <a class="nav-link <?php echo ($active_tab === 'equipos') ? 'active' : ''; ?>" id="tab-nav-equipos-portmapping" href="javascript:void(0)" onclick="loadEquipmentPortmappingTab();" role="tab" aria-selected="<?php echo ($active_tab === 'equipos') ? 'true' : 'false'; ?>">
+                        <span class="tab-index">03</span>
+                        <i class="fas fa-server mr-1"></i>
+                        <span>Mapa de Puertos CMDB</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo ($active_tab === 'analisis') ? 'active' : ''; ?>" id="tab-nav-survey-analysis" href="javascript:void(0)" onclick="activatePmTab('survey-analysis-content'); loadSurveyAnalysisTab(false);" role="tab" aria-selected="<?php echo ($active_tab === 'analisis') ? 'true' : 'false'; ?>">
+                        <span class="tab-index">04</span>
+                        <i class="fas fa-chart-pie mr-1"></i>
+                        <span><?php echo $is_vilaseca ? 'Análisis Vilaseca' : 'Análisis Cliente'; ?></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo ($active_tab === 'informe') ? 'active' : ''; ?>" id="tab-nav-report-config" href="javascript:void(0)" onclick="loadReportConfigTab();" role="tab" aria-selected="<?php echo ($active_tab === 'informe') ? 'true' : 'false'; ?>">
+                        <span class="tab-index">05</span>
+                        <i class="fas fa-file-alt mr-1"></i>
+                        <span>Informe Técnico</span>
                     </a>
                 </li>
             </ul>
-
-            <!-- BOTONES DE ACCIÓN GLOBAL -->
-            <div class="pm-action-buttons">
-                <button type="button" class="btn btn-outline-success btn-sm font-weight-bold" onclick="openExcelImportModal()">
-                    <i class="fas fa-file-excel mr-1"></i> Importar Excel
+            <div class="d-none d-lg-flex align-items-center ml-auto" style="gap: 8px; padding-bottom: 8px;">
+                <button type="button" class="btn btn-outline-light btn-sm font-weight-bold" onclick="openImportModal();" title="Importar Levantamiento desde Excel">
+                    <i class="fas fa-file-excel mr-1 text-success"></i> Importar Excel
                 </button>
-                <button type="button" class="btn btn-light btn-sm text-navy" onclick="downloadPmTemplate()">
-                    <i class="fas fa-download mr-1 text-success"></i> Plantilla Excel
-                </button>
-                <button type="button" class="btn btn-success btn-sm font-weight-bold" onclick="switchToNewPmSurveyTab()">
+                <button type="button" class="btn btn-primary btn-sm font-weight-bold shadow-sm" style="background: var(--color-accent); border-color: var(--color-accent);" onclick="switchToNewPmSurveyTab();">
                     <i class="fas fa-plus mr-1"></i> Nuevo Levantamiento
                 </button>
             </div>
         </div>
-        
-        <div class="card-body bg-white p-4">
+        <div class="card-body p-0">
             <div class="tab-content" id="pm-tab-content">
                 
-                <!-- PESTAÑA 1: LEVANTAMIENTOS REGISTRADOS (Pestaña Principal por Defecto) -->
-                <div class="tab-pane fade show active" id="survey-list-content" role="tabpanel" style="display: block;">
+                <!-- PESTAÑA: LEVANTAMIENTOS REGISTRADOS -->
+                <div class="tab-pane fade <?php echo $is_registros_tab ? 'show active' : ''; ?>" id="survey-list-content" role="tabpanel" style="display: <?php echo $is_registros_tab ? 'block' : 'none'; ?>;">
                     <div id="pm_survey_list_card" class="card border shadow-xs mb-4" style="border-radius: 10px; overflow: hidden;">
                         <div class="card-header bg-light d-flex justify-content-between align-items-center py-3 flex-wrap" style="gap: 10px;">
                             <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
                                 <h5 class="card-title font-weight-bold m-0 text-navy">
                                     <i class="fas fa-folder-open text-primary mr-2"></i> Levantamientos de Portmapping Registrados
                                 </h5>
-                                <span id="survey_count_badge" class="badge badge-primary px-2 py-1 font-weight-bold">0</span>
+                                <span id="survey_count_badge" class="badge badge-primary px-2 py-1 font-weight-bold" style="background: var(--color-accent);">0</span>
                                 <div id="client_filter_badge_wrapper" style="display: none;">
-                                    <span class="badge badge-warning text-dark px-2 py-1 font-weight-bold" id="client_filter_badge_text">
+                                    <span class="badge px-2 py-1 font-weight-bold text-white shadow-xs" id="client_filter_badge_text" style="background: var(--color-accent); font-size: 0.8rem; border-radius: 6px;">
                                         <i class="fas fa-filter mr-1"></i> Cliente: VILASECA
-                                        <a href="portmapping.php" class="text-dark ml-1 font-weight-bold" title="Quitar filtro de cliente" style="text-decoration: none;">&times;</a>
+                                        <a href="portmapping.php" class="text-white ml-2 font-weight-bold" title="Quitar filtro de cliente" style="text-decoration: none;">&times;</a>
                                     </span>
                                 </div>
                             </div>
@@ -764,9 +913,12 @@ require_once __DIR__ . '/partials/header.php';
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-outline-success btn-sm shadow-sm font-weight-bold" onclick="openExcelImportModal()">
-                                    <i class="fas fa-file-excel mr-1"></i> Importar Excel
+                                    <i class="fas fa-file-excel mr-1 text-success"></i> Importar Excel
                                 </button>
-                                <button class="btn btn-primary btn-sm shadow-sm font-weight-bold" onclick="switchToNewPmSurveyTab()">
+                                <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm font-weight-bold" onclick="downloadPmTemplate()">
+                                    <i class="fas fa-download mr-1"></i> Plantilla Excel
+                                </button>
+                                <button class="btn btn-primary btn-sm shadow-sm font-weight-bold" style="background: var(--color-accent); border-color: var(--color-accent);" onclick="switchToNewPmSurveyTab()">
                                     <i class="fas fa-plus mr-1"></i> Nuevo Levantamiento
                                 </button>
                             </div>
@@ -811,6 +963,21 @@ require_once __DIR__ . '/partials/header.php';
                                 </table>
                             </div>
                         </div>
+                        <!-- PIE DE TABLA: INFORMACIÓN Y PAGINACIÓN (MÁXIMO 30 POR PÁGINA) -->
+                        <div class="card-footer bg-white border-top py-2 px-3 d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
+                            <div class="d-flex align-items-center flex-wrap" style="gap: 12px;">
+                                <div id="pm_surveys_table_info" class="small text-muted font-weight-bold">Mostrando registros...</div>
+                                <div class="d-flex align-items-center" style="gap: 6px;">
+                                    <label class="small text-muted font-weight-bold mb-0">Mostrar:</label>
+                                    <select id="pm_surveys_page_size" class="custom-select custom-select-sm font-weight-bold" style="width: auto;" onchange="g_surveyCurrentPage = 1; renderManualSurveysTable();">
+                                        <option value="10">10 por página</option>
+                                        <option value="20">20 por página</option>
+                                        <option value="30" selected>30 por página (Máximo)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="pm_surveys_pagination" class="d-flex align-items-center flex-wrap" style="gap: 4px;"></div>
+                        </div>
                     </div>
 
                     <!-- Floating Sticky Batch Bar -->
@@ -831,12 +998,27 @@ require_once __DIR__ . '/partials/header.php';
                     </div>
                 </div>
 
-                <!-- PESTAÑA 2: ASISTENTE DE MAPEO (Wizard de Creación / Edición) -->
-                <div class="tab-pane fade" id="survey-wizard-content" role="tabpanel" style="display: none;">
+                <!-- PESTAÑA: ASISTENTE DE MAPEO (Wizard de Creación / Edición) -->
+                <div class="tab-pane fade <?php echo $is_asistente_tab ? 'show active' : ''; ?>" id="survey-wizard-content" role="tabpanel" style="display: <?php echo $is_asistente_tab ? 'block' : 'none'; ?>;">
                     <div id="pm_survey_wizard_card" class="card border shadow-sm" style="display: block; border-radius: 12px;">
-                        <div class="card-header bg-gradient-navy text-white d-flex justify-content-between align-items-center">
-                            <h5 class="card-title font-weight-bold m-0" id="pm_survey_title"><i class="fas fa-tools mr-2"></i> Asistente de Levantamiento de Puerto</h5>
-                            <button class="btn btn-sm btn-outline-light font-weight-bold" onclick="openNewPmSurveyModal()"><i class="fas fa-redo mr-1"></i> Reiniciar / Nuevo</button>
+                        <div class="card-header bg-gradient-navy text-white d-flex justify-content-between align-items-center flex-wrap" style="gap: 12px; padding: 12px 20px;">
+                            <h5 class="card-title font-weight-bold m-0" id="pm_survey_title">
+                                <i class="fas fa-tools mr-2" style="color: #38BDF8;"></i> Asistente de Levantamiento de Puerto
+                            </h5>
+                            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                                <button type="button" class="btn btn-outline-light btn-sm font-weight-bold" onclick="openExcelImportModal()">
+                                    <i class="fas fa-file-excel mr-1 text-success"></i> Importar Excel
+                                </button>
+                                <button type="button" class="btn btn-outline-light btn-sm font-weight-bold" onclick="downloadPmTemplate()">
+                                    <i class="fas fa-download mr-1 text-info"></i> Plantilla Excel
+                                </button>
+                                <button type="button" class="btn btn-primary btn-sm font-weight-bold shadow-sm" style="background: var(--color-accent); border-color: var(--color-accent);" onclick="openNewPmSurveyModal()">
+                                    <i class="fas fa-plus mr-1"></i> Nuevo Levantamiento
+                                </button>
+                                <button type="button" class="btn btn-outline-light btn-sm font-weight-bold" onclick="openNewPmSurveyModal()" title="Limpiar y reiniciar formulario">
+                                    <i class="fas fa-redo mr-1"></i> Reiniciar
+                                </button>
+                            </div>
                         </div>
                         
                         <div class="card-body p-4">
@@ -934,14 +1116,14 @@ require_once __DIR__ . '/partials/header.php';
                                                 <div class="form-group col-md-6 mb-0">
                                                     <label class="font-weight-bold small text-navy"><span class="badge-num-step1 mr-1">06</span> Tipo de Equipamiento *</label>
                                                     <select id="pm-survey-device-type" class="form-control font-weight-bold text-navy border-primary" onchange="updatePatchPanelFormVisibility(); renderPmPortsTable();">
-                                                        <option value="Switch">Switch</option>
-                                                        <option value="Router">Router</option>
-                                                        <option value="Firewall">Firewall</option>
-                                                        <option value="Patch Panel">Patch Panel (Pasivo)</option>
-                                                        <option value="Servidor">Servidor</option>
+                                                        <option value="SWITCH">SWITCH</option>
+                                                        <option value="ROUTER">ROUTER</option>
+                                                        <option value="FIREWALL">FIREWALL</option>
+                                                        <option value="PATCH PANEL">PATCH PANEL (PASIVO)</option>
+                                                        <option value="SERVIDOR">SERVIDOR</option>
                                                         <option value="UPS">UPS</option>
                                                         <option value="PDU">PDU</option>
-                                                        <option value="Otro">Otro</option>
+                                                        <option value="OTRO">OTRO</option>
                                                     </select>
                                                 </div>
                                                 <div class="form-group col-md-6 mb-0">
@@ -968,29 +1150,28 @@ require_once __DIR__ . '/partials/header.php';
                                             <h6 class="pm-section-title">
                                                 <i class="fas fa-cogs text-info"></i> SECCIÓN 4: ESPECIFICACIONES TÉCNICAS Y HARDWARE
                                             </h6>
-                                            <span class="pm-section-badge">Campos 10 - 12</span>
+                                            <span class="pm-section-badge">Campos 10 - 13</span>
                                         </div>
                                         <div class="pm-section-body">
                                             <div class="form-row mb-3">
                                                 <div class="form-group col-md-6 mb-0">
                                                     <label class="font-weight-bold small text-navy"><span class="badge-num-step1 mr-1">10</span> Fabricante</label>
-                                                    <input type="text" id="pm-survey-vendor" class="form-control" placeholder="Ej. Cisco, Panduit, CommScope">
+                                                    <input type="text" id="pm-survey-vendor" class="form-control" placeholder="Ej. Cisco, Aruba, HP, Fortinet" oninput="syncPortsFromStep1(false); renderPmPortsTable();">
                                                 </div>
                                                 <div class="form-group col-md-6 mb-0">
-                                                    <label class="font-weight-bold small text-navy"><span class="badge-num-step1 mr-1">11</span> Número de Serie</label>
-                                                    <input type="text" id="pm-survey-serial" class="form-control" placeholder="Ej. SN123456789">
+                                                    <label class="font-weight-bold small text-navy"><span class="badge-num-step1 mr-1" style="background:#0284c7;">11</span> Modelo *</label>
+                                                    <input type="text" id="pm-survey-model" class="form-control font-weight-bold text-navy" placeholder="Ej. Catalyst 9300, 2530 48G, FortiGate 100F" oninput="syncPortsFromStep1(false); renderPmPortsTable();">
                                                 </div>
                                             </div>
                                             <div class="form-row">
                                                 <div class="form-group col-md-6 mb-0">
-                                                    <label class="font-weight-bold small text-navy"><span class="badge-num-step1 mr-1" style="background:#0284c7;">12</span> Número de Puertos (1-96) *</label>
+                                                    <label class="font-weight-bold small text-navy"><span class="badge-num-step1 mr-1">12</span> Número de Serie</label>
+                                                    <input type="text" id="pm-survey-serial" class="form-control" placeholder="Ej. SN123456789">
+                                                </div>
+                                                <div class="form-group col-md-6 mb-0">
+                                                    <label class="font-weight-bold small text-navy"><span class="badge-num-step1 mr-1" style="background:#0284c7;">13</span> Número de Puertos (1-96) *</label>
                                                     <input type="number" id="pm-survey-ports-count" class="form-control font-weight-bold text-success border-success" min="1" max="96" value="24" placeholder="Ej. 24" required onchange="syncPortsFromStep1(true)" oninput="if(this.value > 96) this.value = 96; if(this.value < 1 && this.value !== '') this.value = 1; syncPortsFromStep1(true);">
                                                     <small class="text-muted"><i class="fas fa-info-circle mr-1"></i> Cantidad de puertos que se inicializarán en el mapeo.</small>
-                                                </div>
-                                                <div class="form-group col-md-6 mb-0 d-flex align-items-center">
-                                                    <div class="alert alert-light border w-100 mb-0 py-2 px-3 small text-muted">
-                                                        <i class="fas fa-network-wired text-primary mr-1"></i> El asistente configurará automáticamente las interfaces con los datos de rack y equipo.
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1002,11 +1183,11 @@ require_once __DIR__ . '/partials/header.php';
                                             <h6 class="pm-section-title">
                                                 <i class="fas fa-sticky-note text-secondary"></i> SECCIÓN 5: OBSERVACIONES
                                             </h6>
-                                            <span class="pm-section-badge">Campo 13</span>
+                                            <span class="pm-section-badge">Campo 14</span>
                                         </div>
                                         <div class="pm-section-body">
                                             <div class="form-group mb-0">
-                                                <label class="font-weight-bold small text-navy"><span class="badge-num-step1 mr-1">13</span> Observaciones / Notas del Equipo</label>
+                                                <label class="font-weight-bold small text-navy"><span class="badge-num-step1 mr-1">14</span> Observaciones / Notas del Equipo</label>
                                                 <textarea id="pm-survey-description" class="form-control" rows="2" placeholder="Notas sobre el estado del gabinete, ventilación, parches, advertencias técnicas..."></textarea>
                                             </div>
                                         </div>
@@ -1276,12 +1457,245 @@ require_once __DIR__ . '/partials/header.php';
                     </div>
                 </div>
 
-                <!-- PESTAÑA 3: CONFIGURACIÓN DEL INFORME (PDF & CARÁTULA) -->
-                <div class="tab-pane fade" id="report-config-content" role="tabpanel" style="display: none;">
+                <!-- PESTAÑA: EQUIPOS PORTMAPPING (FICHA TÉCNICA ESTRUCTURADA, GRÁFICO UP/DOWN Y CONECTIVIDAD) -->
+                <div class="tab-pane fade <?php echo $is_equipos_tab ? 'show active' : ''; ?>" id="equipos-portmapping-content" role="tabpanel" style="display: <?php echo $is_equipos_tab ? 'block' : 'none'; ?>;">
+                    <div class="card border shadow-sm mb-4" style="border-radius: 12px; overflow: hidden;">
+                        <!-- Cabecera de la Ficha Técnica de Equipos Portmapping -->
+                        <div class="card-header bg-gradient-navy text-white d-flex justify-content-between align-items-center flex-wrap" style="gap: 12px; padding: 12px 20px;">
+                            <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                                <h5 class="card-title font-weight-bold m-0">
+                                    <i class="fas fa-server mr-2" style="color: #38BDF8;"></i> Equipos Portmapping
+                                </h5>
+                                <span class="badge font-weight-bold px-2 py-1" style="background: var(--color-accent); color: #FFFFFF; font-size: 0.78rem;">Ficha Técnica y Conectividad</span>
+                            </div>
+                            
+                            <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                                <!-- Selector Dinámico de Equipo -->
+                                <div class="d-flex align-items-center" style="gap: 6px;">
+                                    <label class="small text-white-50 m-0 font-weight-bold"><i class="fas fa-microchip text-info mr-1"></i> Seleccionar Equipo:</label>
+                                    <select id="eq_device_selector" class="custom-select custom-select-sm font-weight-bold" style="min-width: 250px; max-width: 340px; border-radius: 6px;" onchange="onEquipmentSelectorChange(this.value)">
+                                        <option value="">Cargando equipos...</option>
+                                    </select>
+                                </div>
+
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-light font-weight-bold" onclick="activatePmTab('survey-list-content'); loadManualSurveys();" title="Volver al listado general de levantamientos">
+                                        <i class="fas fa-arrow-left mr-1"></i> Levantamientos
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info font-weight-bold" onclick="editCurrentSelectedEquipment()" title="Editar este levantamiento en el Asistente">
+                                        <i class="fas fa-edit mr-1"></i> Editar
+                                    </button>
+                                    <button type="button" class="btn btn-danger font-weight-bold shadow-sm" onclick="exportCurrentEquipmentPDF()" title="Revisar data del equipo y generar PDF para imprimir">
+                                        <i class="fas fa-file-pdf mr-1"></i> Revisar Data & PDF
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success font-weight-bold" onclick="exportCurrentEquipmentExcel()" title="Exportar Excel de este equipo">
+                                        <i class="fas fa-file-excel mr-1"></i> Excel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-4 bg-light">
+                            <!-- Spinner mientras carga -->
+                            <div id="eq_loading_spinner" class="text-center py-5" style="display: none;">
+                                <i class="fas fa-circle-notch fa-spin fa-3x text-primary mb-3"></i>
+                                <h5 class="font-weight-bold text-navy">Cargando información del equipo...</h5>
+                                <p class="text-muted small">Consultando datos de hardware, puertos y diagrama de conectividad.</p>
+                            </div>
+
+                            <!-- Estado vacío si no hay equipo seleccionado -->
+                            <div id="eq_empty_state" class="text-center py-5" style="display: none;">
+                                <i class="fas fa-server fa-4x text-muted mb-3" style="opacity: 0.5;"></i>
+                                <h5 class="font-weight-bold text-navy">No se ha seleccionado ningún equipo</h5>
+                                <p class="text-muted small">Haga clic en un equipo en la pestaña de <strong>Levantamiento de Registros</strong> o elija uno del selector superior.</p>
+                                <button type="button" class="btn btn-primary btn-sm font-weight-bold px-3" onclick="activatePmTab('survey-list-content'); loadManualSurveys();">
+                                    <i class="fas fa-list mr-1"></i> Ver Levantamientos
+                                </button>
+                            </div>
+
+                            <!-- Contenido principal del equipo -->
+                            <div id="eq_main_content" style="display: block;">
+                                <!-- 1. BLOQUE DE TARJETAS METRICAS Y DATOS GENERALES -->
+                                <div class="row mb-4">
+                                    <!-- Tarjeta 1: Información del Equipo -->
+                                    <div class="col-xl-3 col-md-6 mb-3">
+                                        <div class="card border shadow-xs h-100 p-3 bg-white" style="border-radius: 10px; border-left: 4px solid #1E40AF !important;">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="small font-weight-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">Equipo & Hardware</span>
+                                                <i class="fas fa-server text-primary" style="font-size: 1.2rem;"></i>
+                                            </div>
+                                            <h5 class="font-weight-bold text-navy text-truncate m-0" id="eq_view_device_name">-</h5>
+                                            <div class="mt-2 d-flex flex-wrap align-items-center" style="gap: 5px;">
+                                                <span class="badge badge-primary px-2 py-1 font-weight-bold" id="eq_view_device_type">Switch</span>
+                                                <span class="badge badge-light border text-dark font-weight-normal" id="eq_view_vendor">Vendor</span>
+                                                <span class="badge badge-light border text-muted font-weight-normal" id="eq_view_serial">Serial</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tarjeta 2: Puertos Usados / Conectados (UP) -->
+                                    <div class="col-xl-3 col-md-6 mb-3">
+                                        <div class="card border shadow-xs h-100 p-3 bg-white" style="border-radius: 10px; border-left: 4px solid #0F766E !important;">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="small font-weight-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">Puertos Conectados (UP)</span>
+                                                <i class="fas fa-check-circle text-success" style="font-size: 1.2rem;"></i>
+                                            </div>
+                                            <div class="d-flex align-items-baseline" style="gap: 8px;">
+                                                <span class="font-weight-extrabold text-success" style="font-size: 1.9rem; line-height: 1;" id="eq_view_ports_up">0</span>
+                                                <span class="small text-muted font-weight-bold">puertos activos</span>
+                                            </div>
+                                            <div class="mt-2">
+                                                <div class="progress" style="height: 6px; border-radius: 3px; background: #e2e8f0;">
+                                                    <div id="eq_view_occupancy_bar" class="progress-bar bg-success" style="width: 0%;"></div>
+                                                </div>
+                                                <small class="text-muted font-weight-bold mt-1 d-block"><span id="eq_view_occupancy_pct">0%</span> de ocupación</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tarjeta 3: Puertos Libres (DOWN) -->
+                                    <div class="col-xl-3 col-md-6 mb-3">
+                                        <div class="card border shadow-xs h-100 p-3 bg-white" style="border-radius: 10px; border-left: 4px solid #D97706 !important;">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="small font-weight-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">Puertos Libres (DOWN)</span>
+                                                <i class="fas fa-ethernet text-warning" style="font-size: 1.2rem;"></i>
+                                            </div>
+                                            <div class="d-flex align-items-baseline" style="gap: 8px;">
+                                                <span class="font-weight-extrabold text-dark" style="font-size: 1.9rem; line-height: 1;" id="eq_view_ports_down">0</span>
+                                                <span class="small text-muted font-weight-bold">puertos disponibles</span>
+                                            </div>
+                                            <div class="mt-2">
+                                                <span class="badge badge-light border text-muted px-2 py-1 font-weight-bold" style="font-size: 0.76rem;">
+                                                    Total: <strong id="eq_view_ports_total">0</strong> puertos
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tarjeta 4: Ubicación & Fecha de Creación -->
+                                    <div class="col-xl-3 col-md-6 mb-3">
+                                        <div class="card border shadow-xs h-100 p-3 bg-white" style="border-radius: 10px; border-left: 4px solid #475569 !important;">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="small font-weight-bold text-muted text-uppercase" style="letter-spacing: 0.5px;">Ubicación & Fecha</span>
+                                                <i class="fas fa-map-marker-alt text-danger" style="font-size: 1.2rem;"></i>
+                                            </div>
+                                            <div class="text-truncate font-weight-bold text-navy" id="eq_view_location">-</div>
+                                            <small class="text-muted d-block mt-1 font-weight-bold">
+                                                Rack: <strong class="text-primary" id="eq_view_rack">-</strong> (UR: <span id="eq_view_ur">-</span>)
+                                            </small>
+                                            <div class="mt-2">
+                                                <span class="badge badge-light border text-secondary px-2 py-1 font-weight-normal" style="font-size: 0.76rem;">
+                                                    <i class="far fa-calendar-alt text-primary mr-1"></i> Fecha: <strong id="eq_view_date">-</strong>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 2. CHASIS FRONTAL / GRÁFICO DEL EQUIPO (PUERTOS UP / DOWN) -->
+                                <div class="card mb-4 border shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                                    <div class="card-header bg-navy text-white d-flex justify-content-between align-items-center py-2 px-3">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-microchip text-info mr-2"></i>
+                                            <span class="font-weight-bold" style="font-size: 0.9rem;">
+                                                Chasis Frontal del Equipo: <span id="eq_chassis_title" class="text-warning">-</span>
+                                            </span>
+                                        </div>
+                                        <div class="d-flex align-items-center flex-wrap" style="gap: 12px; font-size: 0.8rem;">
+                                            <span class="d-flex align-items-center"><span class="switch-led-dot switch-led-green mr-1"></span> <strong>UP</strong> (Conectado / Activo)</span>
+                                            <span class="d-flex align-items-center"><span class="switch-led-dot switch-led-off mr-1"></span> <strong>DOWN</strong> (Libre / Apagado)</span>
+                                            <span class="badge badge-secondary px-2 py-1"><i class="fas fa-mouse-pointer mr-1"></i> Haga clic en un puerto para ver su traza</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body bg-dark p-4 d-flex justify-content-center align-items-center" style="background: #0B1120 !important;">
+                                        <div id="eq_chassis_container" class="switch-faceplate-chassis text-center w-100" style="max-width: 980px;">
+                                            <!-- Generado dinámicamente -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 3. DIAGRAMA DE CONECTIVIDAD (CAMINO PUNTA A PUNTA) -->
+                                <div class="card mb-4 border shadow-sm" style="border-radius: 10px;">
+                                    <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-route text-success mr-2" style="font-size: 1.1rem;"></i>
+                                            <span class="font-weight-bold text-navy" style="font-size: 0.92rem;">
+                                                Diagrama de Conectividad Traza Extremo a Extremo &bull; Puerto: <span id="eq_pathway_port_badge" class="badge badge-primary px-2 py-1 font-weight-bold">P-01</span>
+                                            </span>
+                                        </div>
+                                        <span class="text-muted small font-weight-bold" id="eq_pathway_port_status_badge">
+                                            Estado: <span class="badge badge-success">Up</span>
+                                        </span>
+                                    </div>
+                                    <div class="card-body p-3 bg-white" id="eq_pathway_flow_box">
+                                        <!-- Generado dinámicamente -->
+                                    </div>
+                                </div>
+
+                                <!-- 4. TABLA DETALLADA DE PORTMAPPING -->
+                                <div class="card border shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                                    <div class="card-header bg-white py-3 px-3 d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
+                                        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+                                            <h6 class="font-weight-bold m-0 text-navy" style="font-size: 0.95rem;">
+                                                <i class="fas fa-table text-primary mr-2"></i> Tabla de Portmapping del Equipo
+                                            </h6>
+                                            <span class="badge badge-primary px-2 py-1 font-weight-bold" id="eq_table_ports_count">0 puertos</span>
+                                        </div>
+
+                                        <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-secondary font-weight-bold active" id="btn_filter_ports_all" onclick="filterEqPortsByStatus('all')">Todos</button>
+                                                <button type="button" class="btn btn-outline-success font-weight-bold" id="btn_filter_ports_up" onclick="filterEqPortsByStatus('up')"><i class="fas fa-check-circle mr-1"></i> Solo UP</button>
+                                                <button type="button" class="btn btn-outline-secondary font-weight-bold" id="btn_filter_ports_down" onclick="filterEqPortsByStatus('down')"><i class="fas fa-minus-circle mr-1"></i> Solo DOWN</button>
+                                            </div>
+
+                                            <div class="input-group input-group-sm" style="width: 250px;">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                                                </div>
+                                                <input type="text" id="eq_ports_search" class="form-control" placeholder="Buscar puerto, VLAN, destino..." oninput="onEqPortsSearch(this.value)">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary" type="button" onclick="clearEqPortsSearch()"><i class="fas fa-times"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="table table-custom-pm table-hover align-middle m-0" id="tbl_eq_ports">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center" style="width: 80px;">Puerto</th>
+                                                    <th class="text-center" style="width: 90px;">Estado Link</th>
+                                                    <th>Tipo / Medio</th>
+                                                    <th>VLAN</th>
+                                                    <th>Patch Panel Origen</th>
+                                                    <th>Patch Panel Destino</th>
+                                                    <th>Equipo Destino & Puerto</th>
+                                                    <th>Rack / Ubicación Destino</th>
+                                                    <th>Descripción</th>
+                                                    <th class="text-center" style="width: 95px;">Traza</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbl_eq_ports_body">
+                                                <tr>
+                                                    <td colspan="10" class="text-center py-4 text-muted">No hay puertos cargados.</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: CONFIGURACIÓN DEL INFORME (PDF & CARÁTULA) -->
+                <div class="tab-pane fade <?php echo $is_informe_tab ? 'show active' : ''; ?>" id="report-config-content" role="tabpanel" style="display: <?php echo $is_informe_tab ? 'block' : 'none'; ?>;">
                     <div class="card border shadow-sm" style="border-radius: 12px; overflow: hidden;">
                         <div class="card-header bg-gradient-navy text-white d-flex justify-content-between align-items-center">
                             <h5 class="card-title font-weight-bold m-0 text-white">
-                                <i class="fas fa-file-pdf text-danger mr-2"></i> 03 Configuración General para la Creación del Informe Ejecutivo PDF
+                                <i class="fas fa-file-pdf text-danger mr-2"></i> Configuración General para la Creación del Informe Ejecutivo PDF
                             </h5>
                             <div>
                                 <button type="button" class="btn btn-sm btn-outline-light font-weight-bold mr-2" onclick="resetReportConfigDefaults()">
@@ -1576,7 +1990,7 @@ require_once __DIR__ . '/partials/header.php';
                 </div>
 
                 <!-- PESTAÑA 4: ANÁLISIS VILASECA (Métricas, Tops, Racks y Distribución) -->
-                <div class="tab-pane fade" id="survey-analysis-content" role="tabpanel" style="display: none;">
+                <div class="tab-pane fade <?php echo $is_analisis_tab ? 'show active' : ''; ?>" id="survey-analysis-content" role="tabpanel" style="display: <?php echo $is_analisis_tab ? 'block' : 'none'; ?>;">
                     
                     <!-- BANNER EJECUTIVO DE CABECERA -->
                     <div class="analysis-header-card p-4 mb-4">
@@ -1584,12 +1998,12 @@ require_once __DIR__ . '/partials/header.php';
                             <div>
                                 <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
                                     <h4 class="font-weight-bold m-0 text-white">
-                                        <i class="fas fa-chart-pie text-warning mr-2"></i> Centro de Análisis de Infraestructura - VILASECA
+                                        <i class="fas fa-chart-pie mr-2" style="color: var(--color-accent);"></i> Centro de Análisis de Infraestructura - VILASECA
                                     </h4>
-                                    <span class="badge badge-warning text-dark font-weight-bold px-2 py-1">
+                                    <span class="badge font-weight-bold px-2 py-1" style="background: var(--color-accent); color: #ffffff; border-radius: 6px;">
                                         <i class="fas fa-building mr-1"></i> CLIENTE: VILASECA
                                     </span>
-                                    <span class="badge badge-info px-2 py-1" id="an_badge_status">
+                                    <span class="badge px-2 py-1 font-weight-bold" id="an_badge_status" style="background: var(--status-metric); color: #ffffff; border-radius: 6px;">
                                         <i class="fas fa-check-circle mr-1"></i> Datos Auditados en Vivo
                                     </span>
                                 </div>
@@ -1599,18 +2013,18 @@ require_once __DIR__ . '/partials/header.php';
                             </div>
                             <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
                                 <a href="<?php echo PUBLIC_URL_PREFIX; ?>/clientes/vilaseca/index.php" class="btn btn-outline-light btn-sm font-weight-bold">
-                                    <i class="fas fa-tachometer-alt mr-1"></i> Centro de Control
+                                    <i class="fas fa-tachometer-alt mr-1" style="color: #38BDF8;"></i> Centro Vilaseca
                                 </a>
                                 <a href="<?php echo PUBLIC_URL_PREFIX; ?>/analisis_conexiones.php?cliente=VILASECA" class="btn btn-outline-light btn-sm font-weight-bold">
-                                    <i class="fas fa-project-diagram mr-1"></i> Topología
+                                    <i class="fas fa-project-diagram mr-1" style="color: #14B8A6;"></i> Topología
                                 </a>
                                 <button type="button" class="btn btn-light btn-sm text-navy font-weight-bold shadow-sm" onclick="exportVilasecaAnalysisCSV()">
-                                    <i class="fas fa-file-excel mr-1 text-success"></i> Exportar Informe CSV
+                                    <i class="fas fa-file-excel mr-1 text-primary"></i> Exportar Informe CSV
                                 </button>
                                 <button type="button" class="btn btn-outline-light btn-sm font-weight-bold" onclick="loadSurveyAnalysisTab(true)">
                                     <i class="fas fa-sync-alt mr-1"></i> Actualizar Métricas
                                 </button>
-                                <button type="button" class="btn btn-success btn-sm font-weight-bold shadow-sm" onclick="switchToNewPmSurveyTab()">
+                                <button type="button" class="btn btn-primary btn-sm font-weight-bold shadow-sm" style="background: var(--color-accent); border-color: var(--color-accent);" onclick="switchToNewPmSurveyTab()">
                                     <i class="fas fa-plus mr-1"></i> Nuevo Levantamiento
                                 </button>
                             </div>
@@ -1651,6 +2065,32 @@ require_once __DIR__ . '/partials/header.php';
                         </div>
                     </div>
 
+                    <!-- NAVEGACIÓN RÁPIDA POR SECCIONES (SUB-NAV EXECUTIVE PILLS) -->
+                    <div class="an-subnav-bar mb-4 p-2 d-flex align-items-center justify-content-between flex-wrap" style="background: var(--bg-surface); border: 1px solid var(--border-grid); border-radius: 10px; gap: 8px;">
+                        <div class="d-flex align-items-center flex-wrap" style="gap: 6px;">
+                            <span class="small font-weight-bold text-muted mr-1"><i class="fas fa-compass mr-1 text-primary"></i> Secciones:</span>
+                            <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold an-nav-pill active" onclick="scrollToAnSection('an_sec_kpis_charts', this)">
+                                <i class="fas fa-chart-line mr-1"></i> Métricas & Gráficos
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold an-nav-pill" onclick="scrollToAnSection('an_sec_tops', this)">
+                                <i class="fas fa-balance-scale mr-1 text-success"></i> Capacidad & Tops
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold an-nav-pill" onclick="scrollToAnSection('an_sec_racks', this)">
+                                <i class="fas fa-server mr-1 text-warning"></i> Bastidores & Racks
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold an-nav-pill" onclick="scrollToAnSection('an_sec_inventory', this)">
+                                <i class="fas fa-list-alt mr-1 text-info"></i> Inventario Consolidado
+                            </button>
+                        </div>
+                        <div class="d-none d-md-flex align-items-center" style="gap: 8px;">
+                            <span class="badge badge-light border text-muted px-2 py-1 small font-weight-bold">
+                                <i class="fas fa-shield-alt text-primary mr-1"></i> Auditoría VILASECA
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN 1: KPIS Y GRÁFICOS -->
+                    <div id="an_sec_kpis_charts">
                     <!-- 5 TARJETAS KPI DE IMPACTO -->
                     <div class="row mb-4">
                         <div class="col-xl col-md-4 col-sm-6 mb-3">
@@ -1750,8 +2190,10 @@ require_once __DIR__ . '/partials/header.php';
                             </div>
                         </div>
                     </div>
+                    </div> <!-- /#an_sec_kpis_charts -->
 
-                    <!-- FILA 2: TOPS DE EQUIPOS (PUERTOS VACÍOS VS LLENOS) -->
+                    <!-- SECCIÓN 2: TOPS DE EQUIPOS (PUERTOS VACÍOS VS LLENOS) -->
+                    <div id="an_sec_tops">
                     <div class="row mb-4">
                         <!-- TOP DE EQUIPOS CON PUERTOS VACÍOS (MAYOR DISPONIBILIDAD) -->
                         <div class="col-lg-6 mb-4">
@@ -1821,8 +2263,10 @@ require_once __DIR__ . '/partials/header.php';
                             </div>
                         </div>
                     </div>
+                    </div> <!-- /#an_sec_tops -->
 
-                    <!-- FILA 3: RACKS CON MAYOR CANTIDAD DE EQUIPOS POR LOCALIDAD -->
+                    <!-- SECCIÓN 3: RACKS CON MAYOR CANTIDAD DE EQUIPOS POR LOCALIDAD -->
+                    <div id="an_sec_racks">
                     <div class="card border shadow-xs mb-4" style="border-radius: 12px; overflow: hidden;">
                         <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
                             <div>
@@ -1842,8 +2286,10 @@ require_once __DIR__ . '/partials/header.php';
                             </div>
                         </div>
                     </div>
+                    </div> <!-- /#an_sec_racks -->
 
-                    <!-- FILA 4: INVENTARIO CONSOLIDADO Y ANÁLISIS DETALLADO DE EQUIPOS -->
+                    <!-- SECCIÓN 4: INVENTARIO CONSOLIDADO Y ANÁLISIS DETALLADO DE EQUIPOS -->
+                    <div id="an_sec_inventory">
                     <div class="card border shadow-xs mb-4" style="border-radius: 12px; overflow: hidden;">
                         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap" style="gap: 10px;">
                             <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
@@ -1859,10 +2305,9 @@ require_once __DIR__ . '/partials/header.php';
                             <div class="d-flex align-items-center" style="gap: 8px;">
                                 <label class="small text-muted font-weight-bold mb-0">Mostrar:</label>
                                 <select id="an_inv_page_size" class="custom-select custom-select-sm font-weight-bold" style="width: auto;" onchange="g_anCurrentPage = 1; renderAnalysisInventoryTable(g_anLastFilteredDevs || []);">
-                                    <option value="10" selected>10 registros por página</option>
-                                    <option value="25">25 registros por página</option>
-                                    <option value="50">50 registros por página</option>
-                                    <option value="-1">Todos los registros</option>
+                                    <option value="10">10 registros por página</option>
+                                    <option value="20">20 registros por página</option>
+                                    <option value="30" selected>30 registros por página (Máximo)</option>
                                 </select>
                             </div>
                             <div class="input-group input-group-sm" style="max-width: 320px;">
@@ -1905,6 +2350,7 @@ require_once __DIR__ . '/partials/header.php';
                             <div id="an_inv_pagination" class="d-flex align-items-center flex-wrap" style="gap: 4px;"></div>
                         </div>
                     </div>
+                    </div> <!-- /#an_sec_inventory -->
 
                 </div>
             </div>
@@ -1964,6 +2410,76 @@ require_once __DIR__ . '/partials/header.php';
             <div class="modal-footer bg-light py-2">
                 <button type="button" class="btn btn-sm btn-outline-info font-weight-bold" onclick="copyConfigFileContent()"><i class="fas fa-copy mr-1"></i> Copiar Texto</button>
                 <button type="button" class="btn btn-sm btn-secondary font-weight-bold" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODAL: REVISIÓN DE DATA Y GENERACIÓN DE PDF / IMPRESIÓN DEL EQUIPO        -->
+<!-- ========================================================================= -->
+<div class="modal fade" id="modal_pm_pdf_preview" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="max-width: 1100px;">
+        <div class="modal-content shadow-lg" style="border-radius: 14px; overflow: hidden; border: none;">
+            <!-- Cabecera del Modal -->
+            <div class="modal-header bg-gradient-navy text-white py-3 px-4 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center" style="gap: 12px;">
+                    <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(220,38,38,0.25); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(220,38,38,0.4);">
+                        <i class="fas fa-file-pdf fa-lg text-danger"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-weight-bold m-0" style="letter-spacing: 0.2px;">Revisión de Data y Generación de PDF / Impresión</h5>
+                        <small class="text-white-50">Revise la ficha técnica, métricas de puertos y diagrama antes de imprimir o exportar a PDF</small>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                    <!-- Opciones de inclusión rápida -->
+                    <div class="bg-dark px-3 py-1 rounded d-flex align-items-center" style="gap: 15px; font-size: 0.82rem; border: 1px solid #334155;">
+                        <div class="custom-control custom-checkbox custom-control-inline m-0">
+                            <input type="checkbox" class="custom-control-input" id="pdf_inc_chassis" checked onchange="togglePdfSection('sec_pdf_chassis', this.checked)">
+                            <label class="custom-control-label text-white cursor-pointer font-weight-bold" for="pdf_inc_chassis">Chasis Frontal</label>
+                        </div>
+                        <div class="custom-control custom-checkbox custom-control-inline m-0">
+                            <input type="checkbox" class="custom-control-input" id="pdf_inc_diagram" checked onchange="togglePdfSection('sec_pdf_diagram', this.checked)">
+                            <label class="custom-control-label text-white cursor-pointer font-weight-bold" for="pdf_inc_diagram">Diagrama Conectividad</label>
+                        </div>
+                        <div class="custom-control custom-checkbox custom-control-inline m-0">
+                            <input type="checkbox" class="custom-control-input" id="pdf_inc_signatures" checked onchange="togglePdfSection('sec_pdf_signatures', this.checked)">
+                            <label class="custom-control-label text-white cursor-pointer font-weight-bold" for="pdf_inc_signatures">Firmas</label>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-success btn-sm font-weight-bold px-3 shadow-sm" onclick="printEquipmentPdfDocument()">
+                        <i class="fas fa-print mr-1"></i> Imprimir / Guardar como PDF
+                    </button>
+                    <button type="button" class="close text-white opacity-75" data-dismiss="modal" aria-label="Cerrar" style="outline: none;">
+                        <span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cuerpo del Modal: Hoja A4 / Carta Previsualizable -->
+            <div class="modal-body p-4" style="max-height: 80vh; overflow-y: auto; background-color: #475569 !important;">
+                <div id="pdf_sheet_preview" style="max-width: 980px; margin: 0 auto; background: #ffffff; padding: 36px 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-radius: 6px; font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b;">
+                    <!-- El contenido de la hoja se genera dinámicamente con renderPdfSheetContent() -->
+                </div>
+            </div>
+
+            <!-- Pie del Modal -->
+            <div class="modal-footer bg-light py-2 px-4 d-flex justify-content-between align-items-center">
+                <div class="small text-muted font-weight-bold">
+                    <i class="fas fa-info-circle mr-1 text-primary"></i> En el cuadro de diálogo de impresión, elija <strong>"Guardar como PDF"</strong> o seleccione su impresora.
+                </div>
+                <div class="d-flex align-items-center" style="gap: 8px;">
+                    <button type="button" class="btn btn-outline-secondary btn-sm font-weight-bold" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-outline-success btn-sm font-weight-bold" onclick="exportCurrentEquipmentExcel()">
+                        <i class="fas fa-file-excel mr-1"></i> Exportar CSV/Excel
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm font-weight-bold px-3 shadow-sm" style="background: var(--color-accent); border-color: var(--color-accent);" onclick="printEquipmentPdfDocument()">
+                        <i class="fas fa-print mr-1"></i> Imprimir Documento
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -2121,6 +2637,7 @@ require_once __DIR__ . '/partials/header.php';
                                 <div class="font-weight-bold text-dark text-truncate" id="prev_eq_name">-</div>
                                 <div class="small text-secondary mt-1"><i class="fas fa-barcode text-muted mr-1"></i>Serie: <code id="prev_eq_serial">-</code></div>
                                 <div class="small text-muted"><i class="fas fa-tag mr-1"></i>Tipo: <span id="prev_eq_type" class="font-weight-bold">-</span> (UR <span id="prev_eq_ur">-</span>)</div>
+                                <div class="small text-dark mt-1 text-truncate"><i class="fas fa-microchip text-info mr-1"></i><span id="prev_eq_vendor">-</span> <span id="prev_eq_model" class="font-weight-bold">-</span></div>
                             </div>
                         </div>
 
@@ -2192,12 +2709,16 @@ require_once __DIR__ . '/partials/header.php';
                                         <label class="small font-weight-bold text-secondary mb-1">Fabricante:</label>
                                         <input type="text" class="form-control form-control-sm font-weight-bold" id="cust_vendor" placeholder="Cisco, Aruba, etc.">
                                     </div>
-                                    <div class="col-md-3 mb-2">
+                                    <div class="col-md-2 mb-2">
+                                        <label class="small font-weight-bold text-secondary mb-1">Modelo:</label>
+                                        <input type="text" class="form-control form-control-sm font-weight-bold text-navy" id="cust_model" placeholder="2530, C9300, etc.">
+                                    </div>
+                                    <div class="col-md-2 mb-2">
                                         <label class="small font-weight-bold text-secondary mb-1">Número de Serie:</label>
                                         <input type="text" class="form-control form-control-sm font-weight-bold" id="cust_serial" placeholder="Serie">
                                     </div>
-                                    <div class="col-md-2 mb-2">
-                                        <label class="small font-weight-bold text-secondary mb-1">UR en Rack:</label>
+                                    <div class="col-md-1 mb-2">
+                                        <label class="small font-weight-bold text-secondary mb-1">UR Rack:</label>
                                         <input type="number" min="1" max="52" class="form-control form-control-sm font-weight-bold text-center" id="cust_ur" placeholder="7">
                                     </div>
                                 </div>
@@ -2240,6 +2761,7 @@ require_once __DIR__ . '/partials/header.php';
                                                 <tr>
                                                     <th class="text-center" style="width: 70px;">Puerto</th>
                                                     <th>Estado Link (Excel)</th>
+                                                    <th class="text-center" style="width: 80px;">VLAN</th>
                                                     <th>Velocidad / Tipo</th>
                                                     <th>Destino / Patch Panel</th>
                                                     <th>Módulo / Conector</th>
@@ -2481,16 +3003,26 @@ function getReportLogoHtml(logoType, customDataUrl, defaultLabel = 'SONDA') {
     return `<div style="font-size:14px; font-weight:800; color:#ffffff; background:#64748b; border-radius:6px; padding:6px 14px; letter-spacing:1px;">${defaultLabel.toUpperCase()}</div>`;
 }
 
+function scrollToAnSection(id, btn) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('.an-nav-pill').forEach(b => {
+            b.classList.remove('active', 'btn-outline-primary');
+            b.classList.add('btn-outline-secondary');
+        });
+        if (btn) {
+            btn.classList.add('active', 'btn-outline-primary');
+            btn.classList.remove('btn-outline-secondary');
+        }
+    }
+}
+
 function activatePmTab(targetId) {
     const panes = document.querySelectorAll('#pm-tab-content > .tab-pane');
     panes.forEach(pane => {
         pane.classList.remove('show', 'active');
         pane.style.display = 'none';
-    });
-
-    const links = document.querySelectorAll('#pm-tabs .nav-link');
-    links.forEach(link => {
-        link.classList.remove('active');
     });
 
     const targetPane = document.getElementById(targetId);
@@ -2499,9 +3031,37 @@ function activatePmTab(targetId) {
         targetPane.style.display = 'block';
     }
 
-    const targetLink = document.querySelector(`#pm-tabs .nav-link[href="#${targetId}"]`);
-    if (targetLink) {
-        targetLink.classList.add('active');
+    // Sincronizar estado visual de los botones de pestañas superiores
+    const links = document.querySelectorAll('#pm-tabs .nav-link');
+    links.forEach(link => {
+        link.classList.remove('active');
+        link.setAttribute('aria-selected', 'false');
+    });
+
+    const tabNavMap = {
+        'survey-list-content': { navId: 'tab-nav-survey-list', param: '' },
+        'survey-wizard-content': { navId: 'tab-nav-survey-wizard', param: 'asistente' },
+        'equipos-portmapping-content': { navId: 'tab-nav-equipos-portmapping', param: 'equipos' },
+        'survey-analysis-content': { navId: 'tab-nav-survey-analysis', param: 'analisis' },
+        'report-config-content': { navId: 'tab-nav-report-config', param: 'informe' }
+    };
+
+    const mapping = tabNavMap[targetId];
+    if (mapping) {
+        const navEl = document.getElementById(mapping.navId);
+        if (navEl) {
+            navEl.classList.add('active');
+            navEl.setAttribute('aria-selected', 'true');
+        }
+        try {
+            const url = new URL(window.location);
+            if (mapping.param) {
+                url.searchParams.set('tab', mapping.param);
+            } else {
+                url.searchParams.delete('tab');
+            }
+            window.history.replaceState({}, '', url);
+        } catch(e) {}
     }
 }
 
@@ -2805,8 +3365,8 @@ function normalizePortName(val, fallbackIndex) {
 
 function updatePatchPanelFormVisibility() {
     const devTypeElem = document.getElementById('pm-survey-device-type');
-    const deviceType = devTypeElem ? devTypeElem.value : '';
-    const isPatchPanel = (deviceType === 'Patch Panel' || deviceType.toLowerCase().includes('patch'));
+    const deviceType = devTypeElem ? (devTypeElem.value || '').toUpperCase() : '';
+    const isPatchPanel = deviceType.includes('PATCH');
     
     // Ocultar / Mostrar elementos de hardware activo
     const activeElements = document.querySelectorAll('.pm-form-active-only');
@@ -2904,11 +3464,550 @@ function autofillPpOrigen() {
     }
 }
 
+// =========================================================================
+// MÓDULO: EQUIPOS PORTMAPPING (FICHA TÉCNICA ESTRUCTURADA Y CONECTIVIDAD)
+// =========================================================================
+let g_currentEquipmentData = null;
+let g_currentSelectedPortIndex = 0;
+let g_eqPortsStatusFilter = 'all';
+let g_eqPortsSearchQuery = '';
+
+async function loadEquipmentPortmappingTab(targetId) {
+    activatePmTab('equipos-portmapping-content');
+    
+    // Si no tenemos levantamientos en caché, los descargamos para llenar el selector
+    if (!cachedManualSurveys || cachedManualSurveys.length === 0) {
+        try {
+            const resp = await fetch('api_portmapping.php?action=get_manual_surveys');
+            const res = await resp.json();
+            if (res.success && res.data) {
+                cachedManualSurveys = res.data;
+            }
+        } catch(e) {}
+    }
+    
+    populateEquipmentSelector(targetId);
+
+    if (targetId) {
+        loadEquipmentPortmappingDetail(targetId);
+    } else if (cachedManualSurveys && cachedManualSurveys.length > 0) {
+        // Filtrar por cliente si aplica
+        const urlParams = new URLSearchParams(window.location.search);
+        const clientParam = (urlParams.get('cliente') || '').toUpperCase();
+        let list = cachedManualSurveys;
+        if (clientParam) {
+            const filtered = list.filter(s => (s.client || '').toUpperCase() === clientParam);
+            if (filtered.length > 0) list = filtered;
+        }
+        if (list.length > 0) {
+            loadEquipmentPortmappingDetail(list[0].id);
+        } else {
+            showEquipmentEmptyState();
+        }
+    } else {
+        showEquipmentEmptyState();
+    }
+}
+
+function populateEquipmentSelector(selectedId) {
+    const sel = document.getElementById('eq_device_selector');
+    if (!sel) return;
+    sel.innerHTML = '';
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientParam = (urlParams.get('cliente') || '').toUpperCase();
+    let list = cachedManualSurveys || [];
+    if (clientParam) {
+        const filtered = list.filter(s => (s.client || '').toUpperCase() === clientParam);
+        if (filtered.length > 0) list = filtered;
+    }
+
+    if (list.length === 0) {
+        sel.innerHTML = '<option value="">No hay equipos registrados</option>';
+        return;
+    }
+
+    list.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `${s.device_name || 'Equipo #' + s.id} (${(s.device_type || 'HARDWARE').toUpperCase()}) - ${s.location || 'Sede'} - Rack: ${s.rack || 'N/A'}`;
+        if (selectedId && Number(selectedId) === Number(s.id)) {
+            opt.selected = true;
+        }
+        sel.appendChild(opt);
+    });
+}
+
+function onEquipmentSelectorChange(newId) {
+    if (!newId) return;
+    openEquipmentPortmapping(newId);
+}
+
+function showEquipmentEmptyState() {
+    const mainBox = document.getElementById('eq_main_content');
+    const emptyBox = document.getElementById('eq_empty_state');
+    const spinner = document.getElementById('eq_loading_spinner');
+    if (spinner) spinner.style.display = 'none';
+    if (mainBox) mainBox.style.display = 'none';
+    if (emptyBox) emptyBox.style.display = 'block';
+}
+
+async function openEquipmentPortmapping(surveyId) {
+    if (!surveyId) return;
+    
+    try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', 'equipos');
+        url.searchParams.set('id', surveyId);
+        window.history.pushState({}, '', url.toString());
+    } catch(e) {}
+
+    activatePmTab('equipos-portmapping-content');
+    
+    const sel = document.getElementById('eq_device_selector');
+    if (sel && sel.value != surveyId) {
+        sel.value = surveyId;
+    }
+
+    await loadEquipmentPortmappingDetail(surveyId);
+
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+}
+
+async function loadEquipmentPortmappingDetail(id) {
+    const spinner = document.getElementById('eq_loading_spinner');
+    const mainBox = document.getElementById('eq_main_content');
+    const emptyBox = document.getElementById('eq_empty_state');
+
+    if (spinner) spinner.style.display = 'block';
+    if (mainBox) mainBox.style.display = 'none';
+    if (emptyBox) emptyBox.style.display = 'none';
+
+    try {
+        const resp = await fetch(`api_portmapping.php?action=get_manual_survey_detail&id=${id}`);
+        const res = await resp.json();
+        if (res.success && res.data) {
+            g_currentEquipmentData = res.data;
+            
+            if (!Array.isArray(g_currentEquipmentData.ports)) {
+                if (g_currentEquipmentData.ports_data_json) {
+                    try {
+                        g_currentEquipmentData.ports = typeof g_currentEquipmentData.ports_data_json === 'string' ? 
+                            JSON.parse(g_currentEquipmentData.ports_data_json) : g_currentEquipmentData.ports_data_json;
+                    } catch(e) { g_currentEquipmentData.ports = []; }
+                } else {
+                    g_currentEquipmentData.ports = [];
+                }
+            }
+
+            g_currentEquipmentData.ports.forEach(p => {
+                let st = (p.link_status || p.status || p.estado_link || p.led || '').toString().trim().toUpperCase();
+                if (st === 'UP' || st === 'ON' || st === 'ACTIVO' || st === 'CONECTADO') {
+                    p.link_status = 'Up';
+                } else {
+                    p.link_status = 'Down';
+                }
+            });
+
+            const sel = document.getElementById('eq_device_selector');
+            if (sel && (!sel.options.length || sel.options[0].value === '')) {
+                populateEquipmentSelector(id);
+            }
+            if (sel) sel.value = id;
+
+            renderEquipmentHeaderAndKPIs();
+            renderEquipmentChassisFaceplate();
+            g_currentSelectedPortIndex = 0;
+            renderEquipmentPathwayFlow(0);
+            renderEquipmentPortsTable();
+
+            if (spinner) spinner.style.display = 'none';
+            if (mainBox) mainBox.style.display = 'block';
+        } else {
+            if (spinner) spinner.style.display = 'none';
+            toastr.error(res.error || 'No se pudo cargar el equipo.');
+            showEquipmentEmptyState();
+        }
+    } catch(err) {
+        if (spinner) spinner.style.display = 'none';
+        toastr.error('Error al conectar con el servidor.');
+        showEquipmentEmptyState();
+    }
+}
+
+function renderEquipmentHeaderAndKPIs() {
+    if (!g_currentEquipmentData) return;
+    const d = g_currentEquipmentData;
+    const ports = d.ports || [];
+    const totalPorts = ports.length || parseInt(d.ports_count) || 0;
+    const upPorts = ports.filter(p => p.link_status === 'Up').length;
+    const downPorts = Math.max(0, totalPorts - upPorts);
+    const occupancyPct = totalPorts > 0 ? Math.round((upPorts / totalPorts) * 100) : 0;
+
+    const nameEl = document.getElementById('eq_view_device_name');
+    if (nameEl) nameEl.textContent = d.device_name || `Dispositivo #${d.id}`;
+    
+    const typeEl = document.getElementById('eq_view_device_type');
+    if (typeEl) {
+        const normType = (d.device_type || 'HARDWARE').toUpperCase();
+        typeEl.textContent = normType;
+        const isPP = normType.includes('PATCH');
+        typeEl.className = `badge ${isPP ? 'bg-passive text-white' : 'badge-primary'} px-2 py-1 font-weight-bold`;
+    }
+
+    const vendorEl = document.getElementById('eq_view_vendor');
+    if (vendorEl) vendorEl.textContent = d.vendor ? `Marca: ${d.vendor}` : 'Marca General';
+
+    const serialEl = document.getElementById('eq_view_serial');
+    if (serialEl) serialEl.textContent = d.serial ? `S/N: ${d.serial}` : (d.device_label ? `Label: ${d.device_label}` : 'S/N: N/A');
+
+    const upEl = document.getElementById('eq_view_ports_up');
+    if (upEl) upEl.textContent = upPorts;
+    const barEl = document.getElementById('eq_view_occupancy_bar');
+    if (barEl) barEl.style.width = `${occupancyPct}%`;
+    const pctEl = document.getElementById('eq_view_occupancy_pct');
+    if (pctEl) pctEl.textContent = `${occupancyPct}%`;
+
+    const downEl = document.getElementById('eq_view_ports_down');
+    if (downEl) downEl.textContent = downPorts;
+    const totalEl = document.getElementById('eq_view_ports_total');
+    if (totalEl) totalEl.textContent = totalPorts;
+
+    const locEl = document.getElementById('eq_view_location');
+    if (locEl) locEl.textContent = `${d.location || 'Datacenter'}${d.area ? ' - ' + d.area : ''}`;
+    const rackEl = document.getElementById('eq_view_rack');
+    if (rackEl) rackEl.textContent = d.rack || 'No especificado';
+    const urEl = document.getElementById('eq_view_ur');
+    if (urEl) urEl.textContent = d.ur_rack ? `U${d.ur_rack}` : '-';
+    const dateEl = document.getElementById('eq_view_date');
+    if (dateEl) dateEl.textContent = d.creation_date || '-';
+
+    const titleChassis = document.getElementById('eq_chassis_title');
+    if (titleChassis) titleChassis.innerHTML = `${escapeHtml(d.device_name)} (${escapeHtml((d.device_type || 'SWITCH').toUpperCase())}) &bull; Rack: ${escapeHtml(d.rack || 'N/A')}`;
+}
+
+function renderEquipmentChassisFaceplate() {
+    const container = document.getElementById('eq_chassis_container');
+    if (!container || !g_currentEquipmentData) return;
+
+    const ports = g_currentEquipmentData.ports || [];
+    const totalPorts = ports.length;
+    if (totalPorts === 0) {
+        container.innerHTML = '<div class="text-center text-muted py-3">No hay registros de puertos en este equipo.</div>';
+        return;
+    }
+
+    const portsPerRow = totalPorts >= 8 ? Math.ceil(totalPorts / 2) : Math.max(totalPorts, 1);
+    let html = '';
+
+    if (totalPorts >= 8) {
+        let topRowHtml = '';
+        let bottomRowHtml = '';
+
+        ports.forEach((p, idx) => {
+            const portNum = sanitizeNumericPort(p.port_name, idx + 1);
+            const isUp = p.link_status === 'Up';
+            const ledClass = isUp ? 'switch-led-green' : 'switch-led-off';
+            const destText = p.dest_device ? `${p.dest_device} (${p.dest_port || 'P'})` : 'Libre';
+            const activeClass = (idx === g_currentSelectedPortIndex) ? 'active-selected' : '';
+
+            const card = `
+                <div class="switch-port-item ${activeClass}" id="eq_chassis_port_${idx}" onclick="selectEquipmentPort(${idx})" title="Puerto P-${portNum} | Estado: ${p.link_status} | Destino: ${destText}">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="switch-port-num">P${portNum}</span>
+                        <span class="switch-led-dot ${ledClass}"></span>
+                    </div>
+                    <div class="switch-port-icon text-${isUp ? 'success' : 'secondary'}">
+                        <i class="fas fa-ethernet"></i>
+                    </div>
+                </div>
+            `;
+
+            if ((idx + 1) % 2 !== 0) {
+                topRowHtml += card;
+            } else {
+                bottomRowHtml += card;
+            }
+        });
+
+        html = `
+            <div class="mb-2">
+                <small class="text-uppercase font-weight-bold d-block mb-1 text-left" style="color: #64748b; font-size: 10px; letter-spacing: 0.5px;">Fila Superior (Puertos Impares)</small>
+                <div class="switch-port-grid" style="grid-template-columns: repeat(${portsPerRow}, minmax(32px, 1fr));">
+                    ${topRowHtml}
+                </div>
+            </div>
+            <div>
+                <small class="text-uppercase font-weight-bold d-block mb-1 text-left" style="color: #64748b; font-size: 10px; letter-spacing: 0.5px;">Fila Inferior (Puertos Pares)</small>
+                <div class="switch-port-grid" style="grid-template-columns: repeat(${portsPerRow}, minmax(32px, 1fr));">
+                    ${bottomRowHtml}
+                </div>
+            </div>
+        `;
+    } else {
+        let singleRowHtml = '';
+        ports.forEach((p, idx) => {
+            const portNum = sanitizeNumericPort(p.port_name, idx + 1);
+            const isUp = p.link_status === 'Up';
+            const ledClass = isUp ? 'switch-led-green' : 'switch-led-off';
+            const activeClass = (idx === g_currentSelectedPortIndex) ? 'active-selected' : '';
+
+            singleRowHtml += `
+                <div class="switch-port-item ${activeClass}" id="eq_chassis_port_${idx}" onclick="selectEquipmentPort(${idx})" title="Puerto P-${portNum} | Estado: ${p.link_status}">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="switch-port-num">P${portNum}</span>
+                        <span class="switch-led-dot ${ledClass}"></span>
+                    </div>
+                    <div class="switch-port-icon text-${isUp ? 'success' : 'secondary'}">
+                        <i class="fas fa-ethernet"></i>
+                    </div>
+                </div>
+            `;
+        });
+        html = `
+            <div class="switch-port-grid" style="grid-template-columns: repeat(${portsPerRow}, minmax(32px, 1fr));">
+                ${singleRowHtml}
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+}
+
+function selectEquipmentPort(idx) {
+    g_currentSelectedPortIndex = idx;
+    
+    document.querySelectorAll('#eq_chassis_container .switch-port-item').forEach(el => el.classList.remove('active-selected'));
+    const portEl = document.getElementById(`eq_chassis_port_${idx}`);
+    if (portEl) portEl.classList.add('active-selected');
+
+    renderEquipmentPathwayFlow(idx);
+
+    document.querySelectorAll('#tbl_eq_ports_body tr').forEach(r => r.classList.remove('row-selected'));
+    const rowEl = document.getElementById(`eq_port_row_${idx}`);
+    if (rowEl) {
+        rowEl.classList.add('row-selected');
+        rowEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function renderEquipmentPathwayFlow(idx) {
+    const box = document.getElementById('eq_pathway_flow_box');
+    const labelBadge = document.getElementById('eq_pathway_port_badge');
+    const statusBadge = document.getElementById('eq_pathway_port_status_badge');
+    if (!box || !g_currentEquipmentData) return;
+
+    const ports = g_currentEquipmentData.ports || [];
+    if (!ports || ports.length === 0 || !ports[idx]) {
+        box.innerHTML = '<div class="text-center text-muted py-2">No hay información de puerto para trazar.</div>';
+        return;
+    }
+
+    const p = ports[idx];
+    const portNum = sanitizeNumericPort(p.port_name, idx + 1);
+    const isUp = p.link_status === 'Up';
+
+    if (labelBadge) labelBadge.innerText = `P-${portNum}`;
+    if (statusBadge) {
+        statusBadge.innerHTML = `Estado: <span class="badge badge-${isUp ? 'success' : 'secondary'} px-2 py-1">${p.link_status}</span>`;
+    }
+
+    const devSrc = g_currentEquipmentData.device_name || 'Equipo Origen';
+    const rackSrc = g_currentEquipmentData.rack || 'RACK-A01';
+    const urSrc = g_currentEquipmentData.ur_rack ? `UR:${g_currentEquipmentData.ur_rack}` : '';
+
+    const ppSrcName = p.patch_panel_src ? p.patch_panel_src : '<span class="text-muted font-italic">(Sin Patch Panel Origen)</span>';
+    const ppSrcSub = p.port_pp_src ? `Puerto PP: <strong>${p.port_pp_src}</strong> &bull; UR:${p.ur_pp_src || '-'}` : '<span class="text-muted">Conexión directa / Libre</span>';
+
+    const ppTgtName = p.patch_panel_tgt ? p.patch_panel_tgt : '<span class="text-muted font-italic">(Sin Patch Panel Destino)</span>';
+    const ppTgtSub = p.port_pp_tgt ? `Puerto PP: <strong>${p.port_pp_tgt}</strong> &bull; UR:${p.ur_pp_tgt || '-'}` : '<span class="text-muted">Conexión directa / Libre</span>';
+
+    const destDevName = p.dest_device ? p.dest_device : '<span class="text-muted font-italic">(Sin Conexión / Puerto Libre)</span>';
+    const destSub = p.dest_port ? `Puerto Destino: <strong>${p.dest_port}</strong> &bull; Rack: ${p.rack_tgt || '-'}` : '<span class="text-muted">Disponible para asignación</span>';
+
+    box.innerHTML = `
+        <div class="pathway-flow-container shadow-xs">
+            <!-- NODO 1: EQUIPO ORIGEN -->
+            <div class="pathway-node node-src">
+                <span class="pathway-node-title"><i class="fas fa-server text-primary mr-1"></i> 1. Equipo Origen</span>
+                <span class="pathway-node-name text-truncate" title="${escapeHtml(devSrc)}">${escapeHtml(devSrc)}</span>
+                <span class="pathway-node-sub">Puerto: <strong>P-${portNum}</strong> &bull; ${escapeHtml(rackSrc)} ${urSrc}</span>
+            </div>
+
+            <div class="pathway-arrow"><i class="fas fa-chevron-right"></i></div>
+
+            <!-- NODO 2: PATCH PANEL ORIGEN -->
+            <div class="pathway-node node-pp-src">
+                <span class="pathway-node-title"><i class="fas fa-network-wired text-purple mr-1"></i> 2. Patch Panel Origen</span>
+                <span class="pathway-node-name text-truncate">${ppSrcName}</span>
+                <span class="pathway-node-sub">${ppSrcSub}</span>
+            </div>
+
+            <div class="pathway-arrow"><i class="fas fa-chevron-right"></i></div>
+
+            <!-- NODO 3: PATCH PANEL DESTINO -->
+            <div class="pathway-node node-pp-tgt">
+                <span class="pathway-node-title"><i class="fas fa-network-wired text-info mr-1"></i> 3. Patch Panel Destino</span>
+                <span class="pathway-node-name text-truncate">${ppTgtName}</span>
+                <span class="pathway-node-sub">${ppTgtSub}</span>
+            </div>
+
+            <div class="pathway-arrow"><i class="fas fa-chevron-right"></i></div>
+
+            <!-- NODO 4: EQUIPO DESTINO -->
+            <div class="pathway-node node-dest">
+                <span class="pathway-node-title"><i class="fas fa-desktop text-success mr-1"></i> 4. Equipo Destino</span>
+                <span class="pathway-node-name text-truncate">${destDevName}</span>
+                <span class="pathway-node-sub">${destSub}</span>
+            </div>
+        </div>
+    `;
+}
+
+function renderEquipmentPortsTable() {
+    const tbody = document.getElementById('tbl_eq_ports_body');
+    const countBadge = document.getElementById('eq_table_ports_count');
+    if (!tbody || !g_currentEquipmentData) return;
+
+    const ports = g_currentEquipmentData.ports || [];
+    let filtered = ports.slice();
+
+    if (g_eqPortsStatusFilter === 'up') {
+        filtered = filtered.filter(p => p.link_status === 'Up');
+    } else if (g_eqPortsStatusFilter === 'down') {
+        filtered = filtered.filter(p => p.link_status === 'Down');
+    }
+
+    if (g_eqPortsSearchQuery) {
+        const q = g_eqPortsSearchQuery.toLowerCase();
+        filtered = filtered.filter(p => {
+            return (p.port_name || '').toLowerCase().includes(q) ||
+                   (p.vlan || '').toLowerCase().includes(q) ||
+                   (p.dest_device || '').toLowerCase().includes(q) ||
+                   (p.dest_port || '').toLowerCase().includes(q) ||
+                   (p.patch_panel_src || '').toLowerCase().includes(q) ||
+                   (p.patch_panel_tgt || '').toLowerCase().includes(q) ||
+                   (p.description || '').toLowerCase().includes(q);
+        });
+    }
+
+    if (countBadge) {
+        countBadge.textContent = `${filtered.length} / ${ports.length} puertos`;
+    }
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted"><i class="fas fa-filter mr-1"></i> No se encontraron puertos con los filtros aplicados.</td></tr>';
+        return;
+    }
+
+    let html = '';
+    filtered.forEach(p => {
+        const originalIdx = ports.indexOf(p);
+        const portNum = sanitizeNumericPort(p.port_name, originalIdx + 1);
+        const isUp = p.link_status === 'Up';
+        const isSelected = (originalIdx === g_currentSelectedPortIndex);
+
+        const ppSrcDisplay = p.patch_panel_src ? 
+            `<strong class="text-purple">${escapeHtml(p.patch_panel_src)}</strong><small class="text-muted d-block">P: ${p.port_pp_src || '-'} &bull; UR: ${p.ur_pp_src || '-'}</small>` :
+            `<span class="text-muted font-italic">-</span>`;
+
+        const ppTgtDisplay = p.patch_panel_tgt ? 
+            `<strong class="text-info">${escapeHtml(p.patch_panel_tgt)}</strong><small class="text-muted d-block">P: ${p.port_pp_tgt || '-'} &bull; UR: ${p.ur_pp_tgt || '-'}</small>` :
+            `<span class="text-muted font-italic">-</span>`;
+
+        const destDisplay = p.dest_device ? 
+            `<strong class="text-dark">${escapeHtml(p.dest_device)}</strong><small class="text-primary font-weight-bold d-block">Puerto: ${escapeHtml(p.dest_port || '-')}</small>` :
+            `<span class="badge badge-light border text-muted">Libre / Sin Asignar</span>`;
+
+        html += `
+            <tr id="eq_port_row_${originalIdx}" class="${isSelected ? 'row-selected' : ''}" onclick="selectEquipmentPort(${originalIdx})" style="cursor: pointer;">
+                <td class="text-center font-weight-bold">
+                    <span class="badge ${isUp ? 'badge-primary' : 'badge-secondary'} px-2 py-1 font-weight-bold">P-${portNum}</span>
+                </td>
+                <td class="text-center">
+                    <span class="badge badge-${isUp ? 'success' : 'secondary'} px-2 py-1 font-weight-bold">
+                        <i class="fas ${isUp ? 'fa-link' : 'fa-unlink'} mr-1"></i>${p.link_status}
+                    </span>
+                </td>
+                <td><small class="font-weight-bold text-secondary">${escapeHtml(p.port_type || 'RJ45 UTP')}</small></td>
+                <td><span class="badge badge-light border text-dark font-weight-bold">${escapeHtml(p.vlan || 'VLAN Default')}</span></td>
+                <td>${ppSrcDisplay}</td>
+                <td>${ppTgtDisplay}</td>
+                <td>${destDisplay}</td>
+                <td><small class="text-muted">${escapeHtml(p.rack_tgt || '-')}</small></td>
+                <td><small class="text-muted">${escapeHtml(p.description || '-')}</small></td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-xs btn-outline-primary font-weight-bold px-2 py-1" onclick="event.stopPropagation(); selectEquipmentPort(${originalIdx})" title="Ver camino de conexión">
+                        <i class="fas fa-route mr-1"></i> Traza
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+function filterEqPortsByStatus(st) {
+    g_eqPortsStatusFilter = st;
+    ['btn_filter_ports_all', 'btn_filter_ports_up', 'btn_filter_ports_down'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.remove('active');
+    });
+    const activeBtn = document.getElementById(`btn_filter_ports_${st}`);
+    if (activeBtn) activeBtn.classList.add('active');
+    renderEquipmentPortsTable();
+}
+
+function onEqPortsSearch(val) {
+    g_eqPortsSearchQuery = (val || '').trim();
+    renderEquipmentPortsTable();
+}
+
+function clearEqPortsSearch() {
+    const input = document.getElementById('eq_ports_search');
+    if (input) input.value = '';
+    g_eqPortsSearchQuery = '';
+    renderEquipmentPortsTable();
+}
+
+function editCurrentSelectedEquipment() {
+    if (!g_currentEquipmentData || !g_currentEquipmentData.id) {
+        toastr.warning('No hay ningún equipo seleccionado para editar.');
+        return;
+    }
+    loadManualSurveyDetail(g_currentEquipmentData.id);
+}
+
+function exportCurrentEquipmentPDF() {
+    if (!g_currentEquipmentData || !g_currentEquipmentData.id) {
+        toastr.warning('Seleccione un equipo primero.');
+        return;
+    }
+    exportPmSurveyPDF(g_currentEquipmentData.id);
+}
+
+function exportCurrentEquipmentExcel() {
+    if (!g_currentEquipmentData || !g_currentEquipmentData.id) {
+        toastr.warning('Seleccione un equipo primero.');
+        return;
+    }
+    exportPmSurveyExcel(g_currentEquipmentData.id);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab');
-    if (tabParam === 'analisis' || window.location.hash === '#analisis' || window.location.hash === '#survey-analysis-content') {
-        loadSurveyAnalysisTab();
+    const tabParam = (urlParams.get('tab') || '').toLowerCase();
+    const idParam = urlParams.get('id');
+    if (tabParam === 'asistente' || tabParam === 'wizard' || window.location.hash === '#asistente' || window.location.hash === '#survey-wizard-content') {
+        switchToNewPmSurveyTab();
+    } else if (tabParam === 'equipos' || tabParam === 'equipo' || tabParam === 'equipos_portmapping' || window.location.hash === '#equipos') {
+        loadEquipmentPortmappingTab(idParam);
+    } else if (tabParam === 'informe' || tabParam === 'config' || window.location.hash === '#informe' || window.location.hash === '#report-config-content') {
+        loadReportConfigTab();
+    } else if (tabParam === 'analisis' || tabParam === 'vilaseca' || tabParam === 'analisis_vilaseca' || window.location.hash === '#analisis' || window.location.hash === '#survey-analysis-content') {
+        activatePmTab('survey-analysis-content');
+        loadSurveyAnalysisTab(false);
     } else {
         activatePmTab('survey-list-content');
         loadManualSurveys();
@@ -2923,6 +4022,8 @@ let currentSurveySortCol = 'id';
 let currentSurveySortDir = 'desc';
 let currentSurveySearchQuery = '';
 let selectedSurveyIds = new Set();
+let g_surveyCurrentPage = 1;
+let g_surveyPageSize = 30; // Máximo 30 por página por requerimiento
 
 // 1. CARGAR TABLA DE LEVANTAMIENTOS MANUALES
 async function loadManualSurveys() {
@@ -2938,7 +4039,7 @@ async function loadManualSurveys() {
     const clientBadgeText = document.getElementById('client_filter_badge_text');
     if (clientUrlParam && clientBadgeWrapper && clientBadgeText) {
         clientBadgeWrapper.style.display = 'inline-block';
-        clientBadgeText.innerHTML = `<i class="fas fa-filter mr-1"></i> Cliente: ${clientUrlParam} <a href="portmapping.php" class="text-dark ml-1 font-weight-bold" title="Quitar filtro de cliente" style="text-decoration: none;">&times;</a>`;
+        clientBadgeText.innerHTML = `<i class="fas fa-filter mr-1"></i> Cliente: ${escapeHtml(clientUrlParam)} <a href="portmapping.php" class="text-white ml-2 font-weight-bold" title="Quitar filtro de cliente" style="text-decoration: none;">&times;</a>`;
     } else if (clientBadgeWrapper) {
         clientBadgeWrapper.style.display = 'none';
     }
@@ -2948,6 +4049,7 @@ async function loadManualSurveys() {
         const res = await resp.json();
         if (res.success && res.data && res.data.length > 0) {
             cachedManualSurveys = res.data;
+            g_surveyCurrentPage = 1;
             renderManualSurveysTable();
         } else {
             cachedManualSurveys = [];
@@ -2956,6 +4058,10 @@ async function loadManualSurveys() {
             tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted"><i class="fas fa-folder-open mr-2"></i> No hay levantamientos registrados. Haga clic en "+ Nuevo Levantamiento".</td></tr>';
             const countBadge = document.getElementById('survey_count_badge');
             if (countBadge) countBadge.textContent = '0';
+            const infoContainer = document.getElementById('pm_surveys_table_info');
+            if (infoContainer) infoContainer.innerHTML = '<span class="text-muted"><i class="fas fa-info-circle mr-1"></i>0 levantamientos</span>';
+            const paginationContainer = document.getElementById('pm_surveys_pagination');
+            if (paginationContainer) paginationContainer.innerHTML = '';
         }
     } catch (err) {
         tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i> Error al obtener levantamientos.</td></tr>';
@@ -2964,12 +4070,18 @@ async function loadManualSurveys() {
 
 function renderManualSurveysTable() {
     const tbody = document.getElementById('tbl_manual_surveys_body');
+    const infoContainer = document.getElementById('pm_surveys_table_info');
+    const paginationContainer = document.getElementById('pm_surveys_pagination');
+    const pageSizeSelect = document.getElementById('pm_surveys_page_size');
+
     if (!tbody) return;
     
     if (!cachedManualSurveys || cachedManualSurveys.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted"><i class="fas fa-folder-open mr-2"></i> No hay levantamientos registrados. Haga clic en "+ Nuevo Levantamiento".</td></tr>';
         const countBadge = document.getElementById('survey_count_badge');
         if (countBadge) countBadge.textContent = '0';
+        if (infoContainer) infoContainer.innerHTML = '<span class="text-muted"><i class="fas fa-info-circle mr-1"></i>0 levantamientos</span>';
+        if (paginationContainer) paginationContainer.innerHTML = '';
         updateBatchActionBar();
         return;
     }
@@ -3039,14 +4151,32 @@ function renderManualSurveysTable() {
         tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted"><i class="fas fa-search mr-2"></i> No se encontraron levantamientos que coincidan con los criterios.</td></tr>';
         const countBadge = document.getElementById('survey_count_badge');
         if (countBadge) countBadge.textContent = `0 / ${cachedManualSurveys.length}`;
+        if (infoContainer) infoContainer.innerHTML = '<span class="text-muted"><i class="fas fa-info-circle mr-1"></i>0 levantamientos</span>';
+        if (paginationContainer) paginationContainer.innerHTML = '';
         updateBatchActionBar();
         return;
     }
 
+    // Paginación (Máximo 30 por página, default 30)
+    let pageSize = pageSizeSelect ? parseInt(pageSizeSelect.value) : 30;
+    if (isNaN(pageSize) || pageSize > 30 || pageSize <= 0) pageSize = 30;
+    g_surveyPageSize = pageSize;
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    if (g_surveyCurrentPage > totalPages) g_surveyCurrentPage = totalPages;
+    if (g_surveyCurrentPage < 1) g_surveyCurrentPage = 1;
+
+    const startIndex = (g_surveyCurrentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, filtered.length);
+    const pageItems = filtered.slice(startIndex, endIndex);
+
     let html = '';
-    filtered.forEach(item => {
-        const isPP = (item.device_type === 'Patch Panel' || (item.device_type && item.device_type.toLowerCase().includes('patch')));
-        const typeBadgeClass = isPP ? 'badge-dev-patch' : (item.device_type === 'Router' ? 'badge-dev-router' : 'badge-dev-switch');
+    pageItems.forEach(item => {
+        const devTypeNorm = (item.device_type || '').toUpperCase();
+        const isPP = devTypeNorm.includes('PATCH');
+        const isRouter = devTypeNorm.includes('ROUTER');
+        const isFirewall = devTypeNorm.includes('FIREWALL');
+        const typeBadgeClass = isPP ? 'badge-dev-patch' : (isRouter ? 'badge-dev-router' : (isFirewall ? 'badge-dev-firewall' : 'badge-dev-switch'));
         const itemId = Number(item.id);
         const isChecked = selectedSurveyIds.has(itemId);
         const rowClass = isChecked ? 'row-selected' : '';
@@ -3064,13 +4194,14 @@ function renderManualSurveysTable() {
                 <td><strong class="text-dark"><i class="fas fa-building text-muted mr-1"></i> ${escapeHtml(item.client || '-')}</strong></td>
                 <td><span class="text-secondary"><i class="fas fa-map-marker-alt text-danger mr-1"></i> ${escapeHtml(item.location || '-')}</span></td>
                 <td>
-                    <span class="badge ${isPP ? 'bg-passive text-white' : 'bg-navy text-white'} font-weight-bold py-1 px-2"><i class="fas ${isPP ? 'fa-ethernet' : 'fa-server'} mr-1"></i> ${escapeHtml(item.device_name || '-')}</span>
+                    <span class="badge ${isPP ? 'bg-passive text-white' : 'bg-navy text-white'} font-weight-bold py-1 px-2 cursor-pointer shadow-xs" style="cursor: pointer;" onclick="openEquipmentPortmapping(${item.id})" title="Ver Equipos Portmapping de ${escapeHtml(item.device_name)}"><i class="fas ${isPP ? 'fa-ethernet' : 'fa-server'} mr-1"></i> ${escapeHtml(item.device_name || '-')}</span>
                     ${metaSub}
                 </td>
-                <td><span class="badge ${typeBadgeClass}">${escapeHtml(item.device_type || 'Hardware')}</span></td>
+                <td><span class="badge ${typeBadgeClass}">${escapeHtml((item.device_type || 'HARDWARE').toUpperCase())}</span></td>
                 <td class="text-center"><span class="badge badge-light border text-dark font-weight-normal"><i class="far fa-calendar-alt text-primary mr-1"></i> ${escapeHtml(item.creation_date || '-')}</span></td>
                 <td class="text-center">
                     <div class="btn-group btn-group-sm" role="group">
+                        <button class="btn btn-outline-info font-weight-bold" onclick="openEquipmentPortmapping(${item.id})" title="Ver Equipos Portmapping (Gráfico y Conectividad)"><i class="fas fa-desktop"></i></button>
                         <button class="btn btn-outline-primary font-weight-bold" onclick="loadManualSurveyDetail(${item.id})" title="Editar"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-outline-danger font-weight-bold" onclick="exportPmSurveyPDF(${item.id})" title="Exportar PDF"><i class="fas fa-file-pdf"></i></button>
                         <button class="btn btn-outline-success font-weight-bold" onclick="exportPmSurveyExcel(${item.id})" title="Exportar Excel"><i class="fas fa-file-excel"></i></button>
@@ -3097,7 +4228,53 @@ function renderManualSurveysTable() {
         }
     }
 
+    // Actualizar estado del checkbox general para los elementos de esta página
+    const masterChk = document.getElementById('chk_select_all_surveys');
+    if (masterChk) {
+        const allPageSelected = pageItems.length > 0 && pageItems.every(i => selectedSurveyIds.has(Number(i.id)));
+        masterChk.checked = allPageSelected;
+    }
+
+    // Renderizar pie de tabla e información de paginación
+    if (infoContainer) {
+        const startNum = startIndex + 1;
+        const endNum = endIndex;
+        infoContainer.innerHTML = `Mostrando <strong>${startNum}</strong> a <strong>${endNum}</strong> de <strong>${filtered.length}</strong> levantamientos ${filtered.length !== cachedManualSurveys.length ? '<span class="text-muted">(filtrados de ' + cachedManualSurveys.length + ' totales)</span>' : ''}`;
+    }
+
+    if (paginationContainer) {
+        if (totalPages <= 1) {
+            paginationContainer.innerHTML = '';
+        } else {
+            let pagHtml = '';
+            pagHtml += `<button type="button" class="sonda-page-btn ${g_surveyCurrentPage === 1 ? 'disabled' : ''}" ${g_surveyCurrentPage > 1 ? 'onclick="changeSurveyPage(1)"' : ''} title="Primera página"><i class="fas fa-angle-double-left"></i></button>`;
+            pagHtml += `<button type="button" class="sonda-page-btn ${g_surveyCurrentPage === 1 ? 'disabled' : ''}" ${g_surveyCurrentPage > 1 ? 'onclick="changeSurveyPage(' + (g_surveyCurrentPage - 1) + ')"' : ''} title="Página anterior"><i class="fas fa-chevron-left"></i></button>`;
+            
+            for (let p = 1; p <= totalPages; p++) {
+                if (p === 1 || p === totalPages || (p >= g_surveyCurrentPage - 2 && p <= g_surveyCurrentPage + 2)) {
+                    pagHtml += `<button type="button" class="sonda-page-btn ${p === g_surveyCurrentPage ? 'active' : ''}" onclick="changeSurveyPage(${p})">${p}</button>`;
+                } else if (p === g_surveyCurrentPage - 3 || p === g_surveyCurrentPage + 3) {
+                    pagHtml += `<span class="px-1 text-muted" style="user-select:none;">...</span>`;
+                }
+            }
+
+            pagHtml += `<button type="button" class="sonda-page-btn ${g_surveyCurrentPage === totalPages ? 'disabled' : ''}" ${g_surveyCurrentPage < totalPages ? 'onclick="changeSurveyPage(' + (g_surveyCurrentPage + 1) + ')"' : ''} title="Página siguiente"><i class="fas fa-chevron-right"></i></button>`;
+            pagHtml += `<button type="button" class="sonda-page-btn ${g_surveyCurrentPage === totalPages ? 'disabled' : ''}" ${g_surveyCurrentPage < totalPages ? 'onclick="changeSurveyPage(' + totalPages + ')"' : ''} title="Última página"><i class="fas fa-angle-double-right"></i></button>`;
+            
+            paginationContainer.innerHTML = pagHtml;
+        }
+    }
+
     updateBatchActionBar();
+}
+
+function changeSurveyPage(page) {
+    g_surveyCurrentPage = page;
+    renderManualSurveysTable();
+    const tableEl = document.getElementById('tbl_manual_surveys');
+    if (tableEl) {
+        tableEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 }
 
 function onSurveyCheckboxChange(chk, id) {
@@ -3273,6 +4450,7 @@ function sortSurveysByColumn(col) {
         currentSurveySortCol = col;
         currentSurveySortDir = 'asc';
     }
+    g_surveyCurrentPage = 1;
     renderManualSurveysTable();
 }
 
@@ -3281,6 +4459,7 @@ function filterAndSortSurveysTable() {
     if (input) {
         currentSurveySearchQuery = input.value;
     }
+    g_surveyCurrentPage = 1;
     renderManualSurveysTable();
 }
 
@@ -3290,6 +4469,7 @@ function clearPmSurveySearch() {
         input.value = '';
     }
     currentSurveySearchQuery = '';
+    g_surveyCurrentPage = 1;
     renderManualSurveysTable();
 }
 
@@ -3349,23 +4529,12 @@ function openNewPmSurveyModal() {
     renderPmPortsTable();
     updatePatchPanelFormVisibility();
     
-    const tabEl = document.getElementById('tab-survey-wizard');
-    if (tabEl && window.jQuery && typeof $(tabEl).tab === 'function') {
-        $(tabEl).tab('show');
-    }
-    
+    activatePmTab('survey-wizard-content');
     goToPmSurveyStep(1);
 }
 
 function cancelPmSurvey() {
-    const tabListEl = document.getElementById('tab-survey-list');
-    if (tabListEl) {
-        if (window.jQuery && typeof $(tabListEl).tab === 'function') {
-            $(tabListEl).tab('show');
-        } else {
-            tabListEl.click();
-        }
-    }
+    activatePmTab('survey-list-content');
     loadManualSurveys();
 }
 
@@ -3549,6 +4718,7 @@ function syncPortsFromStep1(forceRebuild = false) {
     const locSrc = document.getElementById('pm-survey-location').value.trim() || 'Datacenter';
     const devSrc = document.getElementById('pm-survey-device').value.trim() || 'SW-CORE-01';
     const vendorSrc = document.getElementById('pm-survey-vendor').value.trim() || 'Cisco';
+    const modelSrc = document.getElementById('pm-survey-model') ? document.getElementById('pm-survey-model').value.trim() : '';
     const devTypeSrc = document.getElementById('pm-survey-device-type').value.trim() || 'Switch';
     const serialSrc = document.getElementById('pm-survey-serial').value.trim() || 'N/A';
     const urSrc = document.getElementById('pm-survey-ur').value.trim() || '12';
@@ -3560,7 +4730,7 @@ function syncPortsFromStep1(forceRebuild = false) {
             p.location_src = locSrc;
             p.device_src = devSrc;
             p.vendor_src = vendorSrc;
-            p.model_src = devTypeSrc;
+            p.model_src = modelSrc || p.model_src || devTypeSrc;
             p.serial_src = serialSrc;
             p.ur_src = urSrc;
             p.hostname_src = hostSrc;
@@ -3577,11 +4747,12 @@ function syncPortsFromStep1(forceRebuild = false) {
                 location_src: locSrc,
                 device_src: devSrc,
                 vendor_src: vendorSrc,
-                model_src: devTypeSrc,
+                model_src: modelSrc || devTypeSrc,
                 serial_src: serialSrc,
                 ur_src: urSrc,
                 hostname_src: hostSrc,
                 port_name: String(i), // PUERTO ORIGEN SOLO NÚMERO
+                vlan: '',
                 nomenclature: '', // NOMENCLATURA DEL PUERTO (TEXTO LIBRE A RECORDAR/ALMACENAR)
                 cable_type: 'UTP Cat6A',
                 connector_type: 'RJ45',
@@ -3639,6 +4810,7 @@ function addSinglePortToMatrix() {
     const devSrc = document.getElementById('pm-survey-device').value.trim() || 'SW-CORE-01';
     const devTypeSrc = document.getElementById('pm-survey-device-type').value.trim() || 'Switch';
     const vendorSrc = document.getElementById('pm-survey-vendor').value.trim() || 'Cisco';
+    const modelSrc = document.getElementById('pm-survey-model') ? document.getElementById('pm-survey-model').value.trim() : '';
     const serialSrc = document.getElementById('pm-survey-serial').value.trim() || 'N/A';
     const urSrc = document.getElementById('pm-survey-ur').value.trim() || '12';
     const hostSrc = document.getElementById('pm-survey-hostname').value.trim() || '';
@@ -3648,11 +4820,12 @@ function addSinglePortToMatrix() {
         location_src: locSrc,
         device_src: devSrc,
         vendor_src: vendorSrc,
-        model_src: devTypeSrc,
+        model_src: modelSrc || devTypeSrc,
         serial_src: serialSrc,
         ur_src: urSrc,
         hostname_src: hostSrc,
         port_name: String(idx), // STRICTLY NUMERIC
+        vlan: '',
         nomenclature: '',
         cable_type: 'UTP Cat6A',
         connector_type: 'RJ45',
@@ -3737,6 +4910,7 @@ function renderPmPortsTable() {
     const locSrc = document.getElementById('pm-survey-location').value.trim() || 'Datacenter';
     const devSrc = document.getElementById('pm-survey-device').value.trim() || 'SW-CORE-01';
     const vendorSrc = document.getElementById('pm-survey-vendor').value.trim() || 'Cisco';
+    const modelSrc = document.getElementById('pm-survey-model') ? document.getElementById('pm-survey-model').value.trim() : '';
     const devTypeSrc = document.getElementById('pm-survey-device-type').value.trim() || 'Switch';
     const serialSrc = document.getElementById('pm-survey-serial').value.trim() || 'N/A';
     const urSrc = document.getElementById('pm-survey-ur').value.trim() || '12';
@@ -3751,7 +4925,7 @@ function renderPmPortsTable() {
                     <div class="col-md-3 border-right border-secondary">
                         <small class="text-uppercase text-cyan font-weight-bold d-block mb-1" style="color: #00B8D4; letter-spacing: 0.5px;">Equipamiento Origen (Paso 1)</small>
                         <h6 class="m-0 font-weight-bold text-white"><i class="fas ${isPatchPanel ? 'fa-ethernet' : 'fa-server'} mr-2 text-warning"></i>${devSrc}</h6>
-                        <small class="text-white-50">${devTypeSrc} &bull; ${vendorSrc}</small>
+                        <small class="text-white-50">${devTypeSrc} &bull; ${vendorSrc}${modelSrc ? ' &bull; ' + modelSrc : ''}</small>
                     </div>
                     <div class="col-md-3 border-right border-secondary">
                         <small class="text-uppercase text-cyan font-weight-bold d-block mb-1" style="color: #00B8D4; letter-spacing: 0.5px;">Ubicación & Rack</small>
@@ -3800,7 +4974,7 @@ function renderPmPortsTable() {
         `;
     } else {
         html += `
-                        <th colspan="16" class="text-white text-center py-2" style="background: linear-gradient(135deg, #0f172a, #1e293b); border-right: 3px solid #64748b !important;">
+                        <th colspan="17" class="text-white text-center py-2" style="background: linear-gradient(135deg, #0f172a, #1e293b); border-right: 3px solid #64748b !important;">
                             <i class="fas fa-server mr-1"></i> 1. EQUIPAMIENTO ORIGEN (PASO 1 + CONEXIÓN)
                         </th>
                         <th colspan="4" class="text-white text-center py-2" style="background: linear-gradient(135deg, #581c87, #7e22ce); border-right: 3px solid #64748b !important;">
@@ -3825,6 +4999,7 @@ function renderPmPortsTable() {
                         <th>Hostname</th>
                         <th style="background-color: #fff3cd; color: #856404; border-bottom: 2px solid #ffebaa;">Puerto Origen (Sólo N°)</th>
                         <th style="background-color: #e2e8f0; color: #1e293b; border-bottom: 2px solid #cbd5e1;">Nomenclatura</th>
+                        <th style="background-color: #e0f2fe; color: #0369a1; border-bottom: 2px solid #bae6fd;">VLAN</th>
                         <th>Tipo Cable</th>
                         <th>Tipo Conector</th>
                         <th>Velocidad</th>
@@ -3881,7 +5056,7 @@ function renderPmPortsTable() {
         if (Array.isArray(cachedManualSurveys)) {
             cachedManualSurveys.forEach(s => {
                 // Filtrar para mostrar ÚNICAMENTE equipos que sean de tipo Patch Panel
-                const isPP = (s.device_type === 'Patch Panel' || (s.device_type && s.device_type.toLowerCase().includes('patch')));
+                const isPP = (s.device_type || '').toUpperCase().includes('PATCH');
                 if (!isPP) return;
 
                 const sName = s.device_name || s.device_label || `PP-${s.id}`;
@@ -3953,8 +5128,8 @@ function renderPmPortsTable() {
                     <td class="align-middle text-center"><span class="badge badge-light border text-navy font-weight-bold py-1 px-2">${p.rack_src || rackSrc}</span></td>
                     <td class="align-middle text-center"><small class="text-secondary font-weight-bold">${p.location_src || locSrc}</small></td>
                     <td class="align-middle text-center"><strong class="text-navy">${p.device_src || devSrc}</strong></td>
-                    <td class="align-middle text-center"><small class="text-dark">${p.vendor_src || vendorSrc}</small></td>
-                    <td class="align-middle text-center"><small class="text-muted">${p.model_src || devTypeSrc}</small></td>
+                    <td class="align-middle text-center"><small class="text-dark font-weight-bold">${p.vendor_src || vendorSrc}</small></td>
+                    <td class="align-middle text-center"><small class="text-dark font-weight-bold">${p.model_src || modelSrc || devTypeSrc}</small></td>
                     <td class="align-middle text-center"><small class="text-muted">${p.serial_src || serialSrc}</small></td>
                     <td class="align-middle text-center"><span class="badge badge-secondary py-1 px-2">${p.ur_src || urSrc}</span></td>
                     <td class="align-middle text-center"><small class="text-primary font-weight-bold">${p.hostname_src || hostSrc}</small></td>
@@ -3967,6 +5142,11 @@ function renderPmPortsTable() {
                     <!-- NOMENCLATURA: CAMPO DE TEXTO EDITABLE Y GUARDABLE -->
                     <td class="align-middle">
                         <input type="text" class="form-control form-control-sm font-weight-bold text-navy p-1" style="min-width:110px;" value="${p.nomenclature || p.nomenclatura || ''}" placeholder="Ej. Gi1/0/${numPort}" oninput="updatePmPortField(${idx}, 'nomenclature', this.value);">
+                    </td>
+
+                    <!-- VLAN: CAMPO DETECTADO DEL EXCEL Y EDITABLE -->
+                    <td class="align-middle" style="background-color: #f0f9ff;">
+                        <input type="text" class="form-control form-control-sm text-center font-weight-bold text-info" style="min-width:70px; border-color: #7dd3fc; background-color:#f0f9ff;" value="${p.vlan || ''}" placeholder="Ej. 10" oninput="updatePmPortField(${idx}, 'vlan', this.value);">
                     </td>
 
                     <td class="align-middle">
@@ -5153,9 +6333,10 @@ async function savePmSurvey() {
     data.append('ur_rack', document.getElementById('pm-survey-ur').value.trim());
     data.append('device_name', deviceName);
     data.append('device_label', document.getElementById('pm-survey-device-label').value.trim());
-    data.append('device_type', document.getElementById('pm-survey-device-type').value);
+    data.append('device_type', (document.getElementById('pm-survey-device-type').value || 'SWITCH').toUpperCase().trim());
     data.append('ports_count', document.getElementById('pm-survey-ports-count').value);
     data.append('vendor', document.getElementById('pm-survey-vendor').value.trim());
+    data.append('model', document.getElementById('pm-survey-model') ? document.getElementById('pm-survey-model').value.trim() : '');
     data.append('serial', document.getElementById('pm-survey-serial').value.trim());
     data.append('hostname', document.getElementById('pm-survey-hostname').value.trim());
     data.append('description', document.getElementById('pm-survey-description').value.trim());
@@ -5190,122 +6371,428 @@ async function savePmSurvey() {
     }
 }
 
-// 9. EXPORTAR MATRIZ EN PDF Y EXCEL CON LAS 4 DIVISIONES
-function exportPmSurveyPDF(surveyId) {
-    const client = document.getElementById('pm-survey-client').value || 'VILASECA';
-    const location = document.getElementById('pm-survey-location').value || 'Datacenter';
-    const device = document.getElementById('pm-survey-device').value || 'SW-CORE-01';
-    const devType = document.getElementById('pm-survey-device-type').value || 'Switch';
-    const date = document.getElementById('pm-survey-date').value || new Date().toISOString().slice(0, 10);
+// =========================================================================
+// 9. REVISIÓN DE DATA Y EXPORTACIÓN / IMPRESIÓN PDF DEL EQUIPO
+// =========================================================================
+let g_pdfEquipmentData = null;
 
-    let rowsHtml = '';
-    pmSurveyPorts.forEach((p, idx) => {
-        rowsHtml += `
-            <tr>
-                <td style="text-align:center; font-weight:bold;">${idx + 1}</td>
-                <td>${p.rack_src || '-'}</td>
-                <td>${p.device_src || '-'}</td>
-                <td style="font-weight:bold; color:#002B49;">${p.port_name || '-'}</td>
-                <td>${p.cable_type || '-'}</td>
-                <td>${p.speed || '-'}</td>
-                <td style="font-weight:bold; color:#6f42c1;">${p.patch_panel_src || '-'}</td>
-                <td style="text-align:center;">${p.port_pp_src || '-'}</td>
-                <td style="font-weight:bold; color:#007a87;">${p.patch_panel_tgt || '-'}</td>
-                <td style="text-align:center;">${p.port_pp_tgt || '-'}</td>
-                <td>${p.rack_tgt || '-'}</td>
-                <td style="font-weight:bold; color:#28a745;">${p.dest_device || '-'}</td>
-                <td style="font-weight:bold; color:#28a745;">${p.dest_port || '-'}</td>
+async function openEquipmentPdfModal(surveyId) {
+    let data = null;
+    if (g_currentEquipmentData && (!surveyId || g_currentEquipmentData.id == surveyId)) {
+        data = g_currentEquipmentData;
+    } else if (surveyId) {
+        try {
+            const resp = await fetch(`api_portmapping.php?action=get_manual_survey_detail&id=${surveyId}`);
+            const res = await resp.json();
+            if (res.success && res.data) {
+                data = res.data;
+            }
+        } catch(e) {}
+    }
+
+    if (!data) {
+        if (cachedManualSurveys && cachedManualSurveys.length > 0) {
+            return openEquipmentPdfModal(cachedManualSurveys[0].id);
+        } else {
+            toastr.warning('No se pudo encontrar la información del equipo para generar el PDF.');
+            return;
+        }
+    }
+
+    g_pdfEquipmentData = data;
+    renderPdfSheetContent(data);
+    $('#modal_pm_pdf_preview').modal('show');
+}
+
+function togglePdfSection(secId, isVisible) {
+    const el = document.getElementById(secId);
+    if (el) el.style.display = isVisible ? 'block' : 'none';
+}
+
+function renderPdfSheetContent(d) {
+    const sheet = document.getElementById('pdf_sheet_preview');
+    if (!sheet || !d) return;
+
+    let ports = d.ports || [];
+    if (!Array.isArray(ports)) {
+        if (d.ports_data_json) {
+            try { ports = typeof d.ports_data_json === 'string' ? JSON.parse(d.ports_data_json) : d.ports_data_json; } catch(e) { ports = []; }
+        } else {
+            ports = [];
+        }
+    }
+
+    const totalPorts = ports.length || parseInt(d.ports_count) || 0;
+    let upPorts = 0;
+    ports.forEach(p => {
+        let st = (p.link_status || p.status || p.estado_link || p.led || '').toString().trim().toUpperCase();
+        if (st === 'UP' || st === 'ON' || st === 'ACTIVO' || st === 'CONECTADO') {
+            p.link_status = 'Up';
+            upPorts++;
+        } else {
+            p.link_status = 'Down';
+        }
+    });
+    const downPorts = Math.max(0, totalPorts - upPorts);
+    const occupancyPct = totalPorts > 0 ? Math.round((upPorts / totalPorts) * 100) : 0;
+
+    // Chasis frontal HTML para el PDF
+    const portsPerRow = totalPorts >= 8 ? Math.ceil(totalPorts / 2) : Math.max(totalPorts, 1);
+    let chasisHtml = '';
+    if (totalPorts >= 8) {
+        let topRow = '';
+        let btmRow = '';
+        ports.forEach((p, idx) => {
+            const portNum = sanitizeNumericPort(p.port_name, idx + 1);
+            const isUp = p.link_status === 'Up';
+            const cell = `
+                <div style="background:${isUp ? '#064e3b' : '#1e293b'}; border:1px solid ${isUp ? '#059669' : '#334155'}; border-radius:3px; padding:3px 2px; text-align:center; min-width:32px;">
+                    <div style="font-size:8.5px; font-weight:bold; color:#f8fafc; line-height:1;">P${portNum}</div>
+                    <div style="width:7px; height:7px; border-radius:50%; background:${isUp ? '#10b981' : '#64748b'}; margin:2px auto;"></div>
+                    <div style="font-size:7.5px; color:${isUp ? '#34d399' : '#94a3b8'}; font-weight:bold;">${isUp ? 'UP' : 'DWN'}</div>
+                </div>
+            `;
+            if ((idx + 1) % 2 !== 0) topRow += cell;
+            else btmRow += cell;
+        });
+        chasisHtml = `
+            <div style="margin-bottom:4px;">
+                <small style="color:#64748b; font-size:8.5px; font-weight:bold; text-transform:uppercase;">Fila Superior (Puertos Impares)</small>
+                <div style="display:grid; grid-template-columns: repeat(${portsPerRow}, 1fr); gap:3px;">${topRow}</div>
+            </div>
+            <div>
+                <small style="color:#64748b; font-size:8.5px; font-weight:bold; text-transform:uppercase;">Fila Inferior (Puertos Pares)</small>
+                <div style="display:grid; grid-template-columns: repeat(${portsPerRow}, 1fr); gap:3px;">${btmRow}</div>
+            </div>
+        `;
+    } else {
+        let singleRow = '';
+        ports.forEach((p, idx) => {
+            const portNum = sanitizeNumericPort(p.port_name, idx + 1);
+            const isUp = p.link_status === 'Up';
+            singleRow += `
+                <div style="background:${isUp ? '#064e3b' : '#1e293b'}; border:1px solid ${isUp ? '#059669' : '#334155'}; border-radius:3px; padding:3px 2px; text-align:center; min-width:34px;">
+                    <div style="font-size:8.5px; font-weight:bold; color:#f8fafc; line-height:1;">P${portNum}</div>
+                    <div style="width:7px; height:7px; border-radius:50%; background:${isUp ? '#10b981' : '#64748b'}; margin:2px auto;"></div>
+                    <div style="font-size:7.5px; color:${isUp ? '#34d399' : '#94a3b8'}; font-weight:bold;">${isUp ? 'UP' : 'DWN'}</div>
+                </div>
+            `;
+        });
+        chasisHtml = `<div style="display:grid; grid-template-columns: repeat(${portsPerRow}, 1fr); gap:4px;">${singleRow}</div>`;
+    }
+
+    // Tabla de puertos HTML para el PDF
+    let portRowsHtml = '';
+    ports.forEach((p, idx) => {
+        const portNum = sanitizeNumericPort(p.port_name, idx + 1);
+        const isUp = p.link_status === 'Up';
+        portRowsHtml += `
+            <tr style="border-bottom:1px solid #e2e8f0; font-size:9px; background:${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+                <td style="text-align:center; font-weight:bold; padding:4px 6px;">P-${portNum}</td>
+                <td style="text-align:center; padding:4px 6px;">
+                    <span style="display:inline-block; padding:1px 6px; border-radius:3px; font-weight:bold; font-size:8px; background:${isUp ? '#dcfce7' : '#f1f5f9'}; color:${isUp ? '#15803d' : '#64748b'}; border:1px solid ${isUp ? '#bbf7d0' : '#cbd5e1'};">
+                        ${p.link_status}
+                    </span>
+                </td>
+                <td style="padding:4px 6px;">${escapeHtml(p.port_type || 'RJ45 UTP')}</td>
+                <td style="padding:4px 6px; font-weight:bold;">${escapeHtml(p.vlan || 'Default')}</td>
+                <td style="padding:4px 6px; color:#6b21a8; font-weight:600;">
+                    ${escapeHtml(p.patch_panel_src || '-')} ${p.port_pp_src ? '(P:' + p.port_pp_src + ')' : ''}
+                </td>
+                <td style="padding:4px 6px; color:#0369a1; font-weight:600;">
+                    ${escapeHtml(p.patch_panel_tgt || '-')} ${p.port_pp_tgt ? '(P:' + p.port_pp_tgt + ')' : ''}
+                </td>
+                <td style="padding:4px 6px; color:#1e293b; font-weight:700;">
+                    ${escapeHtml(p.dest_device || 'Libre / Sin Conexión')} ${p.dest_port ? '(P:' + p.dest_port + ')' : ''}
+                </td>
+                <td style="padding:4px 6px;">${escapeHtml(p.rack_tgt || '-')}</td>
+                <td style="padding:4px 6px; color:#64748b;">${escapeHtml(p.description || '-')}</td>
             </tr>
         `;
     });
 
-    let imagesHtml = '';
-    if (pmSurveyImages.length > 0) {
-        imagesHtml = '<div style="margin-top:20px;"><h3>EVIDENCIA FOTOGRÁFICA REGISTRADA</h3><div style="display:flex; flex-wrap:wrap; gap:10px;">';
-        pmSurveyImages.forEach(img => {
-            let tagStr = Array.isArray(img.tags) ? img.tags.join(', ') : '';
-            imagesHtml += `
-                <div style="border:1px solid #ccc; padding:6px; border-radius:6px; background:#fff; text-align:center; width:220px;">
-                    <img src="${img.src || img.path}" style="max-height:140px; width:100%; object-fit:cover; border-radius:4px;"><br>
-                    <small style="font-size:10px; font-weight:bold; color:#002B49; display:block; margin-top:3px;">${img.title}</small>
-                    <small style="font-size:9px; color:#28a745; display:block;">TAGS: ${tagStr}</small>
+    // Evidencia fotográfica HTML
+    let photosHtml = '';
+    const images = Array.isArray(d.images) ? d.images : [];
+    if (images.length > 0) {
+        photosHtml = `
+            <div id="sec_pdf_photos" style="margin-top:16px;">
+                <div style="font-size:11px; font-weight:bold; color:#0f172a; border-bottom:1.5px solid #002B49; padding-bottom:4px; margin-bottom:8px; text-transform:uppercase;">
+                    Evidencia Fotográfica Registrada (${images.length})
                 </div>
-            `;
-        });
-        imagesHtml += '</div></div>';
+                <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                    ${images.map((img, i) => `
+                        <div style="border:1px solid #cbd5e1; border-radius:4px; padding:4px; width:170px; background:#f8fafc; text-align:center;">
+                            <img src="${img.src || img.path}" style="width:100%; height:95px; object-fit:cover; border-radius:3px;">
+                            <small style="font-size:8.5px; font-weight:bold; color:#0f172a; display:block; margin-top:3px;" class="text-truncate">${escapeHtml(img.title || 'Foto ' + (i + 1))}</small>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
     }
 
-    const docHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Reporte Portmapping - ${device}</title>
-            <style>
-                @page { size: landscape; margin: 10mm; }
-                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; margin: 5px; color: #333; }
-                .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #002B49; padding-bottom: 8px; margin-bottom: 12px; }
-                .brand { font-size: 18px; font-weight: bold; color: #002B49; }
-                .meta { margin-bottom: 12px; padding: 10px; background: #f4f6f9; border-radius: 6px; border-left: 5px solid #002B49; }
-                table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-                th, td { border: 1px solid #ccc; padding: 5px 6px; font-size: 10px; }
-                th { background-color: #002B49; color: white; text-align: left; }
-                tr:nth-child(even) { background-color: #f8f9fa; }
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <div class="brand">SONDA / FEMSA - PORTMAPPING INFRAESTRUCTURA</div>
-                <div>FECHA LEVANTAMIENTO: ${date}</div>
+    sheet.innerHTML = `
+        <!-- MEMBRETE CORPORATIVO -->
+        <div style="border-bottom: 2.5px solid #002B49; padding-bottom: 12px; margin-bottom: 14px; display:flex; justify-content:space-between; align-items:flex-start;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="background:#002B49; color:#ffffff; padding:6px 14px; border-radius:6px; font-weight:900; font-size:18px; letter-spacing:1px;">SONDA</div>
+                <div>
+                    <div style="font-size:15px; font-weight:800; color:#002B49; letter-spacing:-0.3px; text-transform:uppercase;">
+                        INFORME TÉCNICO DE CONECTIVIDAD & PORTMAPPING
+                    </div>
+                    <div style="font-size:10px; color:#64748b; font-weight:600;">
+                        Auditoría y Mapeo Físico Estructurado &bull; Norma ANSI/TIA-942
+                    </div>
+                </div>
             </div>
-            <div class="meta">
-                <strong>Cliente:</strong> ${client} | <strong>Ubicación:</strong> ${location} | <strong>Equipo Origen:</strong> ${device} | <strong>Tipo:</strong> ${devType}
+            <div style="text-align:right; font-size:9.5px; color:#475569;">
+                <div><strong>FECHA EMISIÓN:</strong> ${new Date().toLocaleDateString('es-ES')}</div>
+                <div><strong>FECHA AUDITORÍA:</strong> ${d.creation_date || '-'}</div>
+                <div><span style="background:#1e40af; color:#fff; padding:1px 6px; border-radius:3px; font-weight:bold; font-size:8.5px;">CLIENTE: ${escapeHtml(d.client || 'VILASECA')}</span></div>
             </div>
-            <table>
+        </div>
+
+        <!-- METADATOS Y FICHA TÉCNICA DEL EQUIPO -->
+        <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:10px 14px; margin-bottom:14px;">
+            <div style="font-size:10.5px; font-weight:bold; color:#0f172a; margin-bottom:6px; text-transform:uppercase; border-bottom:1px solid #e2e8f0; padding-bottom:3px;">
+                Ficha Técnica y Ubicación Física del Dispositivo
+            </div>
+            <table style="width:100%; font-size:9.5px; border-collapse:collapse;">
+                <tr>
+                    <td style="width:16%; color:#64748b; font-weight:bold; padding:2px 4px; border:none;">Cliente / Empresa:</td>
+                    <td style="width:34%; font-weight:bold; color:#0f172a; padding:2px 4px; border:none;">${escapeHtml(d.client || '-')}</td>
+                    <td style="width:16%; color:#64748b; font-weight:bold; padding:2px 4px; border:none;">Equipo Origen:</td>
+                    <td style="width:34%; font-weight:800; color:#1e40af; font-size:11px; padding:2px 4px; border:none;">${escapeHtml(d.device_name || '-')}</td>
+                </tr>
+                <tr>
+                    <td style="color:#64748b; font-weight:bold; padding:2px 4px; border:none;">Sede / Localidad:</td>
+                    <td style="font-weight:600; padding:2px 4px; border:none;">${escapeHtml(d.location || '-')}</td>
+                    <td style="color:#64748b; font-weight:bold; padding:2px 4px; border:none;">Tipo Hardware:</td>
+                    <td style="font-weight:bold; padding:2px 4px; border:none;">${escapeHtml((d.device_type || 'SWITCH').toUpperCase())}</td>
+                </tr>
+                <tr>
+                    <td style="color:#64748b; font-weight:bold; padding:2px 4px; border:none;">Área / Sala:</td>
+                    <td style="padding:2px 4px; border:none;">${escapeHtml(d.area || '-')}</td>
+                    <td style="color:#64748b; font-weight:bold; padding:2px 4px; border:none;">Fabricante / Modelo:</td>
+                    <td style="font-weight:600; padding:2px 4px; border:none;">${escapeHtml(d.vendor || '-')}${d.model ? ' &bull; ' + escapeHtml(d.model) : ''}</td>
+                </tr>
+                <tr>
+                    <td style="color:#64748b; font-weight:bold; padding:2px 4px; border:none;">Rack / Bastidor:</td>
+                    <td style="font-weight:700; color:#002B49; padding:2px 4px; border:none;">${escapeHtml(d.rack || '-')} ${d.ur_rack ? '(UR: ' + d.ur_rack + ')' : ''}</td>
+                    <td style="color:#64748b; font-weight:bold; padding:2px 4px; border:none;">Número de Serie:</td>
+                    <td style="font-weight:600; padding:2px 4px; border:none;">${escapeHtml(d.serial || d.device_label || '-')}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- RESUMEN DE PUERTOS (4 KPIS) -->
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-bottom:14px;">
+            <div style="background:#ffffff; border:1px solid #cbd5e1; border-left:3.5px solid #1e40af; border-radius:5px; padding:6px 10px;">
+                <small style="color:#64748b; font-size:8px; font-weight:bold; text-transform:uppercase; display:block;">Total Puertos</small>
+                <strong style="font-size:16px; color:#0f172a; line-height:1;">${totalPorts}</strong>
+                <small style="color:#94a3b8; font-size:8px; display:block;">Capacidad física</small>
+            </div>
+            <div style="background:#ffffff; border:1px solid #cbd5e1; border-left:3.5px solid #15803d; border-radius:5px; padding:6px 10px;">
+                <small style="color:#64748b; font-size:8px; font-weight:bold; text-transform:uppercase; display:block;">Puertos Conectados (UP)</small>
+                <strong style="font-size:16px; color:#15803d; line-height:1;">${upPorts}</strong>
+                <small style="color:#15803d; font-size:8px; font-weight:bold; display:block;">${occupancyPct}% ocupación</small>
+            </div>
+            <div style="background:#ffffff; border:1px solid #cbd5e1; border-left:3.5px solid #d97706; border-radius:5px; padding:6px 10px;">
+                <small style="color:#64748b; font-size:8px; font-weight:bold; text-transform:uppercase; display:block;">Puertos Libres (DOWN)</small>
+                <strong style="font-size:16px; color:#0f172a; line-height:1;">${downPorts}</strong>
+                <small style="color:#64748b; font-size:8px; display:block;">Disponibilidad inmediata</small>
+            </div>
+            <div style="background:#ffffff; border:1px solid #cbd5e1; border-left:3.5px solid #475569; border-radius:5px; padding:6px 10px;">
+                <small style="color:#64748b; font-size:8px; font-weight:bold; text-transform:uppercase; display:block;">Tasa de Ocupación</small>
+                <strong style="font-size:16px; color:#1e40af; line-height:1;">${occupancyPct}%</strong>
+                <small style="color:#64748b; font-size:8px; display:block;">En producción activa</small>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: CHASIS FRONTAL DE PUERTOS -->
+        <div id="sec_pdf_chassis" style="margin-bottom:14px;">
+            <div style="font-size:10.5px; font-weight:bold; color:#0f172a; border-bottom:1.5px solid #002B49; padding-bottom:3px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+                <span>REPRESENTACIÓN GRÁFICA DEL CHASIS FRONTAL &bull; ESTADO DE PUERTOS</span>
+                <span style="font-size:8.5px; font-weight:normal; color:#475569;">
+                    <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#10b981;"></span> UP (Conectado) &nbsp;&bull;&nbsp;
+                    <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#64748b;"></span> DOWN (Libre)
+                </span>
+            </div>
+            <div style="background:#0B1120; border:1px solid #334155; border-radius:6px; padding:10px 12px;">
+                <div style="color:#cbd5e1; font-size:9.5px; font-weight:bold; margin-bottom:6px; display:flex; justify-content:space-between;">
+                    <span>Chasis: ${escapeHtml(d.device_name)} (${escapeHtml((d.device_type || 'SWITCH').toUpperCase())})</span>
+                    <span>Rack: ${escapeHtml(d.rack || 'N/A')} &bull; UR: ${d.ur_rack || '-'}</span>
+                </div>
+                ${chasisHtml}
+            </div>
+        </div>
+
+        <!-- SECCIÓN: DIAGRAMA DE CONECTIVIDAD PUNTA A PUNTA -->
+        <div id="sec_pdf_diagram" style="margin-bottom:14px;">
+            <div style="font-size:10.5px; font-weight:bold; color:#0f172a; border-bottom:1.5px solid #002B49; padding-bottom:3px; margin-bottom:6px;">
+                DIAGRAMA DE ARQUITECTURA DE CONEXIÓN FÍSICA (TRAZA DE 4 NODOS)
+            </div>
+            <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <div style="flex:1; border:1px solid #cbd5e1; border-left:3px solid #1e40af; border-radius:4px; padding:6px; text-align:center; background:#f8fafc;">
+                    <small style="font-size:8px; font-weight:bold; color:#64748b; text-transform:uppercase; display:block;">1. Equipo Origen</small>
+                    <strong style="font-size:10.5px; color:#0f172a; display:block;">${escapeHtml(d.device_name || 'Origen')}</strong>
+                    <small style="font-size:8.5px; color:#475569;">${escapeHtml(d.rack || 'Rack')} (UR:${d.ur_rack || '-'})</small>
+                </div>
+                <div style="color:#94a3b8; font-size:14px; font-weight:bold;">&rarr;</div>
+                <div style="flex:1; border:1px solid #cbd5e1; border-left:3px solid #7c3aed; border-radius:4px; padding:6px; text-align:center; background:#f8fafc;">
+                    <small style="font-size:8px; font-weight:bold; color:#64748b; text-transform:uppercase; display:block;">2. Patch Panel Origen</small>
+                    <strong style="font-size:10.5px; color:#0f172a; display:block;">PP Origen</strong>
+                    <small style="font-size:8.5px; color:#475569;">Conexiones directas / Parcheo</small>
+                </div>
+                <div style="color:#94a3b8; font-size:14px; font-weight:bold;">&rarr;</div>
+                <div style="flex:1; border:1px solid #cbd5e1; border-left:3px solid #0284c7; border-radius:4px; padding:6px; text-align:center; background:#f8fafc;">
+                    <small style="font-size:8px; font-weight:bold; color:#64748b; text-transform:uppercase; display:block;">3. Patch Panel Destino</small>
+                    <strong style="font-size:10.5px; color:#0f172a; display:block;">PP Destino</strong>
+                    <small style="font-size:8.5px; color:#475569;">Enlaces cruzados / Bastidor</small>
+                </div>
+                <div style="color:#94a3b8; font-size:14px; font-weight:bold;">&rarr;</div>
+                <div style="flex:1; border:1px solid #cbd5e1; border-left:3px solid #16a34a; border-radius:4px; padding:6px; text-align:center; background:#f8fafc;">
+                    <small style="font-size:8px; font-weight:bold; color:#64748b; text-transform:uppercase; display:block;">4. Equipamiento Destino</small>
+                    <strong style="font-size:10.5px; color:#0f172a; display:block;">Servidores / Switches</strong>
+                    <small style="font-size:8.5px; color:#475569;">Puertos de servicio terminal</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN: TABLA COMPLETA DE PORTMAPPING -->
+        <div style="margin-bottom:14px;">
+            <div style="font-size:10.5px; font-weight:bold; color:#0f172a; border-bottom:1.5px solid #002B49; padding-bottom:3px; margin-bottom:6px; display:flex; justify-content:space-between;">
+                <span>MATRIZ DETALLADA DE PORTMAPPING (${ports.length} PUERTOS AUDITADOS)</span>
+                <span style="font-size:8.5px; color:#64748b;">Dispositivo: ${escapeHtml(d.device_name)}</span>
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:8.5px;">
                 <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Rack Orig.</th>
-                        <th>Equipo Origen</th>
-                        <th>Puerto Origen</th>
-                        <th>Cable</th>
-                        <th>Velocidad</th>
-                        <th>PP Origen</th>
-                        <th>Puerto PP Orig.</th>
-                        <th>PP Destino</th>
-                        <th>Puerto PP Dest.</th>
-                        <th>Rack Dest.</th>
-                        <th>Equipo Destino</th>
-                        <th>Puerto Destino</th>
+                    <tr style="background:#002B49; color:#ffffff; font-weight:bold; font-size:8.5px;">
+                        <th style="padding:4px; text-align:center; width:50px;">Puerto</th>
+                        <th style="padding:4px; text-align:center; width:60px;">Estado</th>
+                        <th style="padding:4px; text-align:left;">Tipo / Medio</th>
+                        <th style="padding:4px; text-align:left; width:50px;">VLAN</th>
+                        <th style="padding:4px; text-align:left;">PP Origen</th>
+                        <th style="padding:4px; text-align:left;">PP Destino</th>
+                        <th style="padding:4px; text-align:left;">Equipo Destino</th>
+                        <th style="padding:4px; text-align:left; width:70px;">Rack Dest.</th>
+                        <th style="padding:4px; text-align:left;">Observaciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${rowsHtml}
+                    ${portRowsHtml || '<tr><td colspan="9" style="text-align:center; padding:10px; color:#64748b;">Sin puertos registrados.</td></tr>'}
                 </tbody>
             </table>
-            ${imagesHtml}
-        </body>
-        </html>
+        </div>
+
+        <!-- FOTOGRAFÍAS SI APLICA -->
+        ${photosHtml}
+
+        <!-- HOJA DE FIRMAS Y CONFORMIDAD TÉCNICA -->
+        <div id="sec_pdf_signatures" style="margin-top:24px; padding-top:14px; border-top:1.5px dashed #cbd5e1;">
+            <div style="display:flex; justify-content:space-between; gap:40px;">
+                <div style="flex:1; text-align:center;">
+                    <div style="height:45px; border-bottom:1px solid #475569; margin-bottom:6px;"></div>
+                    <strong style="font-size:9.5px; color:#0f172a; display:block;">Ingeniero de Soporte Técnico</strong>
+                    <small style="font-size:8.5px; color:#64748b;">SONDA IT & MANAGED SERVICES</small>
+                </div>
+                <div style="flex:1; text-align:center;">
+                    <div style="height:45px; border-bottom:1px solid #475569; margin-bottom:6px;"></div>
+                    <strong style="font-size:9.5px; color:#0f172a; display:block;">Aprobado y Recibido por Cliente</strong>
+                    <small style="font-size:8.5px; color:#64748b;">${escapeHtml(d.client || 'VILASECA')} &bull; Infraestructura y Redes</small>
+                </div>
+            </div>
+        </div>
     `;
+}
+
+function getPrintStyles() {
+    return `
+        @page { size: landscape; margin: 8mm; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 9px; margin: 0; padding: 10px; color: #1e293b; }
+        table { border-collapse: collapse; width: 100%; page-break-inside: auto; }
+        tr { page-break-inside: avoid; page-break-after: auto; }
+        thead { display: table-header-group; }
+        th, td { border: 1px solid #cbd5e1; }
+    `;
+}
+
+function printEquipmentPdfDocument() {
+    const sheetEl = document.getElementById('pdf_sheet_preview');
+    if (!sheetEl) return;
 
     const printWin = window.open('', '_blank');
-    printWin.document.write(docHtml);
+    if (!printWin) {
+        toastr.warning('Por favor habilite las ventanas emergentes (popups) en su navegador para imprimir el reporte.');
+        return;
+    }
+
+    const title = g_pdfEquipmentData ? `Portmapping_${g_pdfEquipmentData.device_name || 'Equipo'}_${g_pdfEquipmentData.creation_date || ''}` : 'Reporte_Portmapping';
+
+    printWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>${title}</title>
+            <style>
+                ${getPrintStyles()}
+            </style>
+        </head>
+        <body>
+            ${sheetEl.innerHTML}
+        </body>
+        </html>
+    `);
+
     printWin.document.close();
-    setTimeout(() => { printWin.print(); }, 500);
+    printWin.focus();
+    setTimeout(() => {
+        printWin.print();
+    }, 450);
+}
+
+function exportPmSurveyPDF(surveyId) {
+    openEquipmentPdfModal(surveyId);
 }
 
 function exportPmSurveyExcel(surveyId) {
-    let csv = "\uFEFF"; // BOM UTF-8
-    csv += "EQUIPAMIENTO ORIGEN,,,,,,,,,,,,,,,,PATCH PANEL ORIGEN,,,,PATCH PANEL DESTINO,,,,EQUIPAMIENTO DESTINO\n";
-    csv += "Rack Origen,Ubicacion,Equipo Origen,Fabricante,Modelo,Serie,UR Rack,Hostname,Puerto Origen,Nomenclatura,Tipo Cable,Tipo Conector,Velocidad,Estado Link,SFP,Transceiver,Patch Panel Origen,UR Rack,Modulo,Puerto PAR Origen,Patch Panel Destino,UR Rack,Modulo,Puerto PAR Destino,Rack Destino,Equipo Destino,Fabricante,Modelo,Serie,UR Rack,Hostname,Puerto Destino\n";
+    let targetData = null;
+    if (g_currentEquipmentData && (!surveyId || g_currentEquipmentData.id == surveyId)) {
+        targetData = g_currentEquipmentData;
+    } else if (g_pdfEquipmentData && (!surveyId || g_pdfEquipmentData.id == surveyId)) {
+        targetData = g_pdfEquipmentData;
+    }
 
-    pmSurveyPorts.forEach((p) => {
-        csv += `"${p.rack_src||''}","${p.location_src||''}","${p.device_src||''}","${p.vendor_src||''}","${p.model_src||''}","${p.serial_src||''}","${p.ur_src||''}","${p.hostname_src||''}","${p.port_name||''}","${p.nomenclature||p.nomenclatura||''}","${p.cable_type||''}","${p.connector_type||''}","${p.speed||''}","${p.link_status||''}","${p.sfp_installed||''}","${p.transceiver_type||''}","${p.patch_panel_src||''}","${p.ur_pp_src||''}","${p.mod_pp_src||''}","${p.port_pp_src||''}","${p.patch_panel_tgt||''}","${p.ur_pp_tgt||''}","${p.mod_pp_tgt||''}","${p.port_pp_tgt||''}","${p.rack_tgt||''}","${p.dest_device||''}","${p.vendor_tgt||''}","${p.model_tgt||''}","${p.serial_tgt||''}","${p.ur_tgt||''}","${p.hostname_tgt||''}","${p.dest_port||''}"\n`;
+    let portsToExport = [];
+    if (targetData && Array.isArray(targetData.ports) && targetData.ports.length > 0) {
+        portsToExport = targetData.ports;
+    } else if (pmSurveyPorts && pmSurveyPorts.length > 0) {
+        portsToExport = pmSurveyPorts;
+    }
+
+    if (portsToExport.length === 0) {
+        toastr.warning('No hay datos de puertos para exportar.');
+        return;
+    }
+
+    const devName = targetData ? targetData.device_name : (document.getElementById('pm-survey-device')?.value || 'Equipo');
+    const rackName = targetData ? targetData.rack : (document.getElementById('pm-survey-rack')?.value || '');
+
+    let csv = "\uFEFF"; // BOM UTF-8
+    csv += "EQUIPAMIENTO ORIGEN,,,,,,,,,,,,,,,,,PATCH PANEL ORIGEN,,,,PATCH PANEL DESTINO,,,,EQUIPAMIENTO DESTINO\n";
+    csv += "Rack Origen,Ubicacion,Equipo Origen,Fabricante,Modelo,Serie,UR Rack,Hostname,Puerto Origen,Nomenclatura,VLAN,Tipo Cable,Tipo Conector,Velocidad,Estado Link,SFP,Transceiver,Patch Panel Origen,UR Rack,Modulo,Puerto PAR Origen,Patch Panel Destino,UR Rack,Modulo,Puerto PAR Destino,Rack Destino,Equipo Destino,Fabricante,Modelo,Serie,UR Rack,Hostname,Puerto Destino\n";
+
+    portsToExport.forEach((p, idx) => {
+        const portNum = sanitizeNumericPort(p.port_name, idx + 1);
+        csv += `"${p.rack_src||rackName}","${p.location_src||''}","${p.device_src||devName}","${p.vendor_src||''}","${p.model_src||''}","${p.serial_src||''}","${p.ur_src||''}","${p.hostname_src||''}","P-${portNum}","${p.nomenclature||p.nomenclatura||''}","${p.vlan||''}","${p.cable_type||''}","${p.connector_type||''}","${p.speed||''}","${p.link_status||''}","${p.sfp_installed||''}","${p.transceiver_type||''}","${p.patch_panel_src||''}","${p.ur_pp_src||''}","${p.mod_pp_src||''}","${p.port_pp_src||''}","${p.patch_panel_tgt||''}","${p.ur_pp_tgt||''}","${p.mod_pp_tgt||''}","${p.port_pp_tgt||''}","${p.rack_tgt||''}","${p.dest_device||''}","${p.vendor_tgt||''}","${p.model_tgt||''}","${p.serial_tgt||''}","${p.ur_tgt||''}","${p.hostname_tgt||''}","${p.dest_port||''}"\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', `portmapping_matriz_${Date.now()}.csv`);
+    link.setAttribute('download', `portmapping_${devName}_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -5503,8 +6990,10 @@ function renderExcelPreview(s) {
     // 4. Equipo Activo
     $('#prev_eq_name').text(s.equipment.device_name).attr('title', s.equipment.device_name);
     $('#prev_eq_serial').text(s.equipment.serial || 'Sin Serie');
-    $('#prev_eq_type').text(s.equipment.device_type);
+    $('#prev_eq_type').text((s.equipment.device_type || 'SWITCH').toUpperCase());
     $('#prev_eq_ur').text(s.equipment.ur);
+    $('#prev_eq_vendor').text(s.equipment.manufacturer || s.equipment.vendor || '-');
+    $('#prev_eq_model').text(s.equipment.model || '');
 
     // 5. Puertos
     $('#prev_ports_detected').text(s.equipment.ports_detected);
@@ -5521,6 +7010,7 @@ function renderExcelPreview(s) {
     $('#cust_rack_type').val(s.rack.type || 'AEREO');
     $('#cust_device_name').val(s.equipment.device_name || '');
     $('#cust_vendor').val(s.equipment.manufacturer || s.equipment.vendor || '');
+    $('#cust_model').val(s.equipment.model || '');
     $('#cust_serial').val(s.equipment.serial || '');
     $('#cust_ur').val(s.equipment.ur || 1);
 
@@ -5628,17 +7118,20 @@ function renderExcelPreview(s) {
         let modStr = (mod || portPar !== '-') ? `${mod}Puerto: ${portPar}` : (p.connector || 'RJ45');
         let rawExcelText = p.led ? `<small class="text-muted d-block" style="font-size:0.72rem;">Excel: <code>${p.led}</code></small>` : '';
 
+        let vlanBadge = p.vlan ? `<span class="badge badge-info px-2 py-1 font-weight-bold"><i class="fas fa-network-wired mr-1"></i>${escapeHtml(p.vlan)}</span>` : '<span class="text-muted">-</span>';
+
         portsHtml += `
             <tr>
                 <td class="text-center font-weight-bold text-dark">${p.port}</td>
                 <td>${ledBadge}${rawExcelText}</td>
+                <td class="text-center">${vlanBadge}</td>
                 <td><code>${p.speed || '1GB'} ${p.cable || 'UTP'}</code></td>
                 <td class="font-weight-bold text-navy">${dest}</td>
                 <td><small class="text-muted">${modStr}</small></td>
                 <td><small class="text-secondary">${p.observations || '-'}</small></td>
             </tr>`;
     });
-    $('#prev_ports_tbody').html(portsHtml || '<tr><td colspan="6" class="text-center py-3 text-muted">Sin puertos registrados</td></tr>');
+    $('#prev_ports_tbody').html(portsHtml || '<tr><td colspan="7" class="text-center py-3 text-muted">Sin puertos registrados</td></tr>');
 
     // 10. Tabla de Hardware en Rack y Selector Multi-Rack
     if (s.racks && s.racks.length > 1) {
@@ -5731,8 +7224,10 @@ function switchBulkPreviewDevice(devIndex) {
     // Actualizar Tarjeta 3: Equipo
     $('#prev_eq_name').text(dev.device_name).attr('title', dev.device_name);
     $('#prev_eq_serial').text(dev.serial || 'Sin Serie');
-    $('#prev_eq_type').text(dev.device_type);
+    $('#prev_eq_type').text((dev.device_type || 'SWITCH').toUpperCase());
     $('#prev_eq_ur').text(dev.ur);
+    $('#prev_eq_vendor').text(dev.manufacturer || dev.vendor || '-');
+    $('#prev_eq_model').text(dev.model || '');
 
     // Actualizar Tarjeta 4: Puertos
     const pCount = dev.ports ? dev.ports.length : 0;
@@ -5744,6 +7239,7 @@ function switchBulkPreviewDevice(devIndex) {
     // Campos personalizables
     $('#cust_device_name').val(dev.device_name);
     $('#cust_vendor').val(dev.manufacturer || dev.vendor || '');
+    $('#cust_model').val(dev.model || '');
     $('#cust_serial').val(dev.serial || '');
     $('#cust_ur').val(dev.ur || 1);
 
@@ -5823,6 +7319,7 @@ function executePortmappingImport() {
     formData.append('custom_rack_type', $('#cust_rack_type').val() || '');
     formData.append('custom_device_name', $('#cust_device_name').val() || '');
     formData.append('custom_vendor', $('#cust_vendor').val() || '');
+    formData.append('custom_model', $('#cust_model').val() || '');
     formData.append('custom_serial', $('#cust_serial').val() || '');
     formData.append('custom_ur', $('#cust_ur').val() || '');
 
@@ -5891,6 +7388,9 @@ function executePortmappingImport() {
                 }).then(() => {
                     if (typeof loadManualSurveys === 'function') {
                         loadManualSurveys();
+                    }
+                    if (res.survey_id && typeof openDeviceSurveyFromAnalysis === 'function') {
+                        openDeviceSurveyFromAnalysis(res.survey_id);
                     }
                 });
             } else {
@@ -6034,9 +7534,30 @@ async function loadManualSurveyDetail(id) {
             document.getElementById('pm-survey-ur').value = survey.ur_rack || '';
             document.getElementById('pm-survey-device').value = survey.device_name || '';
             document.getElementById('pm-survey-device-label').value = survey.device_label || '';
-            document.getElementById('pm-survey-device-type').value = survey.device_type || 'Switch';
+            const rawType = (survey.device_type || 'SWITCH').trim().toUpperCase();
+            const devTypeSelect = document.getElementById('pm-survey-device-type');
+            let matchedType = false;
+            if (devTypeSelect) {
+                for (let i = 0; i < devTypeSelect.options.length; i++) {
+                    if (devTypeSelect.options[i].value.toUpperCase() === rawType) {
+                        devTypeSelect.selectedIndex = i;
+                        matchedType = true;
+                        break;
+                    }
+                }
+                if (!matchedType) {
+                    const newOpt = document.createElement('option');
+                    newOpt.value = rawType;
+                    newOpt.textContent = rawType;
+                    devTypeSelect.appendChild(newOpt);
+                    devTypeSelect.value = rawType;
+                }
+            }
             document.getElementById('pm-survey-ports-count').value = survey.ports_count || 24;
             document.getElementById('pm-survey-vendor').value = survey.vendor || (survey.ports && survey.ports[0] ? survey.ports[0].vendor_src : '') || '';
+            if (document.getElementById('pm-survey-model')) {
+                document.getElementById('pm-survey-model').value = survey.model || (survey.ports && survey.ports[0] ? survey.ports[0].model_src : '') || '';
+            }
             document.getElementById('pm-survey-serial').value = survey.serial || survey.device_label || (survey.ports && survey.ports[0] ? survey.ports[0].serial_src : '') || '';
             document.getElementById('pm-survey-hostname').value = survey.hostname || '';
             document.getElementById('pm-survey-description').value = survey.description || '';
@@ -6671,13 +8192,13 @@ let g_chartAnTypes = null;
 let g_chartAnLocations = null;
 
 const AN_TYPE_COLORS = {
-    'Switch': '#0056b3',
-    'Patch Panel': '#6f42c1',
-    'Router': '#fd7e14',
-    'Firewall': '#dc3545',
-    'Otro': '#17a2b8',
-    'Servidor': '#20c997',
-    'Access Point': '#e83e8c'
+    'Switch': '#1E40AF',       /* Cobalt Técnico */
+    'Patch Panel': '#475569',   /* Slate Sobrio */
+    'Router': '#D97706',       /* Amber Sobrio */
+    'Firewall': '#DC2626',     /* Red Seguro */
+    'Otro': '#0284C7',         /* Sky Blue */
+    'Servidor': '#0F766E',     /* Teal Calidad */
+    'Access Point': '#6366F1'  /* Indigo Técnico */
 };
 
 const AN_TYPE_ICONS = {
@@ -6701,11 +8222,35 @@ function escapeHtml(str) {
 }
 
 function getAnTypeColor(type) {
-    return AN_TYPE_COLORS[type] || '#6c757d';
+    if (!type) return '#6c757d';
+    const t = String(type).trim().toUpperCase();
+    if (t.includes('SWITCH') || t.includes('CONMUTADOR')) return '#1E40AF';
+    if (t.includes('PATCH')) return '#475569';
+    if (t.includes('ROUTER')) return '#D97706';
+    if (t.includes('FIREWALL')) return '#DC2626';
+    if (t.includes('SERVIDOR') || t.includes('SERVER')) return '#0F766E';
+    if (t.includes('AP') || t.includes('ACCESS POINT') || t.includes('WIFI')) return '#6366F1';
+    if (t.includes('CONVERTIDOR')) return '#0891B2';
+    if (t.includes('POE')) return '#7C3AED';
+    if (t.includes('CENTRAL')) return '#059669';
+    if (t.includes('DESKTOP')) return '#4B5563';
+    return AN_TYPE_COLORS[type] || AN_TYPE_COLORS[t] || '#0284C7';
 }
 
 function getAnTypeIcon(type) {
-    return AN_TYPE_ICONS[type] || 'fa-hdd';
+    if (!type) return 'fa-hdd';
+    const t = String(type).trim().toUpperCase();
+    if (t.includes('SWITCH') || t.includes('CONMUTADOR')) return 'fa-network-wired';
+    if (t.includes('PATCH')) return 'fa-ethernet';
+    if (t.includes('ROUTER')) return 'fa-route';
+    if (t.includes('FIREWALL')) return 'fa-shield-alt';
+    if (t.includes('SERVIDOR') || t.includes('SERVER')) return 'fa-server';
+    if (t.includes('AP') || t.includes('ACCESS POINT') || t.includes('WIFI')) return 'fa-wifi';
+    if (t.includes('CONVERTIDOR')) return 'fa-exchange-alt';
+    if (t.includes('POE')) return 'fa-bolt';
+    if (t.includes('CENTRAL')) return 'fa-phone-alt';
+    if (t.includes('DESKTOP')) return 'fa-desktop';
+    return AN_TYPE_ICONS[type] || AN_TYPE_ICONS[t] || 'fa-microchip';
 }
 
 async function loadSurveyAnalysisTab(forceReload = false) {
@@ -6771,13 +8316,14 @@ function populateAnalysisDropdowns() {
     // Tipos
     const typeSelect = document.getElementById('an_filter_type');
     if (typeSelect) {
-        let currentType = typeSelect.value || 'all';
+        let currentType = (typeSelect.value || 'all').toUpperCase();
         let typeOptions = '<option value="all">Todos los Tipos (' + (g_vilasecaAnalysisData.by_type.length) + ')</option>';
         g_vilasecaAnalysisData.by_type.forEach(t => {
-            typeOptions += `<option value="${escapeHtml(t.type)}">${escapeHtml(t.type)} (${t.devices} equipos)</option>`;
+            const tUpper = (t.type || '').toUpperCase();
+            typeOptions += `<option value="${escapeHtml(tUpper)}">${escapeHtml(tUpper)} (${t.devices} equipos)</option>`;
         });
         typeSelect.innerHTML = typeOptions;
-        typeSelect.value = currentType;
+        typeSelect.value = (currentType === 'ALL') ? 'all' : currentType;
     }
 }
 
@@ -6840,7 +8386,7 @@ function renderSurveyAnalysisDashboard() {
     const allDevs = g_vilasecaAnalysisData.all_devices || [];
     let filteredDevs = allDevs.filter(d => {
         if (g_anFilterLocation !== 'all' && d.location !== g_anFilterLocation) return false;
-        if (g_anFilterType !== 'all' && d.device_type !== g_anFilterType) return false;
+        if (g_anFilterType !== 'all' && (d.device_type || '').toUpperCase() !== g_anFilterType.toUpperCase()) return false;
         if (g_anFilterSearch) {
             const str = (d.device_name + ' ' + d.device_type + ' ' + d.location + ' ' + d.rack + ' ' + (d.ip_address || '')).toLowerCase();
             if (!str.includes(g_anFilterSearch)) return false;
@@ -6873,8 +8419,9 @@ function renderAnalysisKPIs(devsList) {
         totalVac += (parseInt(d.vacant_ports) || 0);
         if (d.location) locationsSet.add(d.location);
         if (d.location && d.rack) racksSet.add(d.location + '___' + d.rack);
-        if (d.device_type === 'Switch') switchesCount++;
-        if (d.device_type === 'Patch Panel' || (d.device_type && d.device_type.toLowerCase().includes('patch'))) patchPanelsCount++;
+        const dtUpper = (d.device_type || '').toUpperCase();
+        if (dtUpper.includes('SWITCH') || dtUpper.includes('CONMUTADOR')) switchesCount++;
+        if (dtUpper.includes('PATCH')) patchPanelsCount++;
     });
 
     const occPct = totalPorts > 0 ? ((totalOcc / totalPorts) * 100).toFixed(1) : 0;
@@ -6925,7 +8472,7 @@ function renderAnalysisTypeDistribution() {
         typesData.forEach(t => {
             const color = getAnTypeColor(t.type);
             const icon = getAnTypeIcon(t.type);
-            const isSelected = g_anFilterType === t.type;
+            const isSelected = g_anFilterType !== 'all' && (g_anFilterType.toUpperCase() === (t.type || '').toUpperCase());
             listHtml += `
                 <tr style="cursor: pointer; ${isSelected ? 'background: #eff6ff; font-weight: bold;' : ''}" onclick="quickFilterAnalysisByType('${escapeHtml(t.type)}')">
                     <td style="width: 25px;"><i class="fas ${icon}" style="color: ${color};"></i></td>
@@ -7021,14 +8568,14 @@ function renderAnalysisLocationDistribution() {
                 {
                     label: 'Equipos Registrados',
                     data: devCounts,
-                    backgroundColor: '#002B49',
+                    backgroundColor: '#1E40AF',
                     borderRadius: 6,
                     barPercentage: 0.6
                 },
                 {
                     label: 'Total Puertos',
                     data: portCounts,
-                    backgroundColor: '#17a2b8',
+                    backgroundColor: '#0F766E',
                     borderRadius: 6,
                     barPercentage: 0.6
                 }
@@ -7292,6 +8839,8 @@ function onAnInventorySearchChange() {
 function changeAnInvPage(page) {
     g_anCurrentPage = page;
     renderAnalysisInventoryTable(g_anLastFilteredDevs || []);
+    const tbl = document.getElementById('tbl_an_inventory');
+    if (tbl) tbl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function renderAnalysisInventoryTable(devsList) {
@@ -7306,8 +8855,8 @@ function renderAnalysisInventoryTable(devsList) {
     if (!tbody) return;
 
     let searchTerm = searchInput ? (searchInput.value || '').toLowerCase().trim() : '';
-    let pageSize = pageSizeSelect ? parseInt(pageSizeSelect.value) : 10;
-    if (isNaN(pageSize)) pageSize = 10;
+    let pageSize = pageSizeSelect ? parseInt(pageSizeSelect.value) : 30;
+    if (isNaN(pageSize) || pageSize > 30 || pageSize <= 0) pageSize = 30;
 
     let filtered = devsList.filter(item => {
         if (!searchTerm) return true;
@@ -7352,7 +8901,7 @@ function renderAnalysisInventoryTable(devsList) {
                 </td>
                 <td>
                     <span class="badge text-white px-2 py-1" style="background:${typeColor};">
-                        ${escapeHtml(item.device_type)}
+                        ${escapeHtml((item.device_type || 'HARDWARE').toUpperCase())}
                     </span>
                 </td>
                 <td>
@@ -7472,21 +9021,21 @@ function exportVilasecaAnalysisCSV() {
     csv += '--- TOP EQUIPOS CON PUERTOS VACIOS (MAYOR DISPONIBILIDAD) ---\n';
     csv += 'ID,Equipo,Tipo,Localidad,Rack,Total Puertos,Puertos Vacios,Puertos Ocupados,Disponibilidad %\n';
     (g_vilasecaAnalysisData.top_vacant || []).forEach(d => {
-        csv += `${d.id},"${d.device_name}","${d.device_type}","${d.location}","${d.rack}",${d.total_ports},${d.vacant_ports},${d.occupied_ports},${d.vacant_pct}%\n`;
+        csv += `${d.id},"${d.device_name}","${(d.device_type || 'HARDWARE').toUpperCase()}","${d.location}","${d.rack}",${d.total_ports},${d.vacant_ports},${d.occupied_ports},${d.vacant_pct}%\n`;
     });
     csv += '\n';
 
     csv += '--- TOP EQUIPOS LLENOS (MAYOR OCUPACION) ---\n';
     csv += 'ID,Equipo,Tipo,Localidad,Rack,Total Puertos,Puertos Ocupados,Puertos Vacios,Ocupacion %\n';
     (g_vilasecaAnalysisData.top_occupied || []).forEach(d => {
-        csv += `${d.id},"${d.device_name}","${d.device_type}","${d.location}","${d.rack}",${d.total_ports},${d.occupied_ports},${d.vacant_ports},${d.occupancy_pct}%\n`;
+        csv += `${d.id},"${d.device_name}","${(d.device_type || 'HARDWARE').toUpperCase()}","${d.location}","${d.rack}",${d.total_ports},${d.occupied_ports},${d.vacant_ports},${d.occupancy_pct}%\n`;
     });
     csv += '\n';
 
     csv += '--- INVENTARIO CONSOLIDADO COMPLETO ---\n';
     csv += 'ID,Equipo,Tipo,Localidad,Area,Rack,UR,IP,Total Puertos,Ocupados,Vacios,Ocupacion %\n';
     devs.forEach(d => {
-        csv += `${d.id},"${d.device_name}","${d.device_type}","${d.location}","${d.area}","${d.rack}","${d.ur_rack}","${d.ip_address}",${d.total_ports},${d.occupied_ports},${d.vacant_ports},${d.occupancy_pct}%\n`;
+        csv += `${d.id},"${d.device_name}","${(d.device_type || 'HARDWARE').toUpperCase()}","${d.location}","${d.area}","${d.rack}","${d.ur_rack}","${d.ip_address}",${d.total_ports},${d.occupied_ports},${d.vacant_ports},${d.occupancy_pct}%\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

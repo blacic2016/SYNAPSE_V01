@@ -92,6 +92,11 @@ $current_sheet = $_GET['name'] ?? '';
         <?php if (has_role('SUPER_ADMIN') || has_module_access('clientes') || has_module_access('vilaseca')): ?>
         <?php 
           $is_vilaseca_portmapping = ($cur === 'portmapping.php' && isset($_GET['cliente']) && strtoupper($_GET['cliente']) === 'VILASECA');
+          $vl_pm_tab = strtolower($_GET['tab'] ?? '');
+          $is_vilaseca_pm_asistente = ($is_vilaseca_portmapping && in_array($vl_pm_tab, ['asistente', 'wizard']));
+          $is_vilaseca_pm_equipos = ($is_vilaseca_portmapping && in_array($vl_pm_tab, ['equipos', 'equipo', 'equipos_portmapping']));
+          $is_vilaseca_pm_informe = ($is_vilaseca_portmapping && in_array($vl_pm_tab, ['informe', 'config']));
+          $is_vilaseca_pm_registros = ($is_vilaseca_portmapping && !$is_vilaseca_pm_asistente && !$is_vilaseca_pm_equipos && !$is_vilaseca_pm_informe);
           $is_vilaseca_visio = ($cur === 'visio.php' && isset($_GET['cliente']) && strtoupper($_GET['cliente']) === 'VILASECA');
           $is_vilaseca_analisis = ($cur === 'analisis_conexiones.php');
           $is_vilaseca_root = (strpos($_SERVER['SCRIPT_NAME'], '/clientes/vilaseca/') !== false);
@@ -163,11 +168,40 @@ $current_sheet = $_GET['name'] ?? '';
             </li>
 
             <!-- 3. Portmapping -->
-            <li class="nav-item">
-              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php?cliente=VILASECA" class="nav-link <?php echo $is_vilaseca_portmapping ? 'active' : ''; ?>">
-                <i class="fas fa-network-wired nav-icon" style="color: #00B8D4; font-size: 0.85rem;"></i>
-                <p>Portmapping</p>
+            <li class="nav-item <?php echo $is_vilaseca_portmapping ? 'menu-is-opening menu-open' : ''; ?>">
+              <a href="#" class="nav-link <?php echo $is_vilaseca_portmapping ? 'active' : ''; ?>" style="font-weight: 600;">
+                <i class="fas fa-network-wired nav-icon" style="color: #00B8D4;"></i>
+                <p>
+                  Portmapping
+                  <i class="right fas fa-angle-left"></i>
+                </p>
               </a>
+              <ul class="nav nav-treeview" style="padding-left: 10px;">
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php?cliente=VILASECA&tab=asistente" class="nav-link <?php echo $is_vilaseca_pm_asistente ? 'active' : ''; ?>">
+                    <i class="fas fa-magic nav-icon" style="color: #38bdf8; font-size: 0.85rem;"></i>
+                    <p>Asistente de Mapeo</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php?cliente=VILASECA" class="nav-link <?php echo $is_vilaseca_pm_registros ? 'active' : ''; ?>">
+                    <i class="fas fa-layer-group nav-icon" style="color: #00B8D4; font-size: 0.85rem;"></i>
+                    <p>Levantamiento de Registros</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php?cliente=VILASECA&tab=equipos" class="nav-link <?php echo $is_vilaseca_pm_equipos ? 'active' : ''; ?>">
+                    <i class="fas fa-server nav-icon" style="color: #10b981; font-size: 0.85rem;"></i>
+                    <p>Equipos Portmapping</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php?cliente=VILASECA&tab=informe" class="nav-link <?php echo $is_vilaseca_pm_informe ? 'active' : ''; ?>">
+                    <i class="fas fa-sliders-h nav-icon" style="color: #c0da20; font-size: 0.85rem;"></i>
+                    <p>Configurador de Informe</p>
+                  </a>
+                </li>
+              </ul>
             </li>
 
             <!-- 4. Diagramas de Red (Modelos Visio) -->
@@ -585,11 +619,48 @@ $current_sheet = $_GET['name'] ?? '';
             <?php endif; ?>
             
             <?php if (has_module_access('portmapping')): ?>
-            <li class="nav-item">
-              <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php" class="nav-link <?php echo $cur === 'portmapping.php' ? 'active' : ''; ?>">
+            <?php 
+              $is_gen_pm = ($cur === 'portmapping.php' && (!isset($_GET['cliente']) || strtoupper($_GET['cliente']) !== 'VILASECA'));
+              $gen_pm_tab = strtolower($_GET['tab'] ?? '');
+              $is_gen_pm_asistente = ($is_gen_pm && in_array($gen_pm_tab, ['asistente', 'wizard']));
+              $is_gen_pm_equipos = ($is_gen_pm && in_array($gen_pm_tab, ['equipos', 'equipo', 'equipos_portmapping']));
+              $is_gen_pm_informe = ($is_gen_pm && in_array($gen_pm_tab, ['informe', 'config']));
+              $is_gen_pm_registros = ($is_gen_pm && !$is_gen_pm_asistente && !$is_gen_pm_equipos && !$is_gen_pm_informe);
+            ?>
+            <li class="nav-item <?php echo $is_gen_pm ? 'menu-is-opening menu-open' : ''; ?>">
+              <a href="#" class="nav-link <?php echo $is_gen_pm ? 'active' : ''; ?>">
                 <i class="far fa-circle nav-icon text-warning"></i>
-                <p>Portmapping</p>
+                <p>
+                  Portmapping
+                  <i class="right fas fa-angle-left"></i>
+                </p>
               </a>
+              <ul class="nav nav-treeview" style="padding-left: 10px;">
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php?tab=asistente" class="nav-link <?php echo $is_gen_pm_asistente ? 'active' : ''; ?>">
+                    <i class="fas fa-magic nav-icon" style="font-size: 0.82rem;"></i>
+                    <p>Asistente de Mapeo</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php" class="nav-link <?php echo $is_gen_pm_registros ? 'active' : ''; ?>">
+                    <i class="fas fa-layer-group nav-icon" style="font-size: 0.82rem;"></i>
+                    <p>Levantamiento de Registros</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php?tab=equipos" class="nav-link <?php echo $is_gen_pm_equipos ? 'active' : ''; ?>">
+                    <i class="fas fa-server nav-icon" style="font-size: 0.82rem;"></i>
+                    <p>Equipos Portmapping</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="<?php echo PUBLIC_URL_PREFIX; ?>/portmapping.php?tab=informe" class="nav-link <?php echo $is_gen_pm_informe ? 'active' : ''; ?>">
+                    <i class="fas fa-sliders-h nav-icon" style="font-size: 0.82rem;"></i>
+                    <p>Configurador de Informe</p>
+                  </a>
+                </li>
+              </ul>
             </li>
             <?php endif; ?>
           </ul>

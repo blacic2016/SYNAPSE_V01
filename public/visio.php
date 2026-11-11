@@ -25,45 +25,45 @@ include 'partials/header.php';
 }
 
 .visio-card-item {
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.25s ease;
     border-radius: 8px;
-    border: 1px solid var(--border-color, #e9ecef);
-    background-color: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-grid, #CBD5E1);
+    background-color: var(--bg-surface, #ffffff);
 }
 
 .visio-card-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 42, 84, 0.15);
-    border-color: var(--sonda-orange, #FF5C05);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+    border-color: var(--color-accent, #1E40AF);
 }
 
 /* Nav tabs styling matching other modules */
 .nav-tabs .nav-link {
     font-weight: 600;
     border: none;
-    color: var(--text-color, #333);
-    opacity: 0.8;
+    color: var(--text-muted, #334155);
+    opacity: 0.85;
 }
 
 .nav-tabs .nav-link.active {
-    color: var(--sonda-orange, #FF5C05) !important;
-    border-bottom: 3px solid var(--sonda-orange, #FF5C05);
+    color: var(--color-accent, #1E40AF) !important;
+    border-bottom: 3px solid var(--color-accent, #1E40AF);
     background-color: transparent !important;
     opacity: 1;
 }
 
 /* Drop Zone styling */
 .drop-zone {
-    border: 2px dashed #002A54;
+    border: 2px dashed var(--color-accent, #1E40AF);
     border-radius: 8px;
-    background-color: rgba(0, 42, 84, 0.02);
-    transition: all 0.3s ease;
+    background-color: rgba(30, 64, 175, 0.02);
+    transition: all 0.2s ease;
     cursor: pointer;
 }
 
 .drop-zone:hover, .drop-zone.dragover {
-    background-color: rgba(0, 42, 84, 0.06);
-    border-color: var(--sonda-orange, #FF5C05);
+    background-color: rgba(30, 64, 175, 0.06);
+    border-color: var(--color-accent, #1E40AF);
 }
 
 /* Fullscreen styling for Draw.io editor */
@@ -72,7 +72,7 @@ include 'partials/header.php';
     height: 100vh !important;
     border: none !important;
     border-radius: 0 !important;
-    background-color: #f8f9fa !important;
+    background-color: var(--bg-canvas, #F8FAFC) !important;
     padding: 15px !important;
     overflow: hidden !important;
     display: flex !important;
@@ -90,22 +90,22 @@ include 'partials/header.php';
 </style>
 
 <div class="visio-container">
-    <div class="card card-orange card-outline card-outline-tabs shadow-sm">
-        <div class="card-header p-0 border-bottom-0 d-flex justify-content-between align-items-center flex-wrap" style="background: #ffffff; padding: 4px 10px !important;">
+    <div class="card card-primary card-outline card-outline-tabs shadow-sm" style="border: 1px solid var(--border-grid, #CBD5E1);">
+        <div class="card-header p-0 border-bottom-0 d-flex justify-content-between align-items-center flex-wrap" style="background: var(--bg-surface, #ffffff); padding: 4px 10px !important;">
             <ul class="nav nav-tabs border-bottom-0" id="visio-tabs" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="list-tab" data-toggle="tab" href="#list-tab-content" role="tab" aria-controls="list-tab-content" aria-selected="true" style="padding: 8px 12px; font-size: 0.85rem;">
-                        <i class="fas fa-sitemap mr-1 text-info"></i>Diagramas Guardados
+                        <i class="fas fa-sitemap mr-1" style="color: var(--color-accent);"></i>Diagramas Guardados
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="editor-tab" data-toggle="tab" href="#editor-tab-content" role="tab" aria-controls="editor-tab-content" aria-selected="false" style="padding: 8px 12px; font-size: 0.85rem;">
-                        <i class="fas fa-pencil-ruler mr-1 text-warning"></i>Modelador / Visor
+                        <i class="fas fa-pencil-ruler mr-1" style="color: var(--status-metric);"></i>Modelador / Visor
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="import-tab" data-toggle="tab" href="#import-tab-content" role="tab" aria-controls="import-tab-content" aria-selected="false" style="padding: 8px 12px; font-size: 0.85rem;">
-                        <i class="fas fa-file-import mr-1 text-success"></i>Importar Visio (.vsdx)
+                        <i class="fas fa-file-import mr-1 text-info"></i>Importar Visio (.vsdx)
                     </a>
                 </li>
             </ul>
@@ -114,7 +114,7 @@ include 'partials/header.php';
             <div id="integrated-title-bar" class="d-none d-flex flex-column align-items-end mr-3" style="gap: 2px; max-width: 450px; min-width: 250px;">
                 <input type="hidden" id="diagram-id" value="0">
                 <div class="d-flex align-items-center" style="gap: 4px; width: 100%;">
-                    <i class="fas fa-project-diagram text-orange" style="font-size: 0.8rem;"></i>
+                    <i class="fas fa-project-diagram" style="font-size: 0.8rem; color: var(--color-accent);"></i>
                     <input type="text" id="diagram-title" class="form-control form-control-sm border-0 font-weight-bold p-0 text-right" style="font-size: 0.88rem; background: transparent; box-shadow: none; height: auto;" placeholder="Título del Diagrama *">
                 </div>
                 <input type="text" id="diagram-desc" class="form-control form-control-sm border-0 text-muted p-0 text-right" style="font-size: 0.75rem; background: transparent; box-shadow: none; height: auto;" placeholder="Descripción / Notas de este modelo">

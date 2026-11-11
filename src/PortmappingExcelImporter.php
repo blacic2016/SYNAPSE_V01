@@ -281,6 +281,16 @@ class PortmappingExcelImporter
                 ],
                 [
                     'origin_sheet' => 'Hoja 1 (Portmapping)',
+                    'excel_col' => 'Modelo',
+                    'db_table' => 'manual_portmap_surveys / ci_instances',
+                    'db_field' => 'model / modelo',
+                    'rule' => 'Modelo del equipo relevado desde la columna Modelo del Excel',
+                    'detected_value' => $parsedPortData['model'] ?: 'Sin Modelo',
+                    'editable' => true,
+                    'input_id' => 'cust_model'
+                ],
+                [
+                    'origin_sheet' => 'Hoja 1 (Portmapping)',
                     'excel_col' => 'Serie',
                     'db_table' => 'manual_portmap_surveys / ci_instances',
                     'db_field' => 'serial / numero_serie / device_label',
@@ -643,9 +653,17 @@ class PortmappingExcelImporter
                     $devVendor = trim((string)$customOverrides['vendor']);
                 }
 
-                $devType = $dev['device_type'] ?: 'Switch';
+                $devModel = $dev['model'] ?: '';
+                if (!$isBulkDevices && $isFirstDev && !empty($customOverrides['model'])) {
+                    $devModel = trim((string)$customOverrides['model']);
+                }
+
+                $devType = mb_strtoupper(trim($dev['device_type'] ?: 'SWITCH'), 'UTF-8');
                 if (!$isBulkDevices && $isFirstDev && !empty($customOverrides['device_type'])) {
-                    $devType = trim((string)$customOverrides['device_type']);
+                    $devType = mb_strtoupper(trim((string)$customOverrides['device_type']), 'UTF-8');
+                }
+                if ($devType === '') {
+                    $devType = 'SWITCH';
                 }
 
                 $devIp = $dev['ip_address'] ?: 'Sin IP';
@@ -688,6 +706,7 @@ class PortmappingExcelImporter
                         $obs = trim((string)($p['observations'] ?? ''));
                         $sfp = (strtoupper(trim((string)($p['sfp'] ?? ''))) === 'SI') ? 'Si' : 'No';
                         $trans = trim((string)($p['transceiver'] ?? '')) ?: 'N/A';
+                        $vlan = trim((string)($p['vlan'] ?? ''));
                     } else {
                         $isUp = false;
                         $destPP = '';
@@ -704,6 +723,7 @@ class PortmappingExcelImporter
                         $obs = 'Puerto libre / sin parcheo';
                         $sfp = 'No';
                         $trans = 'N/A';
+                        $vlan = '';
                     }
 
                     if ($isUp) $connectedCount++;
@@ -717,11 +737,12 @@ class PortmappingExcelImporter
                         'location_src' => $devLoc,
                         'device_src' => $devName,
                         'vendor_src' => $devVendor,
-                        'model_src' => $dev['model'] ?? $devType,
+                        'model_src' => $devModel ?: ($dev['model'] ?? $devType),
                         'serial_src' => $devSerial ?: '',
                         'ur_src' => (string)$devUr,
                         'hostname_src' => $devIp,
                         'port_name' => (string)$pIdx,
+                        'vlan' => $vlan,
                         'nomenclature' => 'Gi1/0/' . $pIdx,
                         'cable_type' => $cable,
                         'connector_type' => $conn,
@@ -761,21 +782,21 @@ class PortmappingExcelImporter
                     $surveyId = (int)$dev['duplicate_id'];
                     $stmt_up_surv = $pdo->prepare("UPDATE manual_portmap_surveys SET 
                         client = ?, location = ?, area = ?, device_name = ?, device_label = ?, device_type = ?, 
-                        vendor = ?, serial = ?, ports_count = ?, rack = ?, ur_rack = ?, ip_address = ?, creation_date = ?, 
+                        vendor = ?, model = ?, serial = ?, ports_count = ?, rack = ?, ur_rack = ?, ip_address = ?, creation_date = ?, 
                         description = ?, ports_data_json = ?, updated_at = NOW() WHERE id = ?");
                     $stmt_up_surv->execute([
                         $devClient, $devLoc, $devArea, $devName, ($devSerial ?: $devName), $devType,
-                        $devVendor, $devSerial,
+                        $devVendor, $devModel, $devSerial,
                         $totalSwitchPorts, $devRackName, (string)$devUr, $devIp,
                         $creationDate, $desc, $portsJson, $surveyId
                     ]);
                 } else {
                     $stmt_ins_surv = $pdo->prepare("INSERT INTO manual_portmap_surveys 
-                        (client, location, area, device_name, device_label, device_type, vendor, serial, ports_count, rack, ur_rack, ip_address, creation_date, description, ports_data_json, images_json, config_files_json, diagram_json, created_at, updated_at) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', '[]', '{}', NOW(), NOW())");
+                        (client, location, area, device_name, device_label, device_type, vendor, model, serial, ports_count, rack, ur_rack, ip_address, creation_date, description, ports_data_json, images_json, config_files_json, diagram_json, created_at, updated_at) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '[]', '[]', '{}', NOW(), NOW())");
                     $stmt_ins_surv->execute([
                         $devClient, $devLoc, $devArea, $devName, ($devSerial ?: $devName), $devType,
-                        $devVendor, $devSerial,
+                        $devVendor, $devModel, $devSerial,
                         $totalSwitchPorts, $devRackName, (string)$devUr, $devIp,
                         $creationDate, $desc, $portsJson
                     ]);
@@ -797,6 +818,7 @@ class PortmappingExcelImporter
                     'location' => $devLoc,
                     'ports_count' => $totalSwitchPorts,
                     'vendor' => $devVendor,
+                    'model' => $devModel,
                     'serial' => $devSerial,
                     'manual_survey_id' => $surveyId
                 ]);
@@ -829,6 +851,8 @@ class PortmappingExcelImporter
                 $totalPortsImported += count($formattedPorts);
                 $importedDevices[] = [
                     'device_name' => $devName,
+                    'vendor' => $devVendor,
+                    'model' => $devModel,
                     'serial' => $devSerial,
                     'rack' => $devRackName,
                     'rack_id' => $matchedRackId,
@@ -883,7 +907,7 @@ class PortmappingExcelImporter
             'area' => '',
             'rack_name' => '',
             'device_name' => '',
-            'device_type' => 'Switch',
+            'device_type' => 'SWITCH',
             'manufacturer' => '',
             'model' => '',
             'serial' => '',
@@ -948,13 +972,14 @@ class PortmappingExcelImporter
         $cArea = $colIndex['area'] ?? 4;
         $cTipoEq = $colIndex['equipoorigen'] ?? 5;
         $cNombreEq = $colIndex['nombredeequipo'] ?? 6;
-        $cFab = $colIndex['fabricante'] ?? 7;
-        $cMod = $colIndex['modelo'] ?? 8;
+        $cFab = $colIndex['fabricante'] ?? ($colIndex['marca'] ?? ($colIndex['vendor'] ?? ($colIndex['manufacturer'] ?? 7)));
+        $cMod = $colIndex['modelo'] ?? ($colIndex['model'] ?? ($colIndex['hardwaremodel'] ?? 8));
         $cNumPuertos = $colIndex['numerodepuertos'] ?? 9;
         $cSerie = $colIndex['serie'] ?? 10;
         $cUR = $colIndex['unidadderack'] ?? 11;
         $cHost = $colIndex['hostname'] ?? 12;
         $cPuerto = $colIndex['puerto'] ?? 13;
+        $cVlan = $colIndex['vlan'] ?? ($colIndex['vlans'] ?? ($colIndex['vlanid'] ?? ($colIndex['idvlan'] ?? ($colIndex['vlanorigen'] ?? ($colIndex['vlanred'] ?? ($colIndex['vlansgestionadas'] ?? null))))));
         $cCable = $colIndex['tipodecable'] ?? 14;
         $cConector = $colIndex['tipoconector'] ?? 15;
         $cVel = $colIndex['velocidad'] ?? 16;
@@ -975,7 +1000,7 @@ class PortmappingExcelImporter
         $lastLocation = '';
         $lastArea = '';
         $lastRack = '';
-        $lastType = 'Switch';
+        $lastType = 'SWITCH';
         $lastMfg = '';
         $lastModel = '';
         $lastSerial = '';
@@ -1028,7 +1053,7 @@ class PortmappingExcelImporter
                 if ($rowLoc !== '') $lastLocation = $rowLoc;
                 if ($rowArea !== '') $lastArea = $rowArea;
                 if ($rowRack !== '') $lastRack = $rowRack;
-                if ($rowTipo !== '') $lastType = $rowTipo;
+                if ($rowTipo !== '') $lastType = mb_strtoupper($rowTipo, 'UTF-8');
                 if ($rowFab !== '') $lastMfg = $rowFab;
                 if ($rowMod !== '') $lastModel = $rowMod;
                 $lastSerial = $rowSerial;
@@ -1041,7 +1066,7 @@ class PortmappingExcelImporter
                 if ($rowLoc !== '') $lastLocation = $rowLoc;
                 if ($rowArea !== '') $lastArea = $rowArea;
                 if ($rowRack !== '') $lastRack = $rowRack;
-                if ($rowTipo !== '') $lastType = $rowTipo;
+                if ($rowTipo !== '') $lastType = mb_strtoupper($rowTipo, 'UTF-8');
                 if ($rowFab !== '') $lastMfg = $rowFab;
                 if ($rowMod !== '') $lastModel = $rowMod;
                 if ($rowSerial !== '') $lastSerial = $rowSerial;
@@ -1088,7 +1113,7 @@ class PortmappingExcelImporter
                     'location' => $lastLocation,
                     'area' => $lastArea,
                     'rack_name' => $lastRack ?: 'RACK 01',
-                    'device_type' => $lastType ?: 'Switch',
+                    'device_type' => $lastType ? mb_strtoupper($lastType, 'UTF-8') : 'SWITCH',
                     'manufacturer' => $lastMfg,
                     'model' => $lastModel,
                     'serial' => $lastSerial,
@@ -1126,6 +1151,7 @@ class PortmappingExcelImporter
 
             $devicesMap[$devKey]['ports'][] = [
                 'port' => (int)$pNum,
+                'vlan' => ($cVlan !== null) ? trim((string)$ws->getCellByColumnAndRow($cVlan, $r)->getValue()) : '',
                 'cable' => trim((string)$ws->getCellByColumnAndRow($cCable, $r)->getValue()),
                 'connector' => trim((string)$ws->getCellByColumnAndRow($cConector, $r)->getValue()),
                 'speed' => trim((string)$ws->getCellByColumnAndRow($cVel, $r)->getValue()),

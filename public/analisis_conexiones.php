@@ -17,8 +17,8 @@ $client_filter = $_GET['cliente'] ?? $_GET['client'] ?? 'VILASECA';
 $is_embed = (isset($_GET['embed']) && $_GET['embed'] == '1');
 if ($is_embed) {
     $hide_sidebar = true;
-    $hide_content_header = true;
 }
+$hide_content_header = true;
 $page_title = "Topología Técnica de Red (" . htmlspecialchars($client_filter) . ") - Estilo Visio";
 include 'partials/header.php';
 ?>
@@ -38,41 +38,79 @@ if (typeof vis === 'undefined') {
 body { background: transparent !important; }
 <?php endif; ?>
 :root {
-    --visio-navy: #0f172a;
-    --visio-navy-light: #1e293b;
-    --visio-border: #334155;
-    --visio-blue: #0284c7;
-    --visio-cyan: #38bdf8;
-    --visio-orange: #f97316;
-    --visio-green: #10b981;
-    --visio-purple: #8b5cf6;
-    --visio-red: #ef4444;
+    --bg-canvas: #F8FAFC;        /* Slate 50: Lienzo principal */
+    --bg-surface: #FFFFFF;       /* Blanco Puro: Tarjetas, formularios y paneles */
+    --color-accent: #1E40AF;     /* Azul Cobalto Técnico: Botones primarios, estados activos */
+    --border-grid: #CBD5E1;      /* Gris Neutro: División, baldosas de 60x60 cm */
+    --status-metric: #0F766E;    /* Verde Azulado: Semáforo de validación TIA-942 */
+
+    /* Regla Tipográfica Estricta - Modo Claro (WCAG AAA) */
+    --text-color: #0F172A;
+    --text-muted: #334155;
+
+    --visio-navy: #0F172A;
+    --visio-navy-light: #1E293B;
+    --visio-border: var(--border-grid);
+    --visio-blue: var(--color-accent);
+    --visio-cyan: #38BDF8;
+    --visio-green: var(--status-metric);
+    --visio-orange: #D97706;
+    --visio-purple: #475569;
+    --visio-red: #DC2626;
+}
+
+body.dark-mode {
+    --bg-canvas: #0B1120;        /* Obsidian Deep: Lienzo principal */
+    --bg-surface: #1E293B;       /* Slate 800: Tarjetas, formularios y paneles */
+    --color-accent: #38BDF8;     /* Sky Blue: Botones primarios, estados activos */
+    --border-grid: #334155;      /* Slate 700: División, baldosas de 60x60 cm */
+    --status-metric: #14B8A6;    /* Teal Calidad: Semáforo de validación TIA-942 */
+
+    /* Regla Tipográfica Estricta - Modo Oscuro */
+    --text-color: #F8FAFC;
+    --text-muted: #94A3B8;
+
+    --visio-navy: #0B1120;
+    --visio-navy-light: #1E293B;
+    --visio-border: var(--border-grid);
+    --visio-blue: var(--color-accent);
+    --visio-cyan: #38BDF8;
+    --visio-green: var(--status-metric);
 }
 
 /* Card & Layout */
 .visio-shell {
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
-    background: #ffffff;
+    border: 1px solid var(--border-grid);
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+    background: var(--bg-surface);
     overflow: hidden;
 }
 
 .visio-header {
-    background: linear-gradient(135deg, #002B49 0%, #003a6c 50%, #0056b3 100%);
-    color: #ffffff;
+    background: linear-gradient(135deg, #0B1120 0%, #0F172A 60%, #1E293B 100%);
+    color: #F8FAFC;
     padding: 1.25rem 1.75rem;
-    border-left: 5px solid #00A3E0;
-    border-bottom: 2px solid #00A3E0;
+    border-left: 5px solid var(--color-accent);
+    border-bottom: 1px solid var(--border-grid);
 }
 
 /* Visio Blueprint Canvas Themes */
 .canvas-wrapper {
     position: relative;
     width: 100%;
-    height: 720px;
-    transition: height 0.3s ease;
+    height: 860px;
+    min-height: 75vh;
+    transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
+}
+
+.canvas-wrapper.height-large {
+    height: 1050px !important;
+}
+
+.canvas-wrapper.height-compact {
+    height: 720px !important;
 }
 
 .canvas-wrapper.fullscreen-mode {
@@ -123,6 +161,11 @@ body { background: transparent !important; }
 #network_canvas {
     width: 100%;
     height: 100%;
+    cursor: grab;
+}
+
+#network_canvas:active {
+    cursor: grabbing;
 }
 
 /* Stats Cards */
@@ -226,6 +269,32 @@ body { background: transparent !important; }
     background: #0284c7;
     border-color: #38bdf8;
     color: #ffffff;
+}
+
+.hud-btn.active-drag {
+    background: #059669 !important;
+    border-color: #34d399 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 10px rgba(52, 211, 153, 0.45);
+}
+
+/* Espaciado HUD Popover */
+.spacing-panel {
+    background: rgba(15, 23, 42, 0.96) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.55);
+    color: #f8fafc;
+    min-width: 320px;
+    z-index: 1050;
+}
+
+.spacing-slider {
+    accent-color: #38bdf8;
+    cursor: pointer;
+    width: 100%;
 }
 
 /* Layer Filter Chips */
@@ -351,7 +420,7 @@ body { background: transparent !important; }
             <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
                 <?php if (strtoupper($client_filter) === 'VILASECA'): ?>
                 <a href="<?php echo PUBLIC_URL_PREFIX; ?>/clientes/vilaseca/index.php" class="btn btn-outline-light btn-sm font-weight-bold px-3">
-                    <i class="fas fa-chart-line mr-1" style="color: #ff5c05;"></i> Dashboard (Manage)
+                    <i class="fas fa-microchip mr-1" style="color: #38BDF8;"></i> Centro Vilaseca
                 </a>
                 <?php endif; ?>
                 <button class="btn btn-outline-light btn-sm font-weight-bold px-3" onclick="exportVisioDrawio()" title="Abrir en editor de diagramas">
@@ -387,34 +456,50 @@ body { background: transparent !important; }
                 </div>
 
                 <!-- DISEÑO VISIO / LAYOUT -->
-                <div class="col-md-3 col-lg-3">
+                <div class="col-md-2 col-lg-2">
                     <label class="font-weight-bold text-dark small mb-1">
-                        <i class="fas fa-layer-group text-info mr-1"></i>Diseño de Topología:
+                        <i class="fas fa-layer-group text-info mr-1"></i>Diseño Topología:
                     </label>
                     <select id="sel_layout" class="form-control form-control-sm font-weight-bold" onchange="changeTopologyLayout(this.value)">
-                        <option value="hierarchical_ud">📐 Jerárquico Visio (Niveles de Red)</option>
-                        <option value="hierarchical_lr">➡️ Jerárquico Horizontal (Borde a Acceso)</option>
-                        <option value="free_stabilized">🕸️ Topología Libre (Fuerza Estabilizada)</option>
+                        <option value="hierarchical_ud">📐 Jerárquico Visio</option>
+                        <option value="hierarchical_lr">➡️ Horizontal (LR)</option>
+                        <option value="free_stabilized">🕸️ Topología Libre</option>
                     </select>
                 </div>
 
                 <!-- ESTILO DE SÍMBOLOS -->
-                <div class="col-md-3 col-lg-3">
+                <div class="col-md-2 col-lg-2">
                     <label class="font-weight-bold text-dark small mb-1">
-                        <i class="fas fa-shapes text-warning mr-1"></i>Estilo de Símbolos:
+                        <i class="fas fa-shapes text-warning mr-1"></i>Estilo Símbolos:
                     </label>
                     <select id="sel_stencil_style" class="form-control form-control-sm font-weight-bold" onchange="changeStencilStyle(this.value)">
-                        <option value="visio_hardware" selected>🖥️ Símbolos Visio (Cisco 3D / Hardware)</option>
-                        <option value="visio_cards">📋 Fichas Blueprint Técnicas</option>
+                        <option value="visio_hardware" selected>🖥️ Visio 3D (160px)</option>
+                        <option value="visio_cards">📋 Ficha Card (240px)</option>
+                    </select>
+                </div>
+
+                <!-- ESPACIADO ENTRE ITEMS -->
+                <div class="col-md-2 col-lg-2">
+                    <label class="font-weight-bold text-dark small mb-1">
+                        <i class="fas fa-arrows-alt-h text-primary mr-1"></i>Espaciado Nodos:
+                    </label>
+                    <select id="sel_spacing_preset" class="form-control form-control-sm font-weight-bold text-primary" onchange="onSpacingPresetSelect(this.value)">
+                        <option value="compact">Compacto (240px)</option>
+                        <option value="normal">Normal (300px)</option>
+                        <option value="wide" selected>Amplio (380px) ★</option>
+                        <option value="extrawide">Extra Espacioso (480px)</option>
                     </select>
                 </div>
 
                 <!-- ACCIONES -->
-                <div class="col-md-2 col-lg-2 d-flex align-items-center" style="gap: 8px;">
-                    <button id="btn_analyze" class="btn btn-primary btn-sm font-weight-bold px-2 shadow-sm flex-fill" onclick="runConnectionAnalysis()">
+                <div class="col-md-2 col-lg-2 d-flex align-items-center" style="gap: 6px;">
+                    <button id="btn_analyze" class="btn btn-primary btn-sm font-weight-bold px-2 shadow-sm flex-fill" onclick="runConnectionAnalysis()" title="Actualizar Topología">
                         <i class="fas fa-sync-alt mr-1"></i> ACTUALIZAR
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm font-weight-bold" onclick="resetFilters()" title="Restablecer">
+                    <button class="btn btn-outline-warning btn-sm font-weight-bold" onclick="resetNodePositions()" title="Reordenar Automáticamente / Restablecer Posiciones">
+                        <i class="fas fa-magic"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm font-weight-bold" onclick="resetFilters()" title="Restablecer Filtros">
                         <i class="fas fa-undo"></i>
                     </button>
                 </div>
@@ -486,6 +571,52 @@ body { background: transparent !important; }
                         <i class="fas fa-border-all"></i>
                     </button>
 
+                    <!-- Drag Mode Toggle (Mover Nodos Libremente) -->
+                    <button class="hud-btn active active-drag" id="btn_drag_mode" onclick="toggleDragMode()" title="Modo Arrastrar y Reubicar Equipos Libremente en 2D (Activado)">
+                        <i class="fas fa-arrows-alt"></i>
+                    </button>
+
+                    <!-- Reset / Reorder Layout -->
+                    <button class="hud-btn" id="btn_reset_pos" onclick="resetNodePositions()" title="Reordenar Diagrama Automáticamente (Restablecer Posiciones)">
+                        <i class="fas fa-magic text-warning"></i>
+                    </button>
+
+                    <!-- Spacing Sliders Dropdown Tool -->
+                    <div class="dropdown d-inline-block">
+                        <button class="hud-btn" id="btn_spacing_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Ajuste Fino de Espaciado (Horizontal y Vertical)">
+                            <i class="fas fa-sliders-h" style="color: #38bdf8;"></i>
+                        </button>
+                        <div class="dropdown-menu p-3 shadow-lg spacing-panel" style="min-width: 310px; z-index: 1050;">
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-secondary">
+                                <span class="font-weight-bold small text-cyan"><i class="fas fa-ruler-combined mr-1"></i>Espaciado de Items</span>
+                                <span class="badge badge-info px-2 py-0.5" id="badge_spacing_label">Amplio (380px)</span>
+                            </div>
+                            <div class="form-group mb-2">
+                                <div class="d-flex justify-content-between small text-white-50 mb-1">
+                                    <span>Separación Horizontal:</span>
+                                    <strong class="text-white" id="val_horiz_spacing">380px</strong>
+                                </div>
+                                <input type="range" class="custom-range spacing-slider" min="180" max="600" step="20" id="slider_horiz_spacing" value="380" oninput="onHorizontalSpacingChange(this.value)">
+                            </div>
+                            <div class="form-group mb-2">
+                                <div class="d-flex justify-content-between small text-white-50 mb-1">
+                                    <span>Separación Vertical (Niveles):</span>
+                                    <strong class="text-white" id="val_vert_spacing">280px</strong>
+                                </div>
+                                <input type="range" class="custom-range spacing-slider" min="160" max="500" step="20" id="slider_vert_spacing" value="280" oninput="onVerticalSpacingChange(this.value)">
+                            </div>
+                            <div class="btn-group btn-group-sm w-100 mb-2">
+                                <button type="button" class="btn btn-xs btn-outline-light" onclick="applyQuickPreset('compact')">Compacto</button>
+                                <button type="button" class="btn btn-xs btn-outline-light" onclick="applyQuickPreset('normal')">Normal</button>
+                                <button type="button" class="btn btn-xs btn-outline-light active" id="btn_preset_wide" onclick="applyQuickPreset('wide')">Amplio</button>
+                                <button type="button" class="btn btn-xs btn-outline-light" onclick="applyQuickPreset('extrawide')">Extra</button>
+                            </div>
+                            <button type="button" class="btn btn-warning btn-xs btn-block font-weight-bold" onclick="resetNodePositions()">
+                                <i class="fas fa-sync-alt mr-1"></i> Reordenar Automático
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Physics Freeze Toggle -->
                     <button class="hud-btn active" id="btn_physics_lock" onclick="togglePhysicsLock()" title="Fijar / Congelar Nodos (Modo Plano)">
                         <i class="fas fa-lock"></i>
@@ -543,6 +674,7 @@ body { background: transparent !important; }
                     <button class="hud-btn" onclick="zoomIn()" title="Acercar (Zoom +)"><i class="fas fa-plus"></i></button>
                     <button class="hud-btn" onclick="zoomOut()" title="Alejar (Zoom -)"><i class="fas fa-minus"></i></button>
                     <button class="hud-btn" onclick="fitGraph()" title="Centrar y Ajustar Diagrama"><i class="fas fa-compress-arrows-alt"></i></button>
+                    <button class="hud-btn" id="btn_canvas_height" onclick="cycleCanvasHeight()" title="Alternar Altura de Presentación del Gráfico (860px / 1050px / 720px)"><i class="fas fa-arrows-alt-v text-cyan"></i></button>
                     <button class="hud-btn" onclick="toggleFullscreenCanvas()" title="Pantalla Completa"><i class="fas fa-expand"></i></button>
                 </div>
 
@@ -608,8 +740,13 @@ let currentLayout = 'hierarchical_ud';
 let currentStencilStyle = 'visio_hardware'; // 'visio_hardware' (Símbolos Cisco 3D) o 'visio_cards' (Fichas Blueprint)
 let isGridVisible = true;
 let isPhysicsLocked = true;
+let isDragModeEnabled = true;
 let activeCategoryFilter = 'all';
 let selectedNodeId = null;
+let currentSpacingPreset = 'wide';
+let currentHorizontalSpacing = 380; // Espaciado horizontal por defecto para stencils (160px) y tarjetas (240px)
+let currentVerticalSeparation = 280; // Separación vertical por defecto entre niveles de red
+let canvasHeightMode = 'standard'; // 'standard' (860px), 'large' (1050px), 'compact' (720px)
 
 document.addEventListener('DOMContentLoaded', () => {
     loadAnalysisFilters();
@@ -678,6 +815,13 @@ function resetFilters() {
     if (btnSt) btnSt.classList.add('active');
     activeCategoryFilter = 'all';
     clearSearch();
+    currentSpacingPreset = 'wide';
+    currentHorizontalSpacing = 380;
+    currentVerticalSeparation = 280;
+    updateSpacingUI();
+    try {
+        localStorage.removeItem(getStorageKey());
+    } catch (e) {}
     runConnectionAnalysis();
 }
 
@@ -687,7 +831,13 @@ function changeStencilStyle(styleVal) {
     if (btn) btn.classList.toggle('active', currentStencilStyle === 'visio_hardware');
     const sel = document.getElementById('sel_stencil_style');
     if (sel) sel.value = styleVal;
-    renderVisioNetwork();
+    
+    // Adaptar espaciado automáticamente al ancho del elemento (160px vs 240px)
+    if (currentSpacingPreset !== 'custom') {
+        applyQuickPreset(currentSpacingPreset);
+    } else {
+        renderVisioNetwork();
+    }
 }
 
 function toggleStencilStyle() {
@@ -1234,6 +1384,7 @@ function renderVisioNetwork() {
             },
             smooth: {
                 type: currentLayout.startsWith('hierarchical') ? 'cubicBezier' : 'continuous',
+                forceDirection: currentLayout === 'hierarchical_ud' ? 'vertical' : (currentLayout === 'hierarchical_lr' ? 'horizontal' : 'none'),
                 roundness: 0.5
             },
             raw: e
@@ -1245,15 +1396,20 @@ function renderVisioNetwork() {
         edges: new vis.DataSet(visEdges)
     };
 
-    // Configuración de Opciones y Física adaptada al estilo de stencil
+    // Configuración de Opciones y Física adaptada al estilo de stencil y espaciados dinámicos
     const isHardware = (currentStencilStyle === 'visio_hardware');
+    const horizSpacing = currentHorizontalSpacing;
+    const vertSeparation = currentVerticalSeparation;
+
     let options = {
         interaction: {
             hover: true,
             tooltipDelay: 150,
             zoomView: true,
             dragView: true,
-            navigationButtons: false
+            dragNodes: isDragModeEnabled,
+            navigationButtons: false,
+            multiselect: false
         }
     };
 
@@ -1262,9 +1418,9 @@ function renderVisioNetwork() {
             hierarchical: {
                 direction: 'UD',
                 sortMethod: 'directed',
-                levelSeparation: isHardware ? 190 : 170,
-                nodeSpacing: isHardware ? 180 : 250,
-                treeSpacing: isHardware ? 200 : 260,
+                levelSeparation: vertSeparation,
+                nodeSpacing: horizSpacing,
+                treeSpacing: horizSpacing + 40,
                 blockShifting: true,
                 edgeMinimization: true
             }
@@ -1277,9 +1433,9 @@ function renderVisioNetwork() {
             hierarchical: {
                 direction: 'LR',
                 sortMethod: 'directed',
-                levelSeparation: isHardware ? 240 : 280,
-                nodeSpacing: isHardware ? 140 : 160,
-                treeSpacing: isHardware ? 180 : 200,
+                levelSeparation: horizSpacing + 40,
+                nodeSpacing: vertSeparation,
+                treeSpacing: vertSeparation + 40,
                 blockShifting: true,
                 edgeMinimization: true
             }
@@ -1300,10 +1456,10 @@ function renderVisioNetwork() {
                 updateInterval: 25
             },
             barnesHut: {
-                gravitationalConstant: isHardware ? -3500 : -4500,
-                centralGravity: 0.25,
-                springLength: isHardware ? 150 : 200,
-                springConstant: 0.04,
+                gravitationalConstant: -(horizSpacing * 25),
+                centralGravity: 0.20,
+                springLength: Math.max(160, horizSpacing - 80),
+                springConstant: 0.03,
                 damping: 0.09
             }
         };
@@ -1311,7 +1467,42 @@ function renderVisioNetwork() {
 
     network = new vis.Network(container, data, options);
 
-    // Eventos
+    // Desacoplar la restricción jerárquica tras el cálculo inicial para permitir arrastre 2D irrestricto
+    network.once("afterDrawing", function () {
+        if (currentLayout.startsWith('hierarchical')) {
+            network.setOptions({
+                layout: { hierarchical: { enabled: false } },
+                physics: { enabled: false }
+            });
+        }
+        applySavedNodePositions();
+    });
+
+    // Gestión de Arrastre Libre de Equipos (Free Drag & Drop)
+    network.on("dragStart", function (params) {
+        if (params.nodes && params.nodes.length > 0) {
+            network.setOptions({ physics: { enabled: false } });
+        }
+    });
+
+    network.on("dragEnd", function (params) {
+        if (params.nodes && params.nodes.length > 0) {
+            const updates = [];
+            params.nodes.forEach(nodeId => {
+                const pos = network.getPosition(nodeId);
+                updates.push({
+                    id: nodeId,
+                    x: pos.x,
+                    y: pos.y,
+                    fixed: { x: true, y: true } // Fijar posición personalizada del equipo
+                });
+            });
+            network.body.data.nodes.update(updates);
+            saveCustomNodePositions();
+        }
+    });
+
+    // Eventos de selección e inspección
     network.on("click", function (params) {
         if (params.nodes.length > 0) {
             const nodeId = params.nodes[0];
@@ -1426,6 +1617,205 @@ function toggleFullscreenCanvas() {
     setTimeout(() => {
         if (network) network.fit();
     }, 200);
+}
+
+// 6.b Control de Altura del Lienzo (Aumentar el área donde se presentan los gráficos)
+function cycleCanvasHeight() {
+    const wrap = document.getElementById('canvas_wrapper');
+    if (!wrap) return;
+
+    if (canvasHeightMode === 'standard') {
+        wrap.classList.remove('height-compact');
+        wrap.classList.add('height-large');
+        canvasHeightMode = 'large';
+    } else if (canvasHeightMode === 'large') {
+        wrap.classList.remove('height-large');
+        wrap.classList.add('height-compact');
+        canvasHeightMode = 'compact';
+    } else {
+        wrap.classList.remove('height-compact', 'height-large');
+        canvasHeightMode = 'standard';
+    }
+
+    const btn = document.getElementById('btn_canvas_height');
+    if (btn) {
+        btn.classList.toggle('active', canvasHeightMode === 'large');
+    }
+
+    setTimeout(() => {
+        if (network) network.fit({ animation: { duration: 350, easingFunction: 'easeInOutQuad' } });
+    }, 360);
+}
+
+// 6.c Modo Arrastrar Nodos Libremente
+function toggleDragMode() {
+    isDragModeEnabled = !isDragModeEnabled;
+    const btn = document.getElementById('btn_drag_mode');
+    if (btn) {
+        btn.classList.toggle('active', isDragModeEnabled);
+        btn.classList.toggle('active-drag', isDragModeEnabled);
+        btn.title = isDragModeEnabled 
+            ? "Modo Arrastrar y Reubicar Equipos Libremente en 2D (Activado)" 
+            : "Modo Bloqueado (Clic para habilitar arrastre de equipos)";
+    }
+
+    if (network) {
+        network.setOptions({
+            interaction: { dragNodes: isDragModeEnabled }
+        });
+    }
+
+    if (typeof Swal !== 'undefined') {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 1800,
+            timerProgressBar: true
+        });
+        Toast.fire({
+            icon: isDragModeEnabled ? 'success' : 'info',
+            title: isDragModeEnabled ? 'Modo Mover Equipos Activado' : 'Movimiento de Equipos Pausado'
+        });
+    }
+}
+
+// 6.d Gestión de Espaciados y Separaciones entre Items
+function onSpacingPresetSelect(preset) {
+    applyQuickPreset(preset);
+}
+
+function applyQuickPreset(preset) {
+    currentSpacingPreset = preset;
+    const isHardware = (currentStencilStyle === 'visio_hardware');
+
+    if (preset === 'compact') {
+        currentHorizontalSpacing = isHardware ? 240 : 280;
+        currentVerticalSeparation = 200;
+    } else if (preset === 'normal') {
+        currentHorizontalSpacing = isHardware ? 300 : 340;
+        currentVerticalSeparation = 240;
+    } else if (preset === 'extrawide') {
+        currentHorizontalSpacing = isHardware ? 480 : 540;
+        currentVerticalSeparation = 340;
+    } else { // 'wide' (default)
+        currentHorizontalSpacing = isHardware ? 380 : 420;
+        currentVerticalSeparation = 280;
+    }
+
+    updateSpacingUI();
+    renderVisioNetwork();
+}
+
+function updateSpacingUI() {
+    const sHoriz = document.getElementById('slider_horiz_spacing');
+    if (sHoriz) sHoriz.value = currentHorizontalSpacing;
+    const sVert = document.getElementById('slider_vert_spacing');
+    if (sVert) sVert.value = currentVerticalSeparation;
+
+    const lblH = document.getElementById('val_horiz_spacing');
+    if (lblH) lblH.textContent = `${currentHorizontalSpacing}px`;
+    const lblV = document.getElementById('val_vert_spacing');
+    if (lblV) lblV.textContent = `${currentVerticalSeparation}px`;
+
+    const badgeLbl = document.getElementById('badge_spacing_label');
+    if (badgeLbl) {
+        const presetNames = {
+            compact: 'Compacto',
+            normal: 'Normal',
+            wide: 'Amplio',
+            extrawide: 'Extra Espacioso'
+        };
+        badgeLbl.textContent = `${presetNames[currentSpacingPreset] || 'Personalizado'} (${currentHorizontalSpacing}px)`;
+    }
+
+    const sel = document.getElementById('sel_spacing_preset');
+    if (sel && sel.value !== currentSpacingPreset) {
+        sel.value = currentSpacingPreset;
+    }
+}
+
+function onHorizontalSpacingChange(val) {
+    currentHorizontalSpacing = parseInt(val, 10);
+    currentSpacingPreset = 'custom';
+    updateSpacingUI();
+    renderVisioNetwork();
+}
+
+function onVerticalSpacingChange(val) {
+    currentVerticalSeparation = parseInt(val, 10);
+    currentSpacingPreset = 'custom';
+    updateSpacingUI();
+    renderVisioNetwork();
+}
+
+// 6.e Persistencia y Reordenamiento de Posiciones de Nodos
+function getStorageKey() {
+    const loc = document.getElementById('sel_location') ? document.getElementById('sel_location').value : 'all';
+    const dev = document.getElementById('sel_device') ? document.getElementById('sel_device').value : 'all';
+    return `synapse_topo_pos_${CLIENT_FILTER}_${loc || 'all'}_${dev || 'all'}_${currentLayout}`;
+}
+
+function saveCustomNodePositions() {
+    if (!network) return;
+    try {
+        const positions = network.getPositions();
+        localStorage.setItem(getStorageKey(), JSON.stringify(positions));
+    } catch (e) {
+        console.warn("No se pudo guardar la posición en LocalStorage:", e);
+    }
+}
+
+function loadSavedNodePositions() {
+    try {
+        const data = localStorage.getItem(getStorageKey());
+        return data ? JSON.parse(data) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function applySavedNodePositions() {
+    if (!network) return;
+    const saved = loadSavedNodePositions();
+    if (saved && Object.keys(saved).length > 0) {
+        const updates = [];
+        for (const [nodeId, pos] of Object.entries(saved)) {
+            if (pos && typeof pos.x === 'number' && typeof pos.y === 'number') {
+                updates.push({
+                    id: nodeId,
+                    x: pos.x,
+                    y: pos.y,
+                    fixed: { x: true, y: true }
+                });
+            }
+        }
+        if (updates.length > 0) {
+            network.body.data.nodes.update(updates);
+        }
+    }
+}
+
+function resetNodePositions() {
+    try {
+        localStorage.removeItem(getStorageKey());
+    } catch (e) {}
+
+    if (typeof Swal !== 'undefined') {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
+        Toast.fire({
+            icon: 'info',
+            title: 'Posiciones restablecidas al diseño automático'
+        });
+    }
+
+    renderVisioNetwork();
 }
 
 // 7. Temas de Fondo y Cuadrícula Visio
